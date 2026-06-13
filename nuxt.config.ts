@@ -58,14 +58,14 @@ export default defineNuxtConfig({
       script: [
         {
           async: true,
-          src: 'https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX'
+          src: 'https://www.googletagmanager.com/gtag/js?id=G-XDWZW2TCLR'
         },
         {
           innerHTML: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-XXXXXXXXXX', {
+            gtag('config', 'G-XDWZW2TCLR', {
               anonymize_ip: true
             });
           `,

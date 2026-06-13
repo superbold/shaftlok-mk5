@@ -206,8 +206,7 @@
 </template>
 
 <script setup>
-const brands = ['Borg Warner', 'Paragon', 'Hurth', 'Volvo Penta']
-
+const brands = ['Borg Warner', 'Paragon', 'Hurth', 'Volvo Penta', 'Yanmar', 'Perkins','Mercedes', 'Velvet Drive', 'Cummins']
 useHead({
   title: 'Welcome',
   meta: [
@@ -469,6 +468,7 @@ definePageMeta({
 
 /* Marquee */
 .hero-marquee {
+  position: relative;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: rgba(8, 18, 38, 0.4);
@@ -478,6 +478,8 @@ definePageMeta({
 }
 
 .marquee-label {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
   font-family: var(--font-display);
   font-size: 0.72rem;
@@ -486,10 +488,13 @@ definePageMeta({
   text-transform: uppercase;
   color: var(--text-low);
   padding: 1.1rem 1.6rem;
+  background: var(--abyss-soft);
   border-right: 1px solid var(--line);
 }
 
 .marquee-track {
+  position: relative;
+  z-index: 1;
   display: flex;
   gap: 3.5rem;
   padding-left: 2.5rem;

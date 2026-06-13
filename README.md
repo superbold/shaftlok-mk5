@@ -109,9 +109,51 @@ pnpm build
 pnpm preview
 ```
 
+## 🎨 MK5 Redesign — What Was Built
+
+The MK5 redesign carries the "Deep Ocean Engineering" theme across the entire site while preserving all MK4 content, SEO metadata, and Supabase integrations.
+
+### Design system
+- New design tokens in `assets/css/main.css`: deep navy background (`--abyss`), aurora cyan/teal accents, glassmorphism cards (`.glass-card`), gradient text/buttons, bento grids, and a `.check-list` / `.prose` content system
+- Space Grotesk (display) + Inter (body) loaded via Google Fonts, with the legacy `DeVinneOrnamentDRegular` brand font retained for the "Shaft Lok" wordmark
+- Legacy CSS variables (`--federal-blue`, `--honolulu-blue`, etc.) mapped onto the new palette for backward compatibility
+- SSR-safe `v-reveal` scroll-reveal directive (`plugins/reveal.ts`), built on `IntersectionObserver` and respecting `prefers-reduced-motion`
+
+### Home page
+- Redesigned hero ("Lock the shaft. Free the sail.") with stats row and floating brochure chips
+- Transmission brand marquee, bento "why lock the shaft" grid, 1978–1981 history timeline, engineering section with check-list, and a final CTA band
+- All original JSON-LD (BreadcrumbList, WebPage, Organization with `hasOfferCatalog`) preserved
+
+### Products
+- New shared `ProductDetail.vue` component generates SEO meta (OpenGraph, Twitter cards, canonical links, JSON-LD BreadcrumbList + Product schema with `additionalProperty` specs) from props
+- All 10 product pages rewritten as thin wrappers around `ProductDetail`, preserving original prose and specs
+- Redesigned product catalog (`/products`) with "Locking Units" and "Controls & Accessories" sections
+
+### Content pages
+- About, Installation, Contact, FAQ, and Testimonials pages restyled with glass cards, step-cards, accordions, and review cards
+- All original Article/WebPage/HowTo/LocalBusiness/FAQPage/Review JSON-LD schema preserved exactly
+
+### Yacht list
+- Dark glass table theme with sticky headers, mobile card-stacking, and a pulsing gradient discount button
+- Live Supabase data (956 yachts) confirmed working with search, sort, pagination, and admin CRUD modals restyled to match
+
+### Verification
+- All 19 routes return HTTP 200; JSON-LD renders correctly in SSR output (including `additionalProperty` and product-specific details)
+- `pnpm build` completes successfully (`.output/` ≈ 2.97 MB, ~703 kB gzip)
+- Visually verified via headless-Chrome screenshots of home, products catalog, product detail, yacht list, and FAQ pages
+
+## 📊 Analytics
+
+The site uses Google Analytics 4 (GA4) via the `gtag.js` snippet, configured in [nuxt.config.ts](./nuxt.config.ts) under `app.head.script`. Because this is part of the global Nuxt head config, it's automatically injected into the `<head>` of every server-rendered page — no per-page setup needed.
+
+- **Measurement ID**: `G-XDWZW2TCLR` (Shaft Lok Inc. GA4 property)
+- **Config**: `gtag('config', 'G-XDWZW2TCLR', { anonymize_ip: true })` — `anonymize_ip` truncates visitor IP addresses for privacy
+- **Updating the ID**: change both occurrences of the Measurement ID in `nuxt.config.ts` (the `script src` URL and the `gtag('config', ...)` call) if the GA4 property ever changes
+- A GA4 Measurement ID is not a secret — it's visible in the rendered page source — so it's safe to reference here
+
 ## 📝 License
 
-© 2025 Shaft Lok Inc. All rights reserved.
+© 2026 Shaft Lok Inc. All rights reserved.
 
 ## 📋 Migration Documentation
 
@@ -120,10 +162,9 @@ For detailed information about the migration process, architectural decisions, a
 
 ## 🚀 Future Enhancements
 
-- **Database Integration** - Supabase integration for dynamic yacht list, FAQ, and testimonials
-- **Content Management** - Admin forms for easy content updates
-- **Performance** - Progressive Web App (PWA) features and image optimization
-- **User Experience** - Search functionality and product comparison tools
+- ~~**Analytics** - Replace the placeholder Google Analytics ID with a production tracking ID~~ (done — `G-XDWZW2TCLR`)
+- **Performance** - Progressive Web App (PWA) features and further image optimization
+- **User Experience** - Product comparison tools and richer yacht list filtering
 
 ## 🔗 Related
 
