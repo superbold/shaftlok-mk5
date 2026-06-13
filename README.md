@@ -1,6 +1,8 @@
-# ShaftLok MK4 - Nuxt 4.0.3 Website
+# ShaftLok MK5 - Nuxt 4 Website
 
-Complete modern migration of the ShaftLok marine propeller control systems website from static HTML/CSS (MK3) to Nuxt 4.0.3 with Vue 3 Composition API.
+Full visual redesign of the ShaftLok marine propeller control systems website (based on MK4), built on Nuxt 4 with Vue 3 Composition API and Supabase.
+
+**MK5 design system — "Deep Ocean Engineering":** dark-first marine industrial theme (deep navy + aurora cyan), glassmorphism navigation and cards, bento feature grids, Space Grotesk / Inter typography, scroll-reveal micro-interactions (`v-reveal` directive), and a shared `ProductDetail` component that generates per-product SEO (meta, OpenGraph, JSON-LD Product schema) from props.
 
 ## 🚀 Features
 

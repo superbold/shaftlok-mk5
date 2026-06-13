@@ -1,448 +1,323 @@
 <template>
-  <header v-if="!isAuthPage">
-    <div class="header-container">
-      <div class="header-content">
-        <div class="logo-container">
-          <NuxtLink to="/">
-            <img 
-              src="/assets/images/Logo_ShaftLok_whiteBG-landscape.png" 
-              alt="Shaft Lok Logo" 
-              loading="lazy"
-              class="logo-desktop"
-            >
-            <img 
-              src="/assets/images/Logo_propeller_only.png" 
-              alt="Shaft Lok Logo" 
-              loading="lazy"
-              class="logo-mobile"
-            >
-          </NuxtLink>
-        </div>
-        <!-- Center navigation buttons - progressively shown based on screen size -->
-        <nav class="nav-center">
-          <NuxtLink to="/products" class="nav-link"><i class="fas fa-cogs"></i><span>Products</span></NuxtLink>
-          <NuxtLink to="/installation" class="nav-link"><i class="fas fa-wrench"></i><span>Installation</span></NuxtLink>
-          <NuxtLink to="/yacht-list" class="nav-link"><i class="fas fa-ship"></i><span>Yacht List</span></NuxtLink>
-          <NuxtLink to="/contact" class="nav-link"><i class="fas fa-envelope"></i><span>Contact</span></NuxtLink>
-        </nav>
-        
-        <!-- Auth section - only shown on largest screens -->
-        <div class="auth-section">
-          <button v-if="user" @click="handleSignOut" class="signin-button signout-button">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Sign Out</span>
-          </button>
-        </div>
+  <header v-if="!isAuthPage" :class="{ scrolled: isScrolled, 'menu-open': menuOpen }">
+    <div class="nav-inner">
+      <NuxtLink to="/" class="brand" @click="menuOpen = false">
+        <img src="/assets/images/Logo_propeller_only.png" alt="Shaft Lok propeller logo" class="brand-mark">
+        <span class="brand-name"><span class="brand-shaft">Shaft Lok</span><span class="brand-inc">INC.</span></span>
+      </NuxtLink>
 
-        <div class="hamburger-menu">
-          <input type="checkbox" id="hamburger-toggle" class="hamburger-checkbox">
-          <label for="hamburger-toggle" class="hamburger-label">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-          </label>
-          <div class="hamburger-dropdown">
-            <NuxtLink to="/products" class="dropdown-link"><i class="fas fa-cogs"></i> Products</NuxtLink>
-            <NuxtLink to="/installation" class="dropdown-link"><i class="fas fa-wrench"></i> Installation</NuxtLink>
-            <NuxtLink to="/yacht-list" class="dropdown-link"><i class="fas fa-ship"></i> Yacht List</NuxtLink>
-            <NuxtLink to="/faq" class="dropdown-link"><i class="fas fa-question-circle"></i> FAQ</NuxtLink>
-            <NuxtLink to="/testimonials" class="dropdown-link"><i class="fas fa-star"></i> Testimonials</NuxtLink>
-            <NuxtLink to="/about" class="dropdown-link"><i class="fas fa-info-circle"></i> About</NuxtLink>
-            <NuxtLink to="/contact" class="dropdown-link"><i class="fas fa-envelope"></i> Contact</NuxtLink>
-          </div>
-        </div>
+      <nav class="nav-links" aria-label="Primary">
+        <NuxtLink v-for="link in links" :key="link.to" :to="link.to" class="nav-link">
+          {{ link.label }}
+        </NuxtLink>
+      </nav>
+
+      <div class="nav-actions">
+        <button v-if="user" @click="handleSignOut" class="signout-button" title="Sign out">
+          <i class="fas fa-sign-out-alt"></i><span>Sign Out</span>
+        </button>
+        <NuxtLink to="/contact" class="btn btn-primary nav-cta">Get a Quote</NuxtLink>
+        <button
+          class="menu-toggle"
+          :aria-expanded="menuOpen"
+          aria-label="Toggle navigation menu"
+          @click="menuOpen = !menuOpen"
+        >
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </button>
       </div>
     </div>
+
+    <Transition name="drop">
+      <nav v-if="menuOpen" class="mobile-menu" aria-label="Mobile">
+        <NuxtLink
+          v-for="link in allLinks"
+          :key="link.to"
+          :to="link.to"
+          class="mobile-link"
+          @click="menuOpen = false"
+        >
+          <i :class="link.icon"></i>{{ link.label }}
+        </NuxtLink>
+        <button v-if="user" @click="handleSignOut" class="mobile-link mobile-signout">
+          <i class="fas fa-sign-out-alt"></i>Sign Out
+        </button>
+      </nav>
+    </Transition>
   </header>
 </template>
 
 <script setup>
-// Hide MainNav on auth pages
 const route = useRoute()
 const isAuthPage = computed(() => route.path.startsWith('/auth'))
+
+const links = [
+  { to: '/products', label: 'Products' },
+  { to: '/installation', label: 'Installation' },
+  { to: '/yacht-list', label: 'Yacht List' },
+  { to: '/about', label: 'About' }
+]
+
+const allLinks = [
+  { to: '/products', label: 'Products', icon: 'fas fa-cogs' },
+  { to: '/installation', label: 'Installation', icon: 'fas fa-wrench' },
+  { to: '/yacht-list', label: 'Yacht List', icon: 'fas fa-ship' },
+  { to: '/faq', label: 'FAQ', icon: 'fas fa-question-circle' },
+  { to: '/testimonials', label: 'Testimonials', icon: 'fas fa-star' },
+  { to: '/about', label: 'About', icon: 'fas fa-info-circle' },
+  { to: '/contact', label: 'Contact', icon: 'fas fa-envelope' }
+]
+
+const menuOpen = ref(false)
+const isScrolled = ref(false)
+
+const onScroll = () => { isScrolled.value = window.scrollY > 12 }
+
+onMounted(() => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
+
+onUnmounted(() => window.removeEventListener('scroll', onScroll))
+
+// Close menu when navigating
+watch(() => route.path, () => { menuOpen.value = false })
 
 // Authentication state
 const user = useSupabaseUser()
 const supabase = useSupabaseClient()
 
-// Handle sign out
 const handleSignOut = async () => {
   try {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
-    
-    // Redirect to home page after sign out
     await navigateTo('/')
   } catch (error) {
     console.error('Error signing out:', error)
     alert('Error signing out: ' + error.message)
   }
 }
-
-
-// MainNav: General site navigation component
 </script>
 
 <style scoped>
 header {
-  background-color: white;
-  border: 2px solid var(--federal-blue);
-  border-radius: 50px;
   position: fixed;
-  top: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
-  width: 90%;
+  border-bottom: 1px solid transparent;
+  transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+header.scrolled,
+header.menu-open {
+  background: rgba(4, 10, 24, 0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom-color: var(--line);
+  box-shadow: 0 12px 40px -18px rgba(2, 8, 23, 0.9);
+}
+
+.nav-inner {
   max-width: 1200px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.header-container {
-  padding: 0.75rem 1.5rem;
-}
-
-.header-content {
+  margin: 0 auto;
+  height: var(--nav-height);
+  padding: 0 1.5rem;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  height: 2.5rem;
-  position: relative;
+  gap: 1.5rem;
 }
 
-.logo-container {
+.brand {
   display: flex;
   align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
   flex-shrink: 0;
 }
 
-.logo-desktop {
-  height: 2.5rem;
-  width: auto;
-  vertical-align: middle;
+.brand-mark {
+  height: 2.4rem;
+  width: 2.4rem;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 10px;
+  padding: 3px;
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.35));
 }
 
-.logo-mobile {
-  display: none;
-  height: 2.5rem;
-  width: auto;
-  vertical-align: middle;
+.brand-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
 }
 
-/* Center navigation - progressively shown based on screen size */
-.nav-center {
+.brand-shaft {
+  font-family: var(--font-brand);
+  font-size: 1.45rem;
+  color: var(--text-hi);
+}
+
+.brand-inc {
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.46em;
+  color: var(--accent);
+  margin-top: 0.18rem;
+}
+
+.nav-links {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  flex: 1;
-  justify-content: center;
-}
-
-/* Auth section - only shown on largest screens */
-.auth-section {
-  display: none;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-/* Mobile styles - logo + hamburger only */
-@media (max-width: 599px) {
-  .header-container {
-    padding: 0.75rem 1rem;
-  }
-
-  .nav-center {
-    display: none;
-  }
-
-  .auth-section {
-    display: none;
-  }
-
-  .logo-desktop {
-    display: block;
-    height: 2rem;
-  }
-
-  .logo-mobile {
-    display: none;
-  }
-}
-
-/* Small screens - logo + Products + hamburger */
-@media (min-width: 600px) and (max-width: 799px) {
-  .nav-center .nav-link:nth-child(1) {
-    display: flex;
-  }
-  .nav-center .nav-link:nth-child(2),
-  .nav-center .nav-link:nth-child(3),
-  .nav-center .nav-link:nth-child(4) {
-    display: none;
-  }
-
-  .auth-section {
-    display: none;
-  }
-}
-
-/* Medium screens - logo + Products + Yacht List + hamburger */
-@media (min-width: 800px) and (max-width: 999px) {
-  .nav-center .nav-link:nth-child(1),
-  .nav-center .nav-link:nth-child(3) {
-    display: flex;
-  }
-  .nav-center .nav-link:nth-child(2),
-  .nav-center .nav-link:nth-child(4) {
-    display: none;
-  }
-
-  .auth-section {
-    display: none;
-  }
-}
-
-/* Large screens - logo + Products + Installation + Yacht List + hamburger */
-@media (min-width: 1000px) and (max-width: 1199px) {
-  .nav-center .nav-link:nth-child(1),
-  .nav-center .nav-link:nth-child(2),
-  .nav-center .nav-link:nth-child(3) {
-    display: flex;
-  }
-  .nav-center .nav-link:nth-child(4) {
-    display: none;
-  }
-
-  .auth-section {
-    display: none;
-  }
-}
-
-/* Extra large screens - show all navigation + auth */
-@media (min-width: 1200px) {
-  .nav-center .nav-link {
-    display: flex;
-  }
-
-  .nav-center {
-    gap: 2rem;
-  }
-
-  .auth-section {
-    display: flex;
-  }
+  gap: 0.35rem;
 }
 
 .nav-link {
-  color: var(--federal-blue);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
   font-weight: 500;
+  color: var(--text-mid);
   text-decoration: none;
-  transition: all 0.3s ease;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  transition: color 0.25s ease, background 0.25s ease;
   white-space: nowrap;
 }
 
-.nav-link i {
-  font-size: 1.2rem;
-  min-width: 1.2rem;
-  text-align: center;
+.nav-link:hover {
+  color: var(--text-hi);
+  background: rgba(148, 197, 255, 0.08);
 }
 
-.nav-link span {
-  transition: all 0.3s ease;
-}
-
-.nav-link:hover,
 .nav-link.router-link-active {
-  color: white;
-  background-color: var(--federal-blue);
-  border-radius: 50px;
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
 }
 
-
-.auth-section {
+.nav-actions {
   display: flex;
   align-items: center;
-  margin-left: 1rem;
-}
-
-.signin-button {
-  background: linear-gradient(135deg, var(--federal-blue), var(--honolulu-blue));
-  color: white;
-  border: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  padding: 0.75rem 1.5rem;
-  border-radius: 50px;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.signin-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(31, 81, 147, 0.3);
-}
-
-.signin-button i {
-  font-size: 1rem;
-}
-
-.signout-button {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
-}
-
-.signout-button:hover {
-  background: linear-gradient(135deg, #b91c1c, #991b1b);
-  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
-}
-
-/* Hamburger menu - always visible */
-.hamburger-menu {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 0.85rem;
   flex-shrink: 0;
 }
 
-.hamburger-checkbox {
-  display: none;
+.nav-cta {
+  padding: 0.6rem 1.4rem;
+  font-size: 0.92rem;
 }
 
-.hamburger-label {
-  display: flex;
+.signout-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: #FCA5A5;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.signout-button:hover {
+  background: rgba(248, 113, 113, 0.2);
+  transform: translateY(-1px);
+}
+
+.menu-toggle {
+  display: none;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  width: 60px;
-  height: 45px;
+  gap: 5px;
+  width: 2.8rem;
+  height: 2.8rem;
+  padding: 0 0.6rem;
+  background: rgba(148, 197, 255, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 12px;
   cursor: pointer;
-  border-radius: 50px;
-  transition: all 0.3s ease;
+  transition: border-color 0.25s ease;
 }
 
-.hamburger-label:hover {
-  background-color: var(--federal-blue);
-}
+.menu-toggle:hover { border-color: var(--accent); }
 
-.hamburger-line {
-  width: 20px;
-  height: 3px;
-  background-color: var(--federal-blue);
+.menu-toggle .bar {
+  height: 2px;
+  width: 100%;
+  background: var(--text-hi);
   border-radius: 2px;
-  transition: all 0.3s ease;
-  margin: 2px 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.hamburger-label:hover .hamburger-line {
-  background-color: white;
-}
+.menu-open .menu-toggle .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-open .menu-toggle .bar:nth-child(2) { opacity: 0; }
+.menu-open .menu-toggle .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-.hamburger-checkbox:checked ~ .hamburger-label .hamburger-line:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
-}
-
-.hamburger-checkbox:checked ~ .hamburger-label .hamburger-line:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger-checkbox:checked ~ .hamburger-label .hamburger-line:nth-child(3) {
-  transform: rotate(-45deg) translate(5px, -5px);
-}
-
-.hamburger-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: white;
-  border: 2px solid var(--federal-blue);
-  border-radius: 15px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  min-width: 200px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  z-index: 1000;
-  margin-top: 10px;
-  max-height: 80vh;
+.mobile-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 1.25rem 1.25rem;
+  border-top: 1px solid var(--line);
+  max-height: calc(100vh - var(--nav-height));
   overflow-y: auto;
 }
 
-.hamburger-checkbox:checked ~ .hamburger-dropdown {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.dropdown-link {
+.mobile-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 12px 20px;
-  color: var(--federal-blue);
-  text-decoration: none;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
   font-weight: 500;
-  transition: all 0.3s ease;
-  border-bottom: 1px solid #f0f0f0;
+  color: var(--text-mid);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
-.dropdown-link:last-child {
-  border-bottom: none;
+.mobile-link i {
+  width: 1.4rem;
+  text-align: center;
+  color: var(--accent);
 }
 
-.dropdown-link:hover,
-.dropdown-link.router-link-active {
-  background-color: var(--federal-blue);
-  color: white;
+.mobile-link:hover,
+.mobile-link.router-link-active {
+  color: var(--text-hi);
+  background: rgba(56, 189, 248, 0.1);
 }
 
-.dropdown-link i {
-  margin-right: 10px;
-  width: 16px;
+.mobile-signout { color: #FCA5A5; }
+.mobile-signout i { color: #FCA5A5; }
+
+.drop-enter-active, .drop-leave-active { transition: opacity 0.25s ease, transform 0.25s ease; }
+.drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-8px); }
+
+@media (max-width: 920px) {
+  .nav-links { display: none; }
+  .menu-toggle { display: flex; }
+  .signout-button span { display: none; }
 }
 
-.dropdown-link:first-child {
-  border-top-left-radius: 13px;
-  border-top-right-radius: 13px;
+@media (max-width: 560px) {
+  .nav-cta { display: none; }
+  .nav-inner { padding: 0 1rem; }
 }
 
-.dropdown-link:last-child {
-  border-bottom-left-radius: 13px;
-  border-bottom-right-radius: 13px;
-}
-
-
-/* Mobile specific adjustments */
-@media (max-width: 599px) {
-  header {
-    top: 0.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 95%;
-  }
-
-  .hamburger-dropdown {
-    right: -10px;
-    left: auto;
-    min-width: 180px;
-  }
-}
-
-@media (max-width: 480px) {
-  .hamburger-dropdown {
-    right: -20px;
-    left: auto;
-    min-width: 160px;
-  }
+@media (min-width: 921px) {
+  .mobile-menu { display: none; }
 }
 </style>

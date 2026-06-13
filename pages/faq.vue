@@ -1,25 +1,44 @@
 <template>
-  <div>
+  <div class="page-shell faq-shell">
     <BreadcrumbNav :items="[{ name: 'FAQ' }]" />
-    
-    <div class="faq-container">
-      <h1 class="page-title">Frequently Asked Questions</h1>
-      <p class="page-description">Common questions about Shaft Lok marine shaft locking systems</p>
-      
-      <div class="faq-list">
-        <div class="faq-item" v-for="(faq, index) in faqs" :key="index">
-          <div class="faq-question" @click="toggleFaq(index)">
-            <h3>{{ faq.question }}</h3>
-            <i class="fas fa-chevron-down" :class="{ 'rotated': faq.isOpen }"></i>
-          </div>
-          <div class="faq-answer" :class="{ 'open': faq.isOpen }">
-            <p v-html="faq.answer"></p>
-          </div>
+
+    <div class="section-head" v-reveal>
+      <span class="eyebrow"><i class="fas fa-circle-question"></i> Support</span>
+      <h1>Frequently Asked <span class="grad-text">Questions</span></h1>
+      <p>Common questions about <span class="shaftlok-font">Shaft Lok</span> marine shaft locking systems</p>
+    </div>
+
+    <div class="faq-list">
+      <div
+        v-for="(faq, index) in faqs"
+        :key="index"
+        :class="['faq-item glass-card', { open: faq.isOpen }]"
+        v-reveal="(index % 4) * 60"
+      >
+        <button
+          class="faq-question"
+          :aria-expanded="faq.isOpen"
+          @click="toggleFaq(index)"
+        >
+          <span class="faq-q-text">{{ faq.question }}</span>
+          <span class="faq-toggle"><i class="fas fa-plus"></i></span>
+        </button>
+        <div class="faq-answer" :class="{ open: faq.isOpen }">
+          <p v-html="faq.answer"></p>
         </div>
       </div>
     </div>
+
+    <div class="faq-cta glass-card" v-reveal>
+      <div>
+        <h2>Still have a question?</h2>
+        <p>Call 1-262-786-6800 or send us your vessel details — we answer every inquiry.</p>
+      </div>
+      <NuxtLink to="/contact" class="btn btn-primary">Contact Us</NuxtLink>
+    </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref } from 'vue'
@@ -169,32 +188,7 @@ definePageMeta({
 </script>
 
 <style scoped>
-.faq-container {
-  margin-top: 4rem;
-  min-height: 100vh;
-  padding: 2rem;
-  max-width: 1000px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.page-title {
-  text-align: center;
-  color: var(--federal-blue);
-  font-family: 'DeVinneOrnamentDRegular', serif;
-  font-size: clamp(2rem, 4vw, 3rem);
-  margin-bottom: 1rem;
-  animation: fadeIn 1s ease-out forwards;
-}
-
-.page-description {
-  font-size: clamp(1rem, 2vw, 1.5rem);
-  color: var(--federal-blue);
-  text-align: center;
-  margin-bottom: 3rem;
-  animation: fadeIn 1s ease-out 0.3s forwards;
-  opacity: 0;
-}
+.faq-shell { max-width: 880px; }
 
 .faq-list {
   display: flex;
@@ -203,105 +197,94 @@ definePageMeta({
 }
 
 .faq-item {
-  background: white;
-  border: 2px solid var(--federal-blue);
-  border-radius: 15px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  animation: fadeIn 0.8s ease-out forwards;
-  opacity: 0;
+  transition: border-color 0.3s ease;
 }
 
-.faq-item:nth-child(1) { animation-delay: 0.1s; }
-.faq-item:nth-child(2) { animation-delay: 0.2s; }
-.faq-item:nth-child(3) { animation-delay: 0.3s; }
-.faq-item:nth-child(4) { animation-delay: 0.4s; }
-.faq-item:nth-child(5) { animation-delay: 0.5s; }
-.faq-item:nth-child(6) { animation-delay: 0.6s; }
-.faq-item:nth-child(7) { animation-delay: 0.7s; }
-.faq-item:nth-child(8) { animation-delay: 0.8s; }
-
-.faq-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
+.faq-item.open { border-color: rgba(56, 189, 248, 0.45); }
 
 .faq-question {
-  padding: 1.5rem;
-  cursor: pointer;
+  width: 100%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background: var(--federal-blue);
-  color: white;
-  transition: background-color 0.3s ease;
+  justify-content: space-between;
+  gap: 1.2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 1.35rem 1.6rem;
+  text-align: left;
 }
 
-.faq-question:hover {
-  background: var(--honolulu-blue);
-}
-
-.faq-question h3 {
-  margin: 0;
-  font-size: 1.2rem;
+.faq-q-text {
+  font-family: var(--font-display);
+  font-size: 1.08rem;
   font-weight: 600;
+  color: var(--text-hi);
 }
 
-.faq-question i {
-  font-size: 1.2rem;
-  transition: transform 0.3s ease;
+.faq-toggle {
+  flex-shrink: 0;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
 }
 
-.faq-question i.rotated {
-  transform: rotate(180deg);
+.faq-item.open .faq-toggle {
+  transform: rotate(45deg);
+  background: var(--grad-accent);
+  color: #04121F;
+  border-color: transparent;
 }
 
 .faq-answer {
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+
+.faq-answer > p {
   overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
-  background: rgba(202, 240, 248, 0.1);
+  margin: 0;
+  padding: 0 1.6rem;
+  color: var(--text-mid);
+  line-height: 1.7;
+  transition: padding 0.35s ease;
 }
 
 .faq-answer.open {
-  max-height: 200px;
-  padding: 1.5rem;
+  grid-template-rows: 1fr;
 }
 
-.faq-answer p {
+.faq-answer.open > p {
+  padding: 0 1.6rem 1.45rem;
+}
+
+.faq-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: 2.5rem;
+  padding: 2rem 2.2rem;
+}
+
+.faq-cta h2 {
+  font-size: 1.3rem;
+  margin: 0 0 0.4rem;
+}
+
+.faq-cta p {
+  color: var(--text-mid);
   margin: 0;
-  color: #333;
-  line-height: 1.6;
-  font-size: 1.1rem;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (max-width: 768px) {
-  .faq-container {
-    padding: 2rem 1rem;
-  }
-  
-  .faq-question {
-    padding: 1rem;
-  }
-  
-  .faq-question h3 {
-    font-size: 1.1rem;
-  }
-  
-  .faq-answer.open {
-    padding: 1rem;
-  }
 }
 </style>

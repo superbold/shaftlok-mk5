@@ -1,21 +1,19 @@
 <template>
-  <div>
+  <div class="site-frame">
     <MainNav />
-    <slot />
+    <main>
+      <slot />
+    </main>
     <AppFooter />
   </div>
 </template>
 
-
-<style>
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(to bottom, var(--light-cyan), white);
+<style scoped>
+.site-frame {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
 }
+
+main { flex: 1; }
 </style>

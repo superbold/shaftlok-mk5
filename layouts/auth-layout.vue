@@ -19,7 +19,10 @@ useHead({
 <style scoped>
 .auth-layout {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--light-cyan) 0%, white 50%, #f8fafc 100%);
+  background:
+    radial-gradient(900px 480px at 85% -10%, rgba(45, 212, 191, 0.12), transparent 60%),
+    radial-gradient(1100px 600px at 8% 0%, rgba(56, 189, 248, 0.15), transparent 60%),
+    var(--abyss);
   display: flex;
   flex-direction: column;
 }

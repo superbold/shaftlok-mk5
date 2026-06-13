@@ -243,166 +243,55 @@ provide('yachtCrud', {
 </script>
 
 <style>
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(to bottom, var(--light-cyan), white);
-  min-height: 100vh;
-}
-
 .nav-wrapper {
   position: relative;
 }
 
 .discount-circle {
-  background: var(--federal-blue);
-  color: white;
-  border: 2px solid white;
-  border-radius: 50%;
-  width: 70px;
-  height: 70px;
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 900;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(120deg, #38BDF8, #2DD4BF);
+  color: #04121F;
+  border: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.92rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  font-weight: bold;
-  font-size: 0.9rem;
-  position: fixed;
-  top: 1rem;
-  left: calc(50% - 35rem);
-  z-index: 1000;
+  box-shadow: 0 14px 36px -10px rgba(56, 189, 248, 0.75);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: discount-pulse 3s ease-in-out infinite;
 }
 
 .discount-circle:hover {
-  background: var(--honolulu-blue);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(31, 81, 147, 0.3);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 18px 44px -10px rgba(56, 189, 248, 0.9);
 }
 
-.discount-text-mobile {
-  display: none;
+@keyframes discount-pulse {
+  0%, 100% { box-shadow: 0 14px 36px -10px rgba(56, 189, 248, 0.75), 0 0 0 0 rgba(56, 189, 248, 0.45); }
+  50% { box-shadow: 0 14px 36px -10px rgba(56, 189, 248, 0.75), 0 0 0 14px rgba(56, 189, 248, 0); }
 }
 
-/* Info Modal Styles - specific to yacht info modal */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 15px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 2px solid var(--federal-blue);
-  background: var(--federal-blue);
-  color: white;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-.modal-header h2.shaftlok-font {
-  color: white;
-}
-
-.modal-close {
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-radius: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-close:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
-}
-
-.modal-body {
-  padding: 1.5rem;
-  font-size: 1.15rem;
-}
-
-.modal-body p {
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-.modal-body p:first-child {
-  margin-top: 0;
-}
-
-.modal-body ul {
-  margin: 1rem 0;
-  padding-left: 2rem;
-}
-
-.modal-body li {
-  margin-bottom: 0.5rem;
-}
-
-.shaftlok-font {
-  font-family: 'DeVinneOrnamentDRegular', serif;
-  color: var(--federal-blue);
-  font-weight: bold;
-}
+.discount-text-mobile { display: none; }
 
 .discount-box {
-  background: var(--light-cyan);
-  border: 2px solid var(--honolulu-blue);
-  border-radius: 10px;
-  padding: 0.5rem;
+  background: rgba(245, 198, 107, 0.08);
+  border: 1px solid rgba(245, 198, 107, 0.4);
+  border-radius: var(--radius-md);
+  padding: 0.9rem;
   margin-top: 1.5rem;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 20px;
-}
-
-.discount-text {
-  font-weight: bold;
-  color: var(--federal-blue);
-  font-size: 1.3rem;
-  margin: 0;
-  line-height: 1;
-  vertical-align: middle;
-  transform: translateY(4px);
 }
 
 .boat-info-list {
@@ -418,10 +307,11 @@ body {
   display: flex;
   align-items: center;
   margin-bottom: 0.5rem;
+  color: var(--text-mid);
 }
 
 .boat-info-list li i {
-  color: #22c55e;
+  color: #5EEAD4;
   margin-right: 0.75rem;
   font-size: 0.9rem;
   flex-shrink: 0;
@@ -429,26 +319,18 @@ body {
 
 @media (max-width: 768px) {
   .discount-circle {
-    width: 50px;
-    height: 50px;
-    font-size: 0.7rem;
-    top: 0.5rem;
-    right: calc(90% + 5px);
+    width: 56px;
+    height: 56px;
+    font-size: 0.8rem;
+    bottom: 1rem;
+    right: 1rem;
   }
 
-  .discount-text-desktop {
-    display: none;
-  }
-
-  .discount-text-mobile {
-    display: inline;
-  }
+  .discount-text-desktop { display: none; }
+  .discount-text-mobile { display: inline; }
 }
 
 @media (max-width: 600px) {
-  .boat-info-list {
-    grid-template-columns: 1fr;
-  }
+  .boat-info-list { grid-template-columns: 1fr; }
 }
-
 </style>

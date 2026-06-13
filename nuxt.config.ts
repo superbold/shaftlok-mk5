@@ -33,6 +33,7 @@ export default defineNuxtConfig({
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'theme-color', content: '#040A18' },
         { name: 'robots', content: 'index, follow' },
         { name: 'description', content: 'Shaft Lok - Premium marine propeller locking systems for boats and yachts. Secure your propeller with our innovative locking solutions.' },
         { property: 'og:title', content: 'Shaft Lok - Marine Propeller Locking Systems' },
@@ -49,6 +50,9 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/assets/images/favico/favicon.ico' },
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap' },
         { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css' }
       ],
       script: [

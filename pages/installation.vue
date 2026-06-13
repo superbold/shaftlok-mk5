@@ -1,61 +1,88 @@
 <template>
-  <div>
+  <div class="page-shell">
     <BreadcrumbNav :items="[{ name: 'Installation' }]" />
-    
-    <div class="product-container">
-      <h1 class="page-title">Shaft Lok Installation Guide</h1>
-      <p class="page-description">Comprehensive guide for installing and understanding your Shaft Lok system</p>
-      <div class="product-detail">
-        <div class="feature-cards">
-          <div class="feature-card">
-            <h2>Pre-Installation Check</h2>
-            <ul>
-              <li>Mod I Easy Lok: 4 1/8 inches diameter template</li>
-              <li>Mod II Easy Lok: 6.75 inches diameter template</li>
-              <li>Mod III Easy Lok: 11.75 inches diameter template</li>
-            </ul>
-            <p>Create a cardboard rotor template cut in half with a centered hole for the propeller shaft. Cut a loading slot equal to the propeller shaft diameter. Use this template in the engine room to verify fit.</p>
-          </div>
-          <div class="feature-card">
-            <h2>System Components</h2>
-            <p>Shaft Lok consists of two main sections:</p>
-            <ul>
-              <li>Upper Housing: Contains locking mechanism with long and short pins, stainless steel spring, and spring assembly screw</li>
-              <li>Lower Housing: Features a deep groove sealed ball bearing (maintenance-free) containing the Black Rotating Disc & Stainless Steel Hub Assembly</li>
-            </ul>
-            <p>The propeller shaft is installed into the Hub Assembly and secured with stainless fasteners.</p>
-          </div>
-          <div class="feature-card">
-            <h2>Locking Mechanisms</h2>
-            <p>Two options for locking the system:</p>
-            <ul>
-              <li>Shaft Lok Marine Control Cable (S.L.M.C.C.): Fastened to the top of the housing with palm knob positioned in the cockpit</li>
-              <li>Simple Spring Locking System (S.S.L.S.): Bolted to top of the housing with Black Palm Knob a few inches above the housing (requires engine room access)</li>
-            </ul>
-          </div>
-          <div class="feature-card">
-            <h2>Operation</h2>
-            <p>To lock Shaft Lok when sailing:</p>
-            <ul>
-              <li>Press down on the Marine Control Cable or Simple Spring Locking System palm knob</li>
-              <li>The long locking pin engages the rotating disc, preventing propeller rotation</li>
-              <li>A spring-loaded short pin holds the long pin in locked/unlocked positions</li>
-            </ul>
-            <p>No electrical or hydraulic power required.</p>
-          </div>
-          <div class="feature-card">
-            <h2>Benefits</h2>
-            <p>Shaft Lok provides several advantages:</p>
-            <ul>
-              <li>Quiet operation while sailing</li>
-              <li>Locks propeller in most efficient position (one blade vertical)</li>
-              <li>Optimizes boat speed</li>
-              <li>Prevents transmission and propeller shaft bearing wear</li>
-              <li>Automatically unlocks when engine starts and transmission engages</li>
-            </ul>
-          </div>
+
+    <div class="section-head" v-reveal>
+      <span class="eyebrow"><i class="fas fa-wrench"></i> Installation guide</span>
+      <h1><span class="shaftlok-font grad-text">Shaft Lok</span> Installation</h1>
+      <p>Comprehensive guide for installing and understanding your Shaft Lok system — about two hours with basic tools.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step-card glass-card hoverable prose" v-reveal>
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h2>Pre-Installation Check</h2>
+          <ul class="check-list">
+            <li>Mod I Easy Lok: 4 1/8 inches diameter template</li>
+            <li>Mod II Easy Lok: 6.75 inches diameter template</li>
+            <li>Mod III Easy Lok: 11.75 inches diameter template</li>
+          </ul>
+          <p>Create a cardboard rotor template cut in half with a centered hole for the propeller shaft. Cut a loading slot equal to the propeller shaft diameter. Use this template in the engine room to verify fit.</p>
         </div>
       </div>
+
+      <div class="step-card glass-card hoverable prose" v-reveal="100">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h2>System Components</h2>
+          <p>Shaft Lok consists of two main sections:</p>
+          <ul class="check-list">
+            <li>Upper Housing: Contains locking mechanism with long and short pins, stainless steel spring, and spring assembly screw</li>
+            <li>Lower Housing: Features a deep groove sealed ball bearing (maintenance-free) containing the Black Rotating Disc &amp; Stainless Steel Hub Assembly</li>
+          </ul>
+          <p>The propeller shaft is installed into the Hub Assembly and secured with stainless fasteners.</p>
+        </div>
+      </div>
+
+      <div class="step-card glass-card hoverable prose" v-reveal="100">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h2>Locking Mechanisms</h2>
+          <p>Two options for locking the system:</p>
+          <ul class="check-list">
+            <li>Shaft Lok Marine Control Cable (S.L.M.C.C.): Fastened to the top of the housing with palm knob positioned in the cockpit</li>
+            <li>Simple Spring Locking System (S.S.L.S.): Bolted to top of the housing with Black Palm Knob a few inches above the housing (requires engine room access)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="step-card glass-card hoverable prose" v-reveal="100">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h2>Operation</h2>
+          <p>To lock Shaft Lok when sailing:</p>
+          <ul class="check-list">
+            <li>Press down on the Marine Control Cable or Simple Spring Locking System palm knob</li>
+            <li>The long locking pin engages the rotating disc, preventing propeller rotation</li>
+            <li>A spring-loaded short pin holds the long pin in locked/unlocked positions</li>
+          </ul>
+          <p>No electrical or hydraulic power required.</p>
+        </div>
+      </div>
+
+      <div class="step-card glass-card hoverable prose" v-reveal="100">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <h2>Benefits</h2>
+          <p>Shaft Lok provides several advantages:</p>
+          <ul class="check-list">
+            <li>Quiet operation while sailing</li>
+            <li>Locks propeller in most efficient position (one blade vertical)</li>
+            <li>Optimizes boat speed</li>
+            <li>Prevents transmission and propeller shaft bearing wear</li>
+            <li>Automatically unlocks when engine starts and transmission engages</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="install-cta glass-card" v-reveal>
+      <div>
+        <h2>Need a hand with your installation?</h2>
+        <p>Our technical team has guided over 1,390 installations since 1979.</p>
+      </div>
+      <NuxtLink to="/contact" class="btn btn-primary">Contact Support</NuxtLink>
     </div>
   </div>
 </template>
@@ -360,183 +387,72 @@ definePageMeta({
 </script>
 
 <style scoped>
-.product-container {
-  margin-top: 4rem;
-  min-height: 100vh;
-  padding: 2rem;
+.steps {
   display: flex;
   flex-direction: column;
+  gap: 1.4rem;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.step-card {
+  display: flex;
+  gap: 1.8rem;
+  padding: 2rem 2.2rem;
+}
+
+.step-num {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  width: 3.6rem;
+  height: 3.6rem;
+  display: flex;
   align-items: center;
-  position: relative;
-  overflow: hidden;
+  justify-content: center;
+  background-color: rgba(56, 189, 248, 0.06);
 }
 
-.product-container::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('/assets/images/shaftlok-install.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  z-index: 0;
+.step-body { flex: 1; }
+
+.step-body h2 {
+  font-size: 1.3rem;
+  margin: 0.35rem 0 0.9rem;
 }
 
-.product-container::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, 
-      var(--light-cyan) 0%,
-      rgba(202, 240, 248, 0.8) 25%,
-      rgba(202, 240, 248, 0.6) 50%,
-      rgba(202, 240, 248, 0.4) 75%,
-      transparent 100%);
-  z-index: 0;
-}
-
-.product-detail {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+.install-cta {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: 2rem;
-  position: relative;
-  z-index: 2;
+  flex-wrap: wrap;
+  max-width: 860px;
+  margin: 2.5rem auto 0;
+  padding: 2rem 2.2rem;
 }
 
-.feature-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
+.install-cta h2 {
+  font-size: 1.3rem;
+  margin: 0 0 0.4rem;
 }
 
-.page-title {
-  text-align: center;
-  color: var(--federal-blue);
-  font-family: 'DeVinneOrnamentDRegular', serif;
-  font-size: clamp(2rem, 4vw, 3rem);
-  margin-bottom: 0;
-  animation: fadeIn 1s ease-out forwards;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  position: relative;
-  z-index: 2;
+.install-cta p {
+  color: var(--text-mid);
+  margin: 0;
 }
 
-.page-description {
-  font-size: clamp(1rem, 2vw, 1.5rem);
-  color: var(--federal-blue);
-  max-width: 800px;
-  margin: 0 auto 2rem;
-  animation: fadeIn 1s ease-out 0.5s forwards;
-  opacity: 0;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  position: relative;
-  z-index: 2;
-  text-align: center;
-}
-
-.feature-card {
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 2px solid var(--federal-blue);
-  border-radius: 15px;
-  padding: 2rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 1s ease-out forwards;
-  opacity: 0;
-  backdrop-filter: blur(5px);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-}
-
-.feature-card:nth-child(1) { animation-delay: 0.2s; }
-.feature-card:nth-child(2) { animation-delay: 0.4s; }
-.feature-card:nth-child(3) { animation-delay: 0.6s; }
-.feature-card:nth-child(4) { animation-delay: 0.8s; }
-.feature-card:nth-child(5) { animation-delay: 1.0s; }
-
-.feature-card h2 {
-  font-size: 1.75rem;
-  font-weight: bold;
-  color: var(--federal-blue);
-  margin: 0 0 1rem 0;
-  position: relative;
-  display: inline-block;
-}
-
-.feature-card h2::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: -2px;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, var(--federal-blue), transparent);
-}
-
-.feature-card p {
-  margin-bottom: 1rem;
-  color: #333;
-  line-height: 1.6;
-  font-size: 1.1rem;
-}
-
-.feature-card ul {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
-}
-
-.feature-card li {
-  margin-bottom: 0.5rem;
-  padding-left: 1.5rem;
-  position: relative;
-  color: #333;
-  font-size: 1.1rem;
-}
-
-.feature-card li::before {
-  content: '✓';
-  color: var(--honolulu-blue);
-  position: absolute;
-  left: 0;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (max-width: 768px) {
-  .product-container::after {
-    background: linear-gradient(90deg, 
-        rgba(255, 255, 255, 0.95) 0%,
-        rgba(255, 255, 255, 0.9) 50%,
-        rgba(255, 255, 255, 1) 100%);
-  }
-  
-  .feature-card {
-    padding: 1.5rem;
+@media (max-width: 560px) {
+  .step-card {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.6rem 1.4rem;
   }
 }
 </style>

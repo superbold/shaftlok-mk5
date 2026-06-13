@@ -1,97 +1,87 @@
 <template>
-  <header>
-    <div class="header-container">
-      <div class="header-content">
-        <div class="logo-container">
-          <NuxtLink to="/">
-            <img 
-              src="/assets/images/Logo_ShaftLok_whiteBG-landscape.png" 
-              alt="Shaft Lok Logo" 
-              loading="lazy"
-              class="logo-desktop"
-            >
-            <img 
-              src="/assets/images/Logo_propeller_only.png" 
-              alt="Shaft Lok Logo" 
-              loading="lazy"
-              class="logo-mobile"
-            >
-          </NuxtLink>
-        </div>
-        
-        <div class="yacht-nav-section">
-          <div class="search-wrapper">
-            <div class="search-input-wrapper">
-              <input
-                :value="props.searchTerm"
-                @input="handleSearchInput"
-                @focus="clearErrorState"
-                type="text"
-                :placeholder="searchPlaceholder"
-                :class="['search-input', { 'error-placeholder': isErrorState && !isRedError }, { 'error-placeholder-red': isErrorState && isRedError }]"
-              />
-              <button
-                v-if="props.searchTerm"
-                @click="emit('clear-search')"
-                class="search-action-button"
-                aria-label="Clear search"
-              >
-                <i class="fas fa-times"></i>
-              </button>
-              <button
-                v-else
-                @click="emit('refresh-data')"
-                class="search-action-button"
-                aria-label="Refresh data"
-                title="Refresh data"
-              >
-                <i class="fas fa-sync-alt"></i>
-              </button>
-            </div>
-          </div>
+  <header :class="{ 'menu-open': menuOpen }">
+    <div class="nav-inner">
+      <NuxtLink to="/" class="brand">
+        <img src="/assets/images/Logo_propeller_only.png" alt="Shaft Lok propeller logo" class="brand-mark">
+        <span class="brand-name"><span class="brand-shaft">Shaft Lok</span><span class="brand-inc">YACHT LIST</span></span>
+      </NuxtLink>
 
-          <div v-if="isAdmin" class="admin-actions">
-            <button @click="emit('add-yacht')" class="admin-btn add-btn" title="Add Yacht">
-              <i class="fas fa-plus"></i>
-              <span class="btn-text">Add Yacht</span>
-            </button>
-            <button
-              @click="handleEditClick"
-              class="admin-btn edit-btn"
-              :title="selectedYacht ? `Edit ${selectedYacht.name}` : 'Edit Yacht (Select a yacht first)'"
-            >
-              <i class="fas fa-edit"></i>
-              <span class="btn-text">Edit Yacht</span>
-            </button>
-            <button @click="handleDeleteClick" class="admin-btn delete-btn" title="Delete Yacht">
-              <i class="fas fa-trash"></i>
-              <span class="btn-text">Delete Yacht</span>
-            </button>
-          </div>
+      <div class="yacht-nav-section">
+        <div class="search-input-wrapper">
+          <i class="fas fa-magnifying-glass search-glyph"></i>
+          <input
+            :value="props.searchTerm"
+            @input="handleSearchInput"
+            @focus="clearErrorState"
+            type="text"
+            :placeholder="searchPlaceholder"
+            :class="['search-input', { 'error-placeholder': isErrorState && !isRedError }, { 'error-placeholder-red': isErrorState && isRedError }]"
+          />
+          <button
+            v-if="props.searchTerm"
+            @click="emit('clear-search')"
+            class="search-action-button"
+            aria-label="Clear search"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+          <button
+            v-else
+            @click="emit('refresh-data')"
+            class="search-action-button"
+            aria-label="Refresh data"
+            title="Refresh data"
+          >
+            <i class="fas fa-sync-alt"></i>
+          </button>
         </div>
-        
-        <div class="hamburger-menu">
-          <input type="checkbox" id="hamburger-toggle" class="hamburger-checkbox">
-          <label for="hamburger-toggle" class="hamburger-label" :class="{ 'admin-hover': isAdmin }">
-            <span class="hamburger-line" :class="{ 'admin-red': isAdmin }"></span>
-            <span class="hamburger-line" :class="{ 'admin-red': isAdmin }"></span>
-            <span class="hamburger-line" :class="{ 'admin-red': isAdmin }"></span>
-          </label>
-          <div class="hamburger-dropdown">
-            <NuxtLink to="/products" class="dropdown-link"><i class="fas fa-cogs"></i> Products</NuxtLink>
-            <NuxtLink to="/installation" class="dropdown-link"><i class="fas fa-wrench"></i> Installation</NuxtLink>
-            <NuxtLink to="/faq" class="dropdown-link"><i class="fas fa-question-circle"></i> FAQ</NuxtLink>
-            <NuxtLink to="/testimonials" class="dropdown-link"><i class="fas fa-star"></i> Testimonials</NuxtLink>
-            <NuxtLink to="/about" class="dropdown-link"><i class="fas fa-info-circle"></i> About</NuxtLink>
-            <NuxtLink to="/contact" class="dropdown-link"><i class="fas fa-envelope"></i> Contact</NuxtLink>
-            <div v-if="isAdmin" class="dropdown-divider"></div>
-            <button v-if="isAdmin" @click="$emit('sign-out')" class="dropdown-link sign-out-link">
-              <i class="fas fa-sign-out-alt"></i> Sign Out
-            </button>
-          </div>
+
+        <div v-if="isAdmin" class="admin-actions">
+          <button @click="emit('add-yacht')" class="admin-btn add-btn" title="Add Yacht">
+            <i class="fas fa-plus"></i>
+            <span class="btn-text">Add</span>
+          </button>
+          <button
+            @click="handleEditClick"
+            class="admin-btn edit-btn"
+            :title="selectedYacht ? `Edit ${selectedYacht.name}` : 'Edit Yacht (Select a yacht first)'"
+          >
+            <i class="fas fa-edit"></i>
+            <span class="btn-text">Edit</span>
+          </button>
+          <button @click="handleDeleteClick" class="admin-btn delete-btn" title="Delete Yacht">
+            <i class="fas fa-trash"></i>
+            <span class="btn-text">Delete</span>
+          </button>
         </div>
       </div>
+
+      <button
+        class="menu-toggle"
+        :class="{ 'admin-ring': isAdmin }"
+        :aria-expanded="menuOpen"
+        aria-label="Toggle navigation menu"
+        @click="menuOpen = !menuOpen"
+      >
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
     </div>
+
+    <Transition name="drop">
+      <nav v-if="menuOpen" class="mobile-menu" aria-label="Site">
+        <NuxtLink to="/products" class="mobile-link" @click="menuOpen = false"><i class="fas fa-cogs"></i> Products</NuxtLink>
+        <NuxtLink to="/installation" class="mobile-link" @click="menuOpen = false"><i class="fas fa-wrench"></i> Installation</NuxtLink>
+        <NuxtLink to="/faq" class="mobile-link" @click="menuOpen = false"><i class="fas fa-question-circle"></i> FAQ</NuxtLink>
+        <NuxtLink to="/testimonials" class="mobile-link" @click="menuOpen = false"><i class="fas fa-star"></i> Testimonials</NuxtLink>
+        <NuxtLink to="/about" class="mobile-link" @click="menuOpen = false"><i class="fas fa-info-circle"></i> About</NuxtLink>
+        <NuxtLink to="/contact" class="mobile-link" @click="menuOpen = false"><i class="fas fa-envelope"></i> Contact</NuxtLink>
+        <button v-if="isAdmin" @click="emit('sign-out')" class="mobile-link mobile-signout">
+          <i class="fas fa-sign-out-alt"></i> Sign Out
+        </button>
+      </nav>
+    </Transition>
   </header>
 </template>
 
@@ -107,6 +97,8 @@ const props = defineProps({
     default: 0
   }
 })
+
+const menuOpen = ref(false)
 
 // Authentication state
 const user = useSupabaseUser()
@@ -143,7 +135,7 @@ const checkAdminStatus = async () => {
       .select('role')
       .eq('id', user.value.id)
       .single()
-    
+
     isAdmin.value = profile?.role === 'admin'
   } catch (error) {
     console.error('Error checking admin status:', error)
@@ -207,421 +199,260 @@ onMounted(async () => {
 
 <style scoped>
 header {
-  background-color: white;
-  border: 2px solid var(--federal-blue);
-  border-radius: 50px;
   position: fixed;
-  top: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
-  width: 80%;
-  max-width: 900px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: rgba(4, 10, 24, 0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 12px 40px -18px rgba(2, 8, 23, 0.9);
 }
 
-.header-container {
-  padding: 0.75rem 1.5rem;
-}
-
-.header-content {
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  height: var(--nav-height);
+  padding: 0 1.5rem;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  height: 2.5rem;
+  gap: 1.25rem;
 }
 
-.logo-container {
+.brand {
   display: flex;
   align-items: center;
-  margin-right: 2rem;
+  gap: 0.7rem;
+  text-decoration: none;
+  flex-shrink: 0;
 }
 
-.logo-desktop {
-  height: 2.5rem;
-  width: auto;
-  vertical-align: middle;
+.brand-mark {
+  height: 2.4rem;
+  width: 2.4rem;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 10px;
+  padding: 3px;
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.35));
 }
 
-.logo-mobile {
-  display: none;
-  height: 2.5rem;
-  width: auto;
-  vertical-align: middle;
+.brand-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.brand-shaft {
+  font-family: var(--font-brand);
+  font-size: 1.45rem;
+  color: var(--text-hi);
+}
+
+.brand-inc {
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  color: var(--accent);
+  margin-top: 0.18rem;
 }
 
 .yacht-nav-section {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.9rem;
   flex: 1;
-  margin: 0 2rem;
-}
-
-
-
-.search-wrapper {
-  flex: 1;
-  max-width: 300px;
+  justify-content: center;
+  min-width: 0;
 }
 
 .search-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+  width: min(420px, 100%);
+}
+
+.search-glyph {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-low);
+  font-size: 0.85rem;
+  pointer-events: none;
 }
 
 .search-input {
-  padding: 0.5rem;
-  padding-right: 2.5rem;
-  border: 1px solid var(--federal-blue);
-  border-radius: 25px;
-  background: white;
-  color: var(--federal-blue);
   width: 100%;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+  background: rgba(13, 27, 54, 0.65);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--text-hi);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 0.62rem 2.8rem 0.62rem 2.5rem;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
+
+.search-input::placeholder { color: var(--text-low); }
 
 .search-input:focus {
-  outline: none;
-  border-color: var(--honolulu-blue);
-  box-shadow: 0 0 0 2px rgba(202, 240, 248, 0.5);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
 }
 
-.search-input::placeholder {
-  color: rgba(31, 81, 147, 0.6);
-}
-
-.search-input.error-placeholder::placeholder {
-  color: #f97316;
-  font-weight: 500;
-}
-
-.search-input.error-placeholder-red::placeholder {
-  color: #ef4444;
-  font-weight: 500;
-}
+.search-input.error-placeholder::placeholder { color: var(--gold); }
+.search-input.error-placeholder-red::placeholder { color: #FCA5A5; }
 
 .search-action-button {
   position: absolute;
-  right: 0.5rem;
-  background: none;
+  right: 0.45rem;
+  background: rgba(56, 189, 248, 0.12);
   border: none;
-  color: rgba(31, 81, 147, 0.6);
+  color: var(--accent);
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
   cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.8rem;
-  transition: all 0.2s ease;
+  transition: background 0.25s ease;
 }
 
-.search-action-button:hover {
-  color: var(--federal-blue);
-  background: rgba(31, 81, 147, 0.1);
-}
+.search-action-button:hover { background: rgba(56, 189, 248, 0.25); }
 
 .admin-actions {
   display: flex;
-  align-items: center;
   gap: 0.5rem;
-  margin-left: 1rem;
 }
 
 .admin-btn {
-  background: var(--federal-blue);
-  color: white;
-  border: none;
-  border-radius: 1rem;
-  padding: 0 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  white-space: nowrap;
-  width: 2rem;
-  height: 2rem;
-  position: relative;
+  gap: 0.45rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.admin-btn i {
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-}
-
-.admin-btn .btn-text {
-  font-size: 0.8rem;
-  font-weight: 500;
-  opacity: 0;
-  max-width: 0;
-  margin-left: 0;
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-.admin-btn:hover {
-  width: auto;
-  padding: 0 1rem;
-}
-
-.admin-btn:hover .btn-text {
-  opacity: 1;
-  max-width: 6rem;
-  margin-left: 0.5rem;
-}
-
-.admin-btn:hover i {
-  margin-right: 0;
-}
-
-.admin-btn.disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-}
-
-.admin-btn.disabled:hover {
-  background: #9ca3af;
-  width: 2rem;
-  padding: 0 1rem;
-}
-
-.admin-btn.disabled:hover .btn-text {
-  opacity: 0;
-  max-width: 0;
-  margin-left: 0;
-}
+.admin-btn:hover { transform: translateY(-1px); }
 
 .add-btn {
-  background: #22c55e;
+  background: rgba(45, 212, 191, 0.12);
+  border-color: rgba(45, 212, 191, 0.4);
+  color: #5EEAD4;
 }
 
-.add-btn:hover {
-  background: #16a34a;
-}
+.add-btn:hover { background: rgba(45, 212, 191, 0.24); }
 
 .edit-btn {
-  background: #f97316;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: var(--accent);
 }
 
-.edit-btn:hover {
-  background: #ea580c;
-}
+.edit-btn:hover { background: rgba(56, 189, 248, 0.24); }
 
 .delete-btn {
-  background: #ef4444;
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #FCA5A5;
 }
 
-.delete-btn:hover {
-  background: #dc2626;
-}
+.delete-btn:hover { background: rgba(248, 113, 113, 0.22); }
 
-
-
-.hamburger-menu {
-  position: relative;
-  display: block;
-}
-
-.hamburger-checkbox {
-  display: none;
-}
-
-.hamburger-label {
+.menu-toggle {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  width: 60px;
-  height: 45px;
+  gap: 5px;
+  width: 2.8rem;
+  height: 2.8rem;
+  padding: 0 0.6rem;
+  background: rgba(148, 197, 255, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 12px;
   cursor: pointer;
-  border-radius: 50px;
-  transition: all 0.3s ease;
+  flex-shrink: 0;
+  transition: border-color 0.25s ease;
 }
 
-.hamburger-label:hover {
-  background-color: var(--federal-blue);
-}
+.menu-toggle:hover { border-color: var(--accent); }
 
-.hamburger-label.admin-hover:hover {
-  background-color: #dc2626;
-}
+.menu-toggle.admin-ring { border-color: rgba(248, 113, 113, 0.55); }
 
-.hamburger-line {
-  width: 20px;
-  height: 3px;
-  background-color: var(--federal-blue);
+.menu-toggle .bar {
+  height: 2px;
+  width: 100%;
+  background: var(--text-hi);
   border-radius: 2px;
-  transition: all 0.3s ease;
-  margin: 2px 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.hamburger-line.admin-red {
-  background-color: #dc2626;
+.menu-open .menu-toggle .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-open .menu-toggle .bar:nth-child(2) { opacity: 0; }
+.menu-open .menu-toggle .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.mobile-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 1.25rem 1.25rem;
+  border-top: 1px solid var(--line);
+  max-height: calc(100vh - var(--nav-height));
+  overflow-y: auto;
 }
 
-.hamburger-label:hover .hamburger-line {
-  background-color: white;
-}
-
-.hamburger-checkbox:checked ~ .hamburger-label .hamburger-line:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
-}
-
-.hamburger-checkbox:checked ~ .hamburger-label .hamburger-line:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger-checkbox:checked ~ .hamburger-label .hamburger-line:nth-child(3) {
-  transform: rotate(-45deg) translate(5px, -5px);
-}
-
-.hamburger-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: white;
-  border: 2px solid var(--federal-blue);
-  border-radius: 15px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  min-width: 200px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  z-index: 1000;
-  margin-top: 10px;
-}
-
-.hamburger-checkbox:checked ~ .hamburger-dropdown {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.dropdown-link {
+.mobile-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 12px 20px;
-  color: var(--federal-blue);
-  text-decoration: none;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
   font-weight: 500;
-  transition: all 0.3s ease;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.dropdown-link:last-child {
-  border-bottom: none;
-}
-
-.dropdown-link:hover,
-.dropdown-link.router-link-active {
-  background-color: var(--federal-blue);
-  color: white;
-}
-
-.dropdown-link i {
-  margin-right: 10px;
-  width: 16px;
-}
-
-.dropdown-link:first-child {
-  border-top-left-radius: 13px;
-  border-top-right-radius: 13px;
-}
-
-.dropdown-link:last-child {
-  border-bottom-left-radius: 13px;
-  border-bottom-right-radius: 13px;
-}
-
-.dropdown-divider {
-  height: 1px;
-  background-color: #e2e8f0;
-  margin: 0.5rem 0;
-}
-
-.sign-out-link {
+  color: var(--text-mid);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
   background: none;
   border: none;
-  width: 100%;
-  text-align: left;
-  color: #dc2626;
   cursor: pointer;
-  font-weight: 500;
-  font-size: inherit;
-  padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  text-align: left;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
-.sign-out-link:hover {
-  background-color: #dc2626;
-  color: white;
+.mobile-link i {
+  width: 1.4rem;
+  text-align: center;
+  color: var(--accent);
 }
 
-@media (max-width: 1024px) {
-  .yacht-nav-section {
-    gap: 0.5rem;
-    margin: 0 1rem;
-  }
-  
-  .search-wrapper {
-    max-width: 200px;
-  }
-  
-  .search-input {
-    font-size: 0.8rem;
-  }
+.mobile-link:hover,
+.mobile-link.router-link-active {
+  color: var(--text-hi);
+  background: rgba(56, 189, 248, 0.1);
 }
 
-@media (max-width: 768px) {
-  header {
-    top: 0.5rem;
-    right: 0.5rem;
-    width: calc(90% - 60px);
-  }
-  
-  .header-content {
-    height: auto;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 0.5rem 0;
-  }
-  
-  .yacht-nav-section {
-    order: 2;
-    width: 100%;
-    justify-content: center;
-    margin: 0;
-  }
-  
-  .search-wrapper {
-    max-width: none;
-    flex: 1;
-  }
-  
-  .hamburger-menu {
-    order: 3;
-    align-self: flex-end;
-  }
-  
-  .logo-container {
-    order: 1;
-    margin-right: 0;
-  }
-  
-  .logo-desktop {
-    display: none;
-  }
-  
-  .logo-mobile {
-    display: block;
-  }
-  
+.mobile-signout { color: #FCA5A5; }
+.mobile-signout i { color: #FCA5A5; }
+
+.drop-enter-active, .drop-leave-active { transition: opacity 0.25s ease, transform 0.25s ease; }
+.drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-8px); }
+
+@media (max-width: 760px) {
+  .brand-name { display: none; }
+  .admin-btn .btn-text { display: none; }
+  .admin-btn { padding: 0.5rem 0.7rem; }
+  .nav-inner { padding: 0 1rem; gap: 0.75rem; }
 }
 </style>

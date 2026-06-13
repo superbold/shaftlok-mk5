@@ -1,109 +1,147 @@
 <template>
-  <div>
+  <div class="page-shell">
     <BreadcrumbNav :items="[{ name: 'Products' }]" />
 
-    <div class="products-container">
-      <div class="products-header">
-        <h1>Shaft Lok Products</h1>
-        <p>Discover our range of innovative products designed to enhance your boating experience</p>
-      </div>
+    <div class="section-head" v-reveal>
+      <span class="eyebrow"><i class="fas fa-fan"></i> Product catalog</span>
+      <h1><span class="shaftlok-font grad-text">Shaft Lok</span> Products</h1>
+      <p>Eight locking systems and two control accessories — covering every shaft from 45&nbsp;mm sailboats to 200&nbsp;mm mega-yachts.</p>
+    </div>
 
-      <div class="products-grid">
-        <div class="product-card">
-          <img src="/assets/images/shaftlok-mod-red.jpg" alt="Shaft Lok Mod I EasyLok marine propeller control system - compact design for small sailboats with engine room space restrictions" class="product-image" loading="lazy">
-          <div class="product-content">
-            <h3>Mod I EasyLok</h3>
-            <p>Entry-level propeller control system for smaller vessels</p>
-            <NuxtLink to="/products/mod-i-easylok" class="product-link">Details</NuxtLink>
-          </div>
+    <h2 class="group-title" v-reveal><i class="fas fa-lock"></i> Locking Units</h2>
+    <div class="products-grid">
+      <NuxtLink
+        v-for="(product, i) in lockingUnits"
+        :key="product.to"
+        :to="product.to"
+        class="product-card glass-card hoverable"
+        v-reveal="(i % 3) * 100"
+      >
+        <div class="card-media">
+          <img :src="product.image" :alt="product.alt" loading="lazy">
+          <span v-if="product.badge" class="card-badge">{{ product.badge }}</span>
         </div>
+        <div class="card-body">
+          <div class="card-top">
+            <h3>{{ product.name }}</h3>
+            <span v-if="product.bore" class="bore-tag">{{ product.bore }}</span>
+          </div>
+          <p>{{ product.blurb }}</p>
+          <span class="card-link">View details <i class="fas fa-arrow-right"></i></span>
+        </div>
+      </NuxtLink>
+    </div>
 
-        <div class="product-card">
-          <img src="/assets/images/shaftlok-mod-orange.jpg" alt="Shaft Lok Mod II EasyLok marine propeller control system - enhanced design for medium-duty sailboats 20-100 feet with 70% market share" class="product-image" loading="lazy">
-          <div class="product-content">
-            <h3>Mod II EasyLok</h3>
-            <p>Standard propeller control for most sailboat applications</p>
-            <NuxtLink to="/products/mod-ii-easylok" class="product-link">Details</NuxtLink>
-          </div>
+    <h2 class="group-title" v-reveal><i class="fas fa-sliders"></i> Controls &amp; Accessories</h2>
+    <div class="products-grid">
+      <NuxtLink
+        v-for="(product, i) in accessories"
+        :key="product.to"
+        :to="product.to"
+        class="product-card glass-card hoverable"
+        v-reveal="(i % 3) * 100"
+      >
+        <div class="card-media">
+          <img :src="product.image" :alt="product.alt" loading="lazy">
         </div>
-
-        <div class="product-card">
-          <img src="/assets/images/shaftlok-mod-purple.jpg" alt="Shaft Lok Mod II EasyLok High Torque marine propeller control system - heavy-duty design for high-torque applications and commercial vessels" class="product-image" loading="lazy">
-          <div class="product-content">
-            <h3>Mod II EasyLok High Torque</h3>
-            <p>Enhanced version for demanding applications</p>
-            <NuxtLink to="/products/mod-ii-easylok-high-torque" class="product-link">Details</NuxtLink>
+        <div class="card-body">
+          <div class="card-top">
+            <h3>{{ product.name }}</h3>
           </div>
+          <p>{{ product.blurb }}</p>
+          <span class="card-link">View details <i class="fas fa-arrow-right"></i></span>
         </div>
-
-        <div class="product-card">
-          <img src="/assets/images/shaftlok-mod-black.jpg" alt="Shaft Lok Mod III EasyLok marine propeller control system - advanced design for large vessels with maximum torque handling and rotating disc assembly" class="product-image" loading="lazy">
-          <div class="product-content">
-            <h3>Mod III EasyLok</h3>
-            <p>Advanced propeller control for larger vessels</p>
-            <NuxtLink to="/products/mod-iii-easylok" class="product-link">Details</NuxtLink>
-          </div>
-        </div>
-
-        <div class="product-card">
-          <img src="/assets/images/shaftlok-mod-red.jpg" alt="Shaft Lok Mod III EasyLok High Torque marine propeller control system - ultimate high-torque design for large vessels with maximum reliability and performance" class="product-image" loading="lazy">
-          <div class="product-content">
-            <h3>Mod III EasyLok High Torque</h3>
-            <p>Large Sailboats with no engine room space restrictions.</p>
-            <NuxtLink to="/products/mod-iii-easylok-high-torque" class="product-link">Details</NuxtLink>
-          </div>
-        </div>
-
-        <div class="product-card">
-          <img src="/assets/images/shaftlok-mod-purple.jpg" alt="Shaft Lok Mod IV marine propeller control system - professional-grade design for specialty applications and large motor vessels with custom installation support" class="product-image" loading="lazy">
-          <div class="product-content">
-            <h3>Mod IV</h3>
-            <p>Million $$$ Yachts with large propeller shafts.</p>
-            <NuxtLink to="/products/mod-iv" class="product-link">Details</NuxtLink>
-          </div>
-        </div>
-
-        <div class="product-card">
-          <img src="/assets/images/shaftlok-mod-purple.jpg" alt="Shaft Lok Mod V marine propeller control system - ultimate design for largest yachts and extreme torque requirements with performance-grade locking technology" class="product-image" loading="lazy">
-          <div class="product-content">
-            <h3>Mod V</h3>
-            <p>Million $$$ Yachts with custom requirements.</p>
-            <NuxtLink to="/products/mod-v" class="product-link">Details</NuxtLink>
-          </div>
-        </div>
-
-        <div class="product-card">
-          <img src="/assets/images/shaftlok-mod-purple.jpg" alt="Shaft Lok Mod VI marine propeller control system - custom design for specialized applications and unique vessel requirements with extreme environment capabilities" class="product-image" loading="lazy">
-          <div class="product-content">
-            <h3>Mod VI</h3>
-            <p>Our premium model, designed for specialized applications requiring the highest level of precision and security.</p>
-            <NuxtLink to="/products/mod-vi" class="product-link">Details</NuxtLink>
-          </div>
-        </div>
-
-        <div class="product-card">
-          <img src="/assets/images/SpringLockingSystem_withHandle.jpg" alt="Shaft Lok Simple Spring Locking System - cost-effective marine propeller control solution with manual operation and easy installation for smaller vessels" class="product-image" loading="lazy">
-          <div class="product-content">
-            <h3>Simple Spring Locking System</h3>
-            <p>Locks Prop from the Engine Room.</p>
-            <NuxtLink to="/products/simple-spring-locking-system" class="product-link">Details</NuxtLink>
-          </div>
-        </div>
-
-        <div class="product-card">
-          <img src="/assets/images/marine-control-cable.png" alt="Shaft Lok Marine Control Cable - durable marine-grade control cables for convenient cockpit operation of propeller locking systems without engine room access" class="product-image" loading="lazy">
-          <div class="product-content">
-            <h3>Marine Control Cable</h3>
-            <p>Standard control cable for propeller locking systems.</p>
-            <NuxtLink to="/products/marine-control-cable" class="product-link">Details</NuxtLink>
-          </div>
-        </div>
-      </div>
+      </NuxtLink>
     </div>
   </div>
 </template>
 
 <script setup>
+const lockingUnits = [
+  {
+    name: 'Mod I EasyLok',
+    to: '/products/mod-i-easylok',
+    image: '/assets/images/shaftlok-mod-red.jpg',
+    alt: 'Shaft Lok Mod I EasyLok marine propeller control system - compact design for small sailboats with engine room space restrictions',
+    bore: '45mm',
+    blurb: 'Entry-level propeller control system for smaller vessels with tight engine rooms.'
+  },
+  {
+    name: 'Mod II EasyLok',
+    to: '/products/mod-ii-easylok',
+    image: '/assets/images/shaftlok-mod-orange.jpg',
+    alt: 'Shaft Lok Mod II EasyLok marine propeller control system - enhanced design for medium-duty sailboats 20-100 feet with 70% market share',
+    bore: '57mm',
+    badge: 'Most popular',
+    blurb: 'The standard for most sailboat applications — 70% of all units shipped since 1979.'
+  },
+  {
+    name: 'Mod II EasyLok High Torque',
+    to: '/products/mod-ii-easylok-high-torque',
+    image: '/assets/images/shaftlok-mod-purple.jpg',
+    alt: 'Shaft Lok Mod II EasyLok High Torque marine propeller control system - heavy-duty design for high-torque applications and commercial vessels',
+    bore: '57mm',
+    blurb: 'Enhanced version for demanding applications on sailboats 45 to 130 feet.'
+  },
+  {
+    name: 'Mod III EasyLok',
+    to: '/products/mod-iii-easylok',
+    image: '/assets/images/shaftlok-mod-black.jpg',
+    alt: 'Shaft Lok Mod III EasyLok marine propeller control system - advanced design for large vessels with maximum torque handling and rotating disc assembly',
+    bore: '80mm',
+    blurb: 'Advanced propeller control for larger vessels with ample engine room space.'
+  },
+  {
+    name: 'Mod III EasyLok High Torque',
+    to: '/products/mod-iii-easylok-high-torque',
+    image: '/assets/images/shaftlok-mod-red.jpg',
+    alt: 'Shaft Lok Mod III EasyLok High Torque marine propeller control system - ultimate high-torque design for large vessels with maximum reliability and performance',
+    bore: '80mm',
+    blurb: 'Large sailboats with no engine room space restrictions and big fixed props.'
+  },
+  {
+    name: 'Mod IV',
+    to: '/products/mod-iv',
+    image: '/assets/images/shaftlok-mod-purple.jpg',
+    alt: 'Shaft Lok Mod IV marine propeller control system - professional-grade design for specialty applications and large motor vessels with custom installation support',
+    bore: '110mm',
+    blurb: 'Mega-yachts with large propeller shafts — engineered to order.'
+  },
+  {
+    name: 'Mod V',
+    to: '/products/mod-v',
+    image: '/assets/images/shaftlok-mod-purple.jpg',
+    alt: 'Shaft Lok Mod V marine propeller control system - ultimate design for largest yachts and extreme torque requirements with performance-grade locking technology',
+    bore: '150mm',
+    blurb: 'The largest yachts and extreme torque requirements, custom-built.'
+  },
+  {
+    name: 'Mod VI',
+    to: '/products/mod-vi',
+    image: '/assets/images/shaftlok-mod-purple.jpg',
+    alt: 'Shaft Lok Mod VI marine propeller control system - custom design for specialized applications and unique vessel requirements with extreme environment capabilities',
+    bore: '165mm',
+    blurb: 'Our premium model for specialized applications requiring the highest precision.'
+  }
+]
+
+const accessories = [
+  {
+    name: 'Simple Spring Locking System',
+    to: '/products/simple-spring-locking-system',
+    image: '/assets/images/SpringLockingSystem_withHandle.jpg',
+    alt: 'Shaft Lok Simple Spring Locking System - cost-effective marine propeller control solution with manual operation and easy installation for smaller vessels',
+    blurb: 'Locks the prop from the engine room — inexpensive, compact, reliable.'
+  },
+  {
+    name: 'Marine Control Cable',
+    to: '/products/marine-control-cable',
+    image: '/assets/images/marine-control-cable.png',
+    alt: 'Shaft Lok Marine Control Cable - durable marine-grade control cables for convenient cockpit operation of propeller locking systems without engine room access',
+    blurb: 'Operate your Shaft Lok from the cockpit — no engine room access needed.'
+  }
+]
+
 useHead({
   title: 'Shaft Lok - Products',
   meta: [
@@ -153,149 +191,119 @@ definePageMeta({
 </script>
 
 <style scoped>
-.products-container {
-  margin-top: 6rem;
-  min-height: 100vh;
-  padding: 2rem;
+.group-title {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 0.8rem;
+  font-size: 1.35rem;
+  margin: 3rem 0 1.5rem;
 }
 
-.products-header {
-  text-align: center;
-  margin-bottom: 0;
-  color: #333;
-}
-
-.products-header h1 {
-  text-align: center;
-  color: var(--federal-blue);
-  font-family: 'DeVinneOrnamentDRegular', serif;
-  font-size: var(--font-size-title);
-  margin-top: 1rem;
-  margin-bottom: 0;
-  animation: fadeIn 1s ease-out forwards;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  position: relative;
-  z-index: 2;
-}
-
-.products-header p {
-  font-size: var(--font-size-subtitle);
-  color: var(--federal-blue);
-  max-width: 1200px;
-  margin: 0 auto;
-  margin-bottom: 3rem;
-  animation: fadeIn 1s ease-out 0.5s forwards;
-  opacity: 0;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  position: relative;
-  z-index: 2;
-  text-align: center;
+.group-title i {
+  color: var(--accent);
+  font-size: 1.05rem;
 }
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
 }
 
 .product-card {
-  background-color: white;
-  border: 2px solid var(--federal-blue);
-  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  animation: fadeIn 0.8s ease-out forwards;
-  opacity: 0;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 5px;
-}
-
-.product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-.product-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-}
-
-.product-content {
-  padding: 0.5rem;
-  color: #333;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.product-content h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
-  color: var(--federal-blue);
-}
-
-.product-content p {
-  font-size: 1rem;
-  line-height: 1.3;
-  color: #333;
-  margin-bottom: 0.75rem;
-}
-
-.product-link {
-  display: block;
-  width: 100%;
-  padding: 0.75rem 1.5rem;
-  margin-top: auto;
-  background-color: var(--federal-blue);
-  color: white;
-  text-align: center;
   text-decoration: none;
-  border-radius: 8px;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  border: 2px solid var(--federal-blue);
+  border-radius: var(--radius-lg);
 }
 
-.product-link:hover {
-  background-color: transparent;
-  color: var(--federal-blue);
-  transform: translateY(-2px);
+.card-media {
+  position: relative;
+  background: #fff;
+  height: 200px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-@media (max-width: 768px) {
-  .products-container {
-    padding: 1rem;
-  }
+.card-badge {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #04121F;
+  background: var(--grad-accent);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  box-shadow: 0 6px 18px -6px rgba(56, 189, 248, 0.65);
+}
 
-  .products-grid {
-    grid-template-columns: 1fr;
-  }
+.card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 1.4rem 1.5rem 1.5rem;
+}
 
-  .product-card {
-    margin: 0 auto;
-    max-width: 400px;
-  }
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-body h3 {
+  font-size: 1.12rem;
+  margin: 0;
+}
+
+.bore-tag {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 999px;
+  padding: 0.22rem 0.7rem;
+}
+
+.card-body p {
+  color: var(--text-mid);
+  font-size: 0.93rem;
+  margin: 0 0 1.2rem;
+  flex: 1;
+}
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  transition: gap 0.25s ease;
+}
+
+.product-card:hover .card-link { gap: 0.85rem; }
+
+@media (max-width: 920px) {
+  .products-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 580px) {
+  .products-grid { grid-template-columns: 1fr; }
 }
 </style>

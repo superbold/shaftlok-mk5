@@ -128,23 +128,28 @@ const updateField = (field, value) => {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--federal-blue);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-mid);
 }
 
 .form-control {
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  background: rgba(13, 27, 54, 0.65);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-hi);
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: var(--honolulu-blue);
-  box-shadow: 0 0 0 3px rgba(202, 240, 248, 0.3);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
 }
 
 @media (max-width: 768px) {

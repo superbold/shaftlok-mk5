@@ -1,27 +1,52 @@
 <template>
-  <div>
+  <div class="page-shell">
     <BreadcrumbNav :items="[{ name: 'Testimonials' }]" />
-    
-    <div class="testimonials-container">
-      <h1 class="page-title">Customer Testimonials</h1>
-      <p class="page-description">What sailors are saying about Shaft Lok</p>
-      
-      <div class="testimonials-grid">
-        <div class="testimonial-card" v-for="(testimonial, index) in testimonials" :key="index">
-          <div class="testimonial-content">
-            <p class="testimonial-text">"{{ testimonial.text }}"</p>
-            <div class="testimonial-author">
-              <strong>{{ testimonial.author }}</strong>
-              <span class="testimonial-boat">{{ testimonial.boat }}</span>
-            </div>
-          </div>
+
+    <div class="section-head" v-reveal>
+      <span class="eyebrow"><i class="fas fa-star"></i> Customer stories</span>
+      <h1>What sailors are <span class="grad-text">saying</span></h1>
+      <p>Real experiences from skippers who locked the shaft and freed the sail.</p>
+    </div>
+
+    <div class="testimonials-grid">
+      <figure
+        v-for="(testimonial, index) in testimonials"
+        :key="index"
+        class="testimonial-card glass-card hoverable"
+        v-reveal="(index % 3) * 100"
+      >
+        <div class="stars" aria-label="5 out of 5 stars">
+          <i v-for="n in 5" :key="n" class="fas fa-star"></i>
         </div>
+        <blockquote>"{{ testimonial.text }}"</blockquote>
+        <figcaption>
+          <span class="avatar">{{ initials(testimonial.author) }}</span>
+          <span class="author-meta">
+            <strong>{{ testimonial.author }}</strong>
+            <span class="boat"><i class="fas fa-sailboat"></i> {{ testimonial.boat }}</span>
+          </span>
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="testimonial-cta glass-card" v-reveal>
+      <div>
+        <h2>Sailing with a <span class="shaftlok-font">Shaft Lok</span>?</h2>
+        <p>We'd love to hear your story — and add your yacht to the list.</p>
       </div>
+      <NuxtLink to="/contact" class="btn btn-primary">Share Your Experience</NuxtLink>
     </div>
   </div>
 </template>
 
+
 <script setup>
+// First letters of the first two name words (skipping titles like "Captain")
+const initials = (name) => {
+  const words = name.replace(/^Captain\s+/i, '').split(/\s+/)
+  return words.slice(0, 2).map(w => w[0]).join('').toUpperCase()
+}
+
 const testimonials = [
   {
     text: "The Shaft Lok has been a game changer for our sailing experience. No more annoying propeller noise, and we've noticed a definite improvement in our sailing speed.",
@@ -182,116 +207,105 @@ definePageMeta({
 </script>
 
 <style scoped>
-.testimonials-container {
-  margin-top: 4rem;
-  min-height: 100vh;
-  padding: 2rem;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.page-title {
-  text-align: center;
-  color: var(--federal-blue);
-  font-family: 'DeVinneOrnamentDRegular', serif;
-  font-size: clamp(2rem, 4vw, 3rem);
-  margin-bottom: 1rem;
-  animation: fadeIn 1s ease-out forwards;
-}
-
-.page-description {
-  font-size: clamp(1rem, 2vw, 1.5rem);
-  color: var(--federal-blue);
-  text-align: center;
-  margin-bottom: 3rem;
-  animation: fadeIn 1s ease-out 0.3s forwards;
-  opacity: 0;
-}
-
 .testimonials-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.4rem;
 }
 
 .testimonial-card {
-  background: white;
-  border: 2px solid var(--federal-blue);
-  border-radius: 15px;
-  padding: 2rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  animation: fadeIn 0.8s ease-out forwards;
-  opacity: 0;
-}
-
-.testimonial-card:nth-child(1) { animation-delay: 0.2s; }
-.testimonial-card:nth-child(2) { animation-delay: 0.4s; }
-.testimonial-card:nth-child(3) { animation-delay: 0.6s; }
-.testimonial-card:nth-child(4) { animation-delay: 0.8s; }
-.testimonial-card:nth-child(5) { animation-delay: 1.0s; }
-.testimonial-card:nth-child(6) { animation-delay: 1.2s; }
-
-.testimonial-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-}
-
-.testimonial-content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  margin: 0;
+  padding: 1.9rem 2rem;
 }
 
-.testimonial-text {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  color: #333;
-  font-style: italic;
+.stars {
+  display: flex;
+  gap: 0.25rem;
+  color: var(--gold);
+  font-size: 0.85rem;
+  margin-bottom: 1.1rem;
+}
+
+blockquote {
+  flex: 1;
+  margin: 0 0 1.5rem;
+  color: var(--text-mid);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+figcaption {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.2rem;
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 999px;
+  background: var(--grad-accent);
+  color: #04121F;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.author-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.author-meta strong {
+  font-family: var(--font-display);
+  color: var(--text-hi);
+  font-size: 0.97rem;
+}
+
+.boat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-low);
+  font-size: 0.85rem;
+}
+
+.boat i { color: var(--accent); font-size: 0.75rem; }
+
+.testimonial-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: 2.5rem;
+  padding: 2rem 2.2rem;
+}
+
+.testimonial-cta h2 {
+  font-size: 1.3rem;
+  margin: 0 0 0.4rem;
+}
+
+.testimonial-cta p {
+  color: var(--text-mid);
   margin: 0;
 }
 
-.testimonial-author {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+@media (max-width: 980px) {
+  .testimonials-grid { grid-template-columns: 1fr 1fr; }
 }
 
-.testimonial-author strong {
-  color: var(--federal-blue);
-  font-size: 1rem;
-}
-
-.testimonial-boat {
-  color: var(--honolulu-blue);
-  font-size: 0.9rem;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (max-width: 768px) {
-  .testimonials-container {
-    padding: 2rem 1rem;
-  }
-  
-  .testimonials-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
-  .testimonial-card {
-    padding: 1.5rem;
-  }
+@media (max-width: 620px) {
+  .testimonials-grid { grid-template-columns: 1fr; }
 }
 </style>

@@ -1,9 +1,8 @@
 <template>
   <div>
-    <BreadcrumbNav :items="[{ name: 'Yacht List' }]" />
-    
     <div class="yacht-container">
-      
+      <BreadcrumbNav :items="[{ name: 'Yacht List' }]" />
+
       <div v-if="loading" class="loading-indicator">
         <i class="fas fa-spinner fa-spin"></i>
         Loading yachts...
@@ -326,17 +325,16 @@ definePageMeta({
   cursor: pointer;
 }
 
-.yacht-row:hover {
-  background-color: rgba(202, 240, 248, 0.3) !important;
+.selected-row td {
+  background-color: rgba(245, 198, 107, 0.08) !important;
 }
 
-.selected-row {
-  background-color: rgba(249, 115, 22, 0.1) !important;
-  border-left: 4px solid #f97316;
+.selected-row td:first-child {
+  box-shadow: inset 3px 0 0 var(--gold);
 }
 
-.selected-row:hover {
-  background-color: rgba(249, 115, 22, 0.2) !important;
+.selected-row:hover td {
+  background-color: rgba(245, 198, 107, 0.14) !important;
 }
 </style>
 

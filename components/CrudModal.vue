@@ -93,52 +93,53 @@ const handleDelete = () => emit('delete')
 <style scoped>
 .modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(2, 8, 23, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 1rem;
 }
 
 .modal-content {
-  background: white;
-  border-radius: 15px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
+  background: var(--abyss-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  max-width: 620px;
+  width: 92%;
+  max-height: 82vh;
   overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-card), var(--glow-accent);
+  color: var(--text-hi);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  border-bottom: 2px solid var(--federal-blue);
-  background: var(--federal-blue);
-  color: white;
+  padding: 1.4rem 1.6rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(13, 27, 54, 0.7);
 }
 
 .modal-header h2 {
   margin: 0;
-  font-size: 1.5rem;
-  font-family: 'DeVinneOrnamentDRegular', serif;
-  font-weight: bold;
-  color: white;
+  font-size: 1.35rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text-hi);
 }
 
 .modal-close {
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-radius: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
-  color: white;
+  background: rgba(148, 197, 255, 0.08);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  width: 2.4rem;
+  height: 2.4rem;
+  color: var(--text-hi);
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -148,13 +149,13 @@ const handleDelete = () => emit('delete')
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
+  background: rgba(148, 197, 255, 0.18);
+  transform: scale(1.06);
 }
 
 .modal-body {
-  padding: 1.5rem;
-  font-size: 1.1rem;
+  padding: 1.6rem;
+  font-size: 1rem;
 }
 
 .modal-actions {
@@ -162,55 +163,60 @@ const handleDelete = () => emit('delete')
   gap: 1rem;
   justify-content: flex-end;
   margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e2e8f0;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
 }
 
 .btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
+  padding: 0.7rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
 .btn-primary {
-  background-color: var(--federal-blue);
-  color: white;
+  background: linear-gradient(120deg, #38BDF8, #2DD4BF);
+  color: #04121F;
+  box-shadow: 0 8px 24px -8px rgba(56, 189, 248, 0.55);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--honolulu-blue);
   transform: translateY(-1px);
+  box-shadow: 0 12px 30px -8px rgba(56, 189, 248, 0.7);
 }
 
 .btn-secondary {
-  background-color: #6b7280;
-  color: white;
+  background: rgba(148, 197, 255, 0.07);
+  border-color: var(--line-strong);
+  color: var(--text-mid);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #4b5563;
+  background: rgba(148, 197, 255, 0.14);
+  color: var(--text-hi);
   transform: translateY(-1px);
 }
 
 .btn-danger {
-  background-color: #dc2626;
-  color: white;
+  background: rgba(248, 113, 113, 0.14);
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #FCA5A5;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: #b91c1c;
+  background: rgba(248, 113, 113, 0.28);
   transform: translateY(-1px);
 }
 
@@ -219,16 +225,18 @@ const handleDelete = () => emit('delete')
 }
 
 .delete-confirmation p {
-  font-weight: bold;
-  color: var(--honolulu-blue);
-  font-size: 1.3rem;
+  font-weight: 600;
+  color: #FCA5A5;
+  font-size: 1.15rem;
   margin-bottom: 1rem;
 }
 
 .entity-details {
-  background-color: #f8fafc;
-  padding: 1rem;
-  border-radius: 8px;
+  background: rgba(13, 27, 54, 0.6);
+  border: 1px solid var(--line);
+  color: var(--text-mid);
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius-sm);
   margin: 1rem 0;
   text-align: left;
 }
@@ -237,62 +245,22 @@ const handleDelete = () => emit('delete')
   .modal-content {
     width: 95%;
     max-height: 90vh;
-    margin: 20px;
-    border-radius: 10px;
   }
-  
-  .modal-header {
-    padding: 1rem;
-  }
-  
-  .modal-header h2 {
-    font-size: 1.25rem;
-  }
-  
-  .modal-body {
-    padding: 1rem;
-  }
-  
+
+  .modal-header { padding: 1rem 1.2rem; }
+  .modal-header h2 { font-size: 1.2rem; }
+  .modal-body { padding: 1.2rem; }
+
   .modal-actions {
     flex-direction: column;
     gap: 0.75rem;
     margin-top: 1.5rem;
   }
-  
+
   .btn {
     width: 100%;
     justify-content: center;
-    padding: 1rem 1.5rem;
-    font-size: 1.1rem;
-  }
-  
-  .delete-confirmation p {
-    font-size: 1rem;
-  }
-  
-  .entity-details {
-    padding: 0.75rem;
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .modal-content {
-    width: 98%;
-    max-height: 95vh;
-    margin: 10px;
-  }
-  
-  .modal-header {
-    padding: 0.75rem;
-  }
-  
-  .modal-header h2 {
-    font-size: 1.1rem;
-  }
-  
-  .modal-body {
-    padding: 0.75rem;
+    padding: 0.9rem 1.5rem;
   }
 }
 </style>

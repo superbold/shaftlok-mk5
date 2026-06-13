@@ -1,15 +1,13 @@
 <template>
-  <div class="breadcrumb-container" aria-label="Breadcrumb">
-    <nav class="breadcrumb">
-      <span class="breadcrumb-item">
-        <NuxtLink to="/" class="breadcrumb-link">Home</NuxtLink>
-      </span>
-      <span v-for="(item, index) in items" :key="index" class="breadcrumb-item">
-        <NuxtLink v-if="item.to" :to="item.to" class="breadcrumb-link">{{ item.name }}</NuxtLink>
-        <span v-else class="breadcrumb-current">{{ item.name }}</span>
-      </span>
-    </nav>
-  </div>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <span class="breadcrumb-item">
+      <NuxtLink to="/" class="breadcrumb-link"><i class="fas fa-house"></i><span class="sr-only">Home</span></NuxtLink>
+    </span>
+    <span v-for="(item, index) in items" :key="index" class="breadcrumb-item">
+      <NuxtLink v-if="item.to" :to="item.to" class="breadcrumb-link">{{ item.name }}</NuxtLink>
+      <span v-else class="breadcrumb-current" aria-current="page">{{ item.name }}</span>
+    </span>
+  </nav>
 </template>
 
 <script setup lang="ts">
@@ -24,80 +22,57 @@ defineProps<{
 </script>
 
 <style scoped>
-.breadcrumb-container {
-  background-color: var(--federal-blue);
-  border-radius: 25px;
-  padding: 0.5rem 1rem;
-  position: fixed;
-  top: 5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 999;
-  width: fit-content;
-  max-width: 90%;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
 .breadcrumb {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.25rem;
-  font-size: 0.85em;
-  color: var(--light-cyan);
+  gap: 0.15rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  background: rgba(13, 27, 54, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  margin-bottom: 2rem;
 }
 
 .breadcrumb-item {
   display: flex;
   align-items: center;
-  gap: 0.25em;
 }
 
 .breadcrumb-item:not(:last-child)::after {
-  content: '›';
-  color: var(--light-cyan);
-  font-weight: bold;
-  margin-left: 0.25em;
-  font-size: 1.1em;
+  content: '/';
+  color: var(--text-low);
+  margin: 0 0.5rem;
+  font-size: 0.75rem;
 }
 
 .breadcrumb-link {
-  color: var(--light-cyan);
+  color: var(--text-mid);
   text-decoration: none;
-  transition: all 0.3s ease;
-  padding: 0.25em 0.5em;
-  border-radius: 15px;
-  opacity: 0.8;
+  transition: color 0.2s ease;
 }
 
-.breadcrumb-link:hover {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.2);
-  opacity: 1;
-}
+.breadcrumb-link:hover { color: var(--accent); }
+
+.breadcrumb-link i { font-size: 0.78rem; }
 
 .breadcrumb-current {
-  color: white;
+  color: var(--accent);
   font-weight: 600;
-  padding: 0.25em 0.5em;
-  border-radius: 15px;
-  background-color: var(--honolulu-blue);
 }
 
-/* Mobile Responsive Breadcrumbs */
-@media (max-width: 768px) {
-  .breadcrumb-container {
-    top: 4.5rem;
-    padding: 0.4rem 0.8rem;
-  }
-  
-  .breadcrumb {
-    font-size: 0.75rem;
-    gap: 0.2em;
-  }
-  
-  .breadcrumb-item:not(:last-child)::after {
-    margin-left: 0.2em;
-  }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 </style>

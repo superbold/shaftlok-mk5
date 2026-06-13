@@ -1,369 +1,39 @@
 <template>
-  <div>
-    <BreadcrumbNav :items="[{ name: 'Products', to: '/products' }, { name: 'Mod III EasyLok' }]" />
-    
-    <div class="product-container">
-      <div class="product-detail">
-        <div class="product-card">
-          <h1 class="page-title">Mod III EasyLok</h1>
-          <h2 class="page-description">Large Sailboats with no engine room space restrictions</h2>
-          <div class="product-content">
-            <div class="product-image-container">
-              <img src="/assets/images/shaftlok-mod-black.jpg" alt="Shaft Lok Mod III EasyLok marine propeller control system - advanced design for large vessels with maximum torque handling and large rotating disc assembly for superior performance" class="product-image" loading="lazy">
-            </div>
-            <div class="product-description">
-              <div class="features-grid">
-                <div class="feature-item">
-                  <h3 class="feature-title">
-                    <i class="fas fa-ruler feature-icon"></i>
-                    Max Bore Size
-                  </h3>
-                  <p class="feature-description">3.15" (80mm)</p>
-                </div>
-                <div class="feature-item">
-                  <h3 class="feature-title">
-                    <i class="fas fa-cog feature-icon"></i>
-                    High Torque Capability
-                  </h3>
-                  <p class="feature-description">Built for demanding large vessel applications</p>
-                </div>
-                <div class="feature-item">
-                  <h3 class="feature-title">
-                    <i class="fas fa-anchor feature-icon"></i>
-                    Ideal For
-                  </h3>
-                  <p class="feature-description">Fixed 3-5 blade propellers</p>
-                </div>
-                <div class="feature-item">
-                  <h3 class="feature-title">
-                    <i class="fas fa-circle-nodes feature-icon"></i>
-                    Large Rotating Disc
-                  </h3>
-                  <p class="feature-description">Enhanced disc assembly for superior performance</p>
-                </div>
-              </div>
-              <div class="details-text">
-                <p>Advanced propeller control for larger vessels with ample engine room space.</p>
-                <p>The Mod III EasyLok is designed for large sailboats that require maximum torque handling and reliability.</p>
-                <p>Features a larger rotating disc assembly and enhanced construction for demanding marine environments.</p>
-                <p>Perfect for vessels with fixed 3-5 blade propellers requiring superior locking performance.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <ProductDetail
+    name="Mod III EasyLok"
+    slug="mod-iii-easylok"
+    tagline="Large Sailboats with no engine room space restrictions"
+    description="Shaft Lok Mod III EasyLok - advanced propeller control for large vessels. Maximum torque handling with rotating disc assembly for superior marine performance."
+    og-title="Shaft Lok Mod III EasyLok - Advanced Marine Propeller Control"
+    image="/assets/images/shaftlok-mod-black.jpg"
+    image-alt="Shaft Lok Mod III EasyLok marine propeller control system - advanced design for large vessels with maximum torque handling and large rotating disc assembly for superior performance"
+    bore='3.15" (80mm)'
+    :features="features"
+    :specs="specs"
+  >
+    <p>Advanced propeller control for larger vessels with ample engine room space.</p>
+    <p>The Mod III EasyLok is designed for large sailboats that require maximum torque handling and reliability.</p>
+    <p>Features a larger rotating disc assembly and enhanced construction for demanding marine environments.</p>
+    <p>Perfect for vessels with fixed 3-5 blade propellers requiring superior locking performance.</p>
+  </ProductDetail>
 </template>
 
 <script setup>
-useHead({
-  title: 'Mod III EasyLok',
-  meta: [
-    { name: 'description', content: 'Shaft Lok Mod III EasyLok - advanced propeller control for large vessels. Maximum torque handling with rotating disc assembly for superior marine performance.' },
-    { property: 'og:title', content: 'Shaft Lok Mod III EasyLok - Advanced Marine Propeller Control' },
-    { property: 'og:description', content: 'Shaft Lok Mod III EasyLok - Advanced propeller control for larger vessels. Maximum torque handling with large rotating disc assembly for superior marine performance.' },
-    { property: 'og:image', content: 'https://shaftlok.com/assets/images/shaftlok-mod-black.jpg' },
-    { property: 'og:url', content: 'https://shaftlok.com/products/mod-iii-easylok' },
-    { property: 'og:type', content: 'website' },
-    { property: 'og:site_name', content: 'Shaft Lok Inc.' },
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: 'Shaft Lok Mod III EasyLok - Advanced Marine Propeller Control' },
-    { name: 'twitter:description', content: 'Shaft Lok Mod III EasyLok - Advanced propeller control for larger vessels. Maximum torque handling with large rotating disc assembly.' },
-    { name: 'twitter:image', content: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png' }
-  ],
-  link: [
-    { rel: 'canonical', href: 'https://shaftlok.com/products/mod-iii-easylok' }
-  ],
-  script: [
-    {
-      type: 'application/ld+json',
-      children: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          {
-            '@type': 'ListItem',
-            position: 1,
-            name: 'Home',
-            item: 'https://shaftlok.com/'
-          },
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: 'Products',
-            item: 'https://shaftlok.com/products'
-          },
-          {
-            '@type': 'ListItem',
-            position: 3,
-            name: 'Mod III EasyLok',
-            item: 'https://shaftlok.com/products/mod-iii-easylok'
-          }
-        ]
-      })
-    },
-    {
-      type: 'application/ld+json',
-      children: JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'Product',
-        name: 'Mod III EasyLok',
-        description: 'Advanced propeller control for larger vessels with no engine room space restrictions. Maximum torque handling with large rotating disc assembly for superior marine performance.',
-        brand: {
-          '@type': 'Brand',
-          name: 'Shaft Lok'
-        },
-        manufacturer: {
-          '@type': 'Organization',
-          name: 'Shaft Lok Inc.',
-          url: 'https://shaftlok.com'
-        },
-        image: 'https://shaftlok.com/assets/images/shaftlok-mod-black.jpg',
-        url: 'https://shaftlok.com/products/mod-iii-easylok',
-        category: 'Marine Equipment',
-        additionalProperty: [
-          {
-            '@type': 'PropertyValue',
-            name: 'Max Bore Size',
-            value: '3.15" (80mm)'
-          },
-          {
-            '@type': 'PropertyValue',
-            name: 'Suitable For',
-            value: 'Large sailboats with no engine room space restrictions'
-          },
-          {
-            '@type': 'PropertyValue',
-            name: 'Propeller Type',
-            value: 'Fixed 3-5 blade propellers'
-          },
-          {
-            '@type': 'PropertyValue',
-            name: 'Torque Capability',
-            value: 'High torque for demanding large vessel applications'
-          },
-          {
-            '@type': 'PropertyValue',
-            name: 'Disc Assembly',
-            value: 'Large rotating disc for enhanced performance'
-          }
-        ]
-      })
-    }
-  ]
-})
+const features = [
+  { icon: 'fas fa-ruler', title: 'Max Bore Size', text: '3.15" (80mm)' },
+  { icon: 'fas fa-cog', title: 'High Torque Capability', text: 'Built for demanding large vessel applications' },
+  { icon: 'fas fa-anchor', title: 'Ideal For', text: 'Fixed 3-5 blade propellers' },
+  { icon: 'fas fa-circle-nodes', title: 'Large Rotating Disc', text: 'Enhanced disc assembly for superior performance' }
+]
+
+const specs = [
+  { name: 'Max Bore Size', value: '3.15" (80mm)' },
+  { name: 'Suitable For', value: 'Large sailboats with no engine room space restrictions' },
+  { name: 'Ideal For', value: 'Fixed 3-5 blade propellers' },
+  { name: 'Disc Assembly', value: 'Large rotating disc for maximum torque handling' }
+]
 
 definePageMeta({
   layout: 'default'
 })
 </script>
-
-<style scoped>
-.product-container {
-  margin-top: 8rem;
-  min-height: 100vh;
-  background: linear-gradient(to bottom, var(--light-cyan), white);
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.product-detail {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.product-card {
-  background-color: white;
-  border: 2px solid var(--federal-blue);
-  border-radius: 15px;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 1s ease-out forwards;
-  opacity: 0;
-  position: relative;
-}
-
-.page-title {
-  text-align: center;
-  color: var(--federal-blue);
-  font-family: 'DeVinneOrnamentDRegular', serif;
-  font-size: var(--font-size-title);
-  margin-top: 1rem;
-  margin-bottom: 0;
-  animation: fadeIn 1s ease-out forwards;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  position: relative;
-  z-index: 2;
-}
-
-.page-description {
-  font-size: var(--font-size-subtitle);
-  color: var(--federal-blue);
-  max-width: 1200px;
-  margin: 0 auto;
-  margin-bottom: 2rem;
-  animation: fadeIn 1s ease-out 0.5s forwards;
-  opacity: 0;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  position: relative;
-  z-index: 2;
-  text-align: center;
-}
-
-.product-content {
-  display: flex;
-  gap: 2rem;
-  padding-top: 2rem;
-}
-
-.product-image-container {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 600px;
-}
-
-.product-image {
-  width: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.product-description {
-  flex: 2;
-  color: #333;
-  line-height: 1.6;
-  font-size: var(--font-size-description);
-  animation: fadeIn 1s ease-out 0.5s forwards;
-  opacity: 0;
-  height: 600px;
-  display: flex;
-  flex-direction: column;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.feature-item {
-  text-align: left;
-}
-
-.feature-title {
-  font-weight: bold;
-  color: #333;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: var(--font-size-subtitle);
-}
-
-.feature-icon {
-  color: var(--honolulu-blue);
-  font-size: var(--font-size-icon);
-}
-
-.feature-description {
-  color: #666;
-  font-size: var(--font-size-description);
-  margin-top: 0;
-  margin-bottom: 0;
-  margin-left: 2rem;
-}
-
-.details-text {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 1rem;
-  margin-top: 1rem;
-  color: #333;
-  line-height: 1.2;
-}
-
-.details-text::-webkit-scrollbar {
-  width: 8px;
-}
-
-.details-text::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-}
-
-.details-text::-webkit-scrollbar-thumb {
-  background: var(--honolulu-blue);
-  border-radius: 4px;
-}
-
-.details-text::-webkit-scrollbar-thumb:hover {
-  background: var(--federal-blue);
-}
-
-.details-text p {
-  margin-bottom: 1rem;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (max-width: 768px) {
-  .product-detail {
-    padding: 0.5rem;
-  }
-
-  .product-card {
-    padding: 1.5rem;
-    gap: 1.5rem;
-  }
-
-  .product-content {
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .product-image-container {
-    width: 100%;
-    height: auto;
-  }
-
-  .product-description {
-    width: 100%;
-    height: auto;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .feature-description {
-    margin-left: 0;
-    padding-left: 0;
-  }
-
-  .feature-icon {
-    display: none;
-  }
-}
-</style>

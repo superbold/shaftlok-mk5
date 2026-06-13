@@ -1,89 +1,107 @@
 <template>
-  <div>
+  <div class="page-shell">
     <BreadcrumbNav :items="[{ name: 'About' }]" />
-    
-    <div class="product-container">
-      <div class="product-detail">
-        <h1 class="page-title"><span class="shaft-lok-text">Shaft Lok</span> History</h1>
-        <p class="page-description">By Kenneth R. Nigel | July 28, 2023</p>
+
+    <div class="section-head" v-reveal>
+      <span class="eyebrow"><i class="fas fa-compass"></i> Company history</span>
+      <h1><span class="shaftlok-font grad-text">Shaft Lok</span> History</h1>
+      <p>By Kenneth R. Nigel | July 28, 2023</p>
+    </div>
+
+    <!-- Stats band -->
+    <div class="stats-band glass-card" v-reveal>
+      <div class="stat">
+        <span class="stat-number">1979</span>
+        <span class="stat-label">Since</span>
       </div>
-      <div class="about-content">
-        <div class="about-card" style="animation-delay: 0.2s">
-          <h2 class="beginning">The Beginning</h2>
-          <p>In 1978, Dick Badzinski and George Nigel, both sailboat owners, faced a common problem: their propellers would rotate freely while sailing without engine power. This freewheeling caused:</p>
-          <ul class="about-features">
-            <li>Reduced boat speed</li>
-            <li>Unwanted vibration and noise</li>
-            <li>Unnecessary drive train wear</li>
-          </ul>
-          <p>As Kenneth Nigel describes, "Both sailors said it was like a dripping faucet which just got on one's nerves."</p>
-        </div>
-
-        <div class="about-card" style="animation-delay: 0.4s">
-          <h2 class="invention">The Invention</h2>
-          <p>Working at Rex Chain Belt in Milwaukee, Wisconsin as a Product Marketing Manager, Kenneth encouraged them to pursue the invention that could be marketed worldwide. After finalizing the concept design, they built a working model and secured three patents with the help of a family connection in Boston.</p>
-          <p>During this period, they were advised to maintain confidentiality until all patent documents were properly filed with the government.</p>
-        </div>
-
-        <div class="about-card" style="animation-delay: 0.6s">
-          <h2 class="success">Early Success</h2>
-          <p>The founders pooled their resources to:</p>
-          <ul class="about-features">
-            <li>Publish a four-color bulletin</li>
-            <li>Build a website</li>
-            <li>Begin advertising</li>
-          </ul>
-          <p>Their breakthrough came at the Chicago Boat Show, where they approached Borg Warner, a manufacturer of transmissions for sailboats under 100 feet. The response from Borg Warner's east and west coast dealers was overwhelmingly positive, leading to the first shipments of Mod I units in 1979.</p>
-        </div>
-
-        <div class="about-card" style="animation-delay: 0.8s">
-          <h2 class="innovation">Innovation & Patents</h2>
-          <p>The company evolved from a 2V design to the Easy Lok concept, significantly improving the locking mechanism's ease of use.</p>
-          <p>U.S. Patent & Trademark Office Recognition:</p>
-          <ul class="about-features">
-            <li>Patent Numbers: <a href="https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4389199" target="_blank" rel="noopener">#4389199</a> and <a href="https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/D271583" target="_blank" rel="noopener">#D271583</a></li>
-          </ul>
-        </div>
-
-        <div class="about-card" style="animation-delay: 1.0s">
-          <h2 class="numbers">By The Numbers</h2>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <span class="stat-number">1979</span>
-              <span class="stat-label">Since</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number">1390+</span>
-              <span class="stat-label">Units Shipped</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number">50+</span>
-              <span class="stat-label">Boat Types</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number">23+</span>
-              <span class="stat-label">Transmissions</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number">2</span>
-              <span class="stat-label">Patents</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="about-card" style="animation-delay: 1.2s">
-          <h2 class="features"><span class="shaft-lok-text">Shaft Lok</span> Noteworthy Features</h2>
-          <ul class="about-features">
-            <li>No power is required…save the batteries…no electrical wires or hydraulic hoses.</li>
-            <li>Simple design, few moving parts, easy to install. Two patents awarded in 1981.</li>
-            <li>The "Engine" is a stainless steel compression spring with thousands of life cycles, which will never need replacing… Guaranteed!</li>
-            <li>The Marine Hard Polyurethane unit which is light weight and proven that it will easily tolerate salt water environment including the drive train's vibrations will last longer than the both of us.</li>
-            <li>The propeller shaft Hub, Anti-Torque Bracket and all fasteners are made of Stainless Steel.</li>
-            <li>The single deep groove double shielded ball bearing does not need any maintenance.</li>
-            <li>The long locking pin that contacts the rotating disc's 45 degree locking ramp and the short pin that holds the long pin in the locked or unlocked position are key unit components. These pins are made of Acetron AF POM-H acetal is a unique thermoplastic material for use in moving parts in which low friction and long wear life are important. It is a combination of Teflon fibers uniformly dispersed in Delrin acetal resin. A material that has strength, toughness, dimensional stability and good machinability with excellent sliding/friction properties. The natural color is dark brown. Data provided by Quadrant Engineering Plastic Products from tests on stock shapes and parts produced by Quadrant EPP.</li>
-          </ul>
-        </div>
+      <div class="stat">
+        <span class="stat-number">1,390+</span>
+        <span class="stat-label">Units Shipped</span>
       </div>
+      <div class="stat">
+        <span class="stat-number">50+</span>
+        <span class="stat-label">Boat Types</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">23+</span>
+        <span class="stat-label">Transmissions</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">2</span>
+        <span class="stat-label">Patents</span>
+      </div>
+    </div>
+
+    <div class="story-grid">
+      <div class="story-card glass-card hoverable prose" v-reveal>
+        <h2><i class="fas fa-sailboat"></i> The Beginning</h2>
+        <p>In 1978, Dick Badzinski and George Nigel, both sailboat owners, faced a common problem: their propellers
+          would rotate freely while sailing without engine power. This freewheeling caused:</p>
+        <ul class="check-list">
+          <li>Reduced boat speed</li>
+          <li>Unwanted vibration and noise</li>
+          <li>Unnecessary drive train wear</li>
+        </ul>
+        <p class="quote">As Kenneth Nigel describes, "Both sailors said it was like a dripping faucet which just got
+          on one's nerves."</p>
+      </div>
+
+      <div class="story-card glass-card hoverable prose" v-reveal="100">
+        <h2><i class="fas fa-lightbulb"></i> The Invention</h2>
+        <p>Working at Rex Chain Belt in Milwaukee, Wisconsin as a Product Marketing Manager, Kenneth encouraged them
+          to pursue the invention that could be marketed worldwide. After finalizing the concept design, they built a
+          working model and secured three patents with the help of a family connection in Boston.</p>
+        <p>During this period, they were advised to maintain confidentiality until all patent documents were properly
+          filed with the government.</p>
+      </div>
+
+      <div class="story-card glass-card hoverable prose" v-reveal>
+        <h2><i class="fas fa-trophy"></i> Early Success</h2>
+        <p>The founders pooled their resources to:</p>
+        <ul class="check-list">
+          <li>Publish a four-color bulletin</li>
+          <li>Build a website</li>
+          <li>Begin advertising</li>
+        </ul>
+        <p>Their breakthrough came at the Chicago Boat Show, where they approached Borg Warner, a manufacturer of
+          transmissions for sailboats under 100 feet. The response from Borg Warner's east and west coast dealers was
+          overwhelmingly positive, leading to the first shipments of Mod I units in 1979.</p>
+      </div>
+
+      <div class="story-card glass-card hoverable prose" v-reveal="100">
+        <h2><i class="fas fa-flask"></i> Innovation &amp; Patents</h2>
+        <p>The company evolved from a 2V design to the Easy Lok concept, significantly improving the locking
+          mechanism's ease of use.</p>
+        <p>U.S. Patent &amp; Trademark Office Recognition:</p>
+        <ul class="check-list">
+          <li>Patent Numbers:
+            <a href="https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4389199" target="_blank" rel="noopener">#4389199</a>
+            and
+            <a href="https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/D271583" target="_blank" rel="noopener">#D271583</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="features-card glass-card prose" v-reveal>
+      <h2><i class="fas fa-star"></i> <span class="shaftlok-font">Shaft Lok</span> Noteworthy Features</h2>
+      <ul class="check-list">
+        <li>No power is required…save the batteries…no electrical wires or hydraulic hoses.</li>
+        <li>Simple design, few moving parts, easy to install. Two patents awarded in 1981.</li>
+        <li>The "Engine" is a stainless steel compression spring with thousands of life cycles, which will never need
+          replacing… Guaranteed!</li>
+        <li>The Marine Hard Polyurethane unit which is light weight and proven that it will easily tolerate salt water
+          environment including the drive train's vibrations will last longer than the both of us.</li>
+        <li>The propeller shaft Hub, Anti-Torque Bracket and all fasteners are made of Stainless Steel.</li>
+        <li>The single deep groove double shielded ball bearing does not need any maintenance.</li>
+        <li>The long locking pin that contacts the rotating disc's 45 degree locking ramp and the short pin that holds
+          the long pin in the locked or unlocked position are key unit components. These pins are made of Acetron AF
+          POM-H acetal is a unique thermoplastic material for use in moving parts in which low friction and long wear
+          life are important. It is a combination of Teflon fibers uniformly dispersed in Delrin acetal resin. A
+          material that has strength, toughness, dimensional stability and good machinability with excellent
+          sliding/friction properties. The natural color is dark brown. Data provided by Quadrant Engineering Plastic
+          Products from tests on stock shapes and parts produced by Quadrant EPP.</li>
+      </ul>
     </div>
   </div>
 </template>
@@ -223,272 +241,90 @@ definePageMeta({
 </script>
 
 <style scoped>
-.product-container {
-  margin-top: 8rem;
-  min-height: 100vh;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.product-container::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('/assets/images/shaftlok-canvasback.png');
-  background-size: 120%;
-  background-position-x: -15rem;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  transform: scaleX(-1);
-  z-index: 0;
-}
-
-.product-container::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(202, 240, 248, 0.65) 0%,
-    rgba(0, 119, 182, 0.75) 50%,
-    rgba(3, 4, 94, 0.85) 100%);
-  z-index: 1;
-}
-
-.product-detail {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-}
-
-.page-title {
-  text-align: center;
-  color: var(--light-cyan);
-  font-family: 'DeVinneOrnamentDRegular', serif;
-  font-size: var(--font-size-title);
-  margin-top: 1rem;
-  margin-bottom: 0;
-  animation: fadeIn 1s ease-out forwards;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-  position: relative;
-  z-index: 2;
-}
-
-.page-description {
-  font-size: var(--font-size-subtitle);
-  color: var(--light-cyan);
-  max-width: 1200px;
-  margin: 0 auto;
-  margin-bottom: 3rem;
-  animation: fadeIn 1s ease-out 0.5s forwards;
-  opacity: 0;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-  position: relative;
-  z-index: 2;
-  text-align: center;
-}
-
-.about-content {
-  max-width: 900px;
-  width: 100%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  position: relative;
-  z-index: 2;
-}
-
-.about-card {
-  background-color: rgba(255, 255, 255, 0.95);
-  border: 2px solid var(--federal-blue);
-  border-radius: 15px;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.8s ease-out forwards;
-  opacity: 0;
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.about-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-}
-
-.about-card h2 {
-  color: var(--federal-blue);
-  font-size: var(--font-size-subtitle);
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.about-card h2::before {
-  font-family: 'Font Awesome 6 Free';
-  font-weight: 900;
-  color: var(--honolulu-blue);
-  font-size: var(--font-size-icon);
-}
-
-.about-card h2.beginning::before {
-  content: '\f1da';
-}
-
-.about-card h2.invention::before {
-  content: '\f0eb';
-}
-
-.about-card h2.success::before {
-  content: '\f091';
-}
-
-.about-card h2.innovation::before {
-  content: '\f0c3';
-}
-
-.about-card h2.numbers::before {
-  content: '\f080';
-}
-
-.about-card h2.features::before {
-  content: '\f005';
-}
-
-.about-card h2.features {
-  margin-top: 0;
-}
-
-.about-card h2.success + p + .about-features {
-  margin-bottom: 0;
-}
-
-.about-card p {
-  color: #333;
-  font-size: var(--font-size-description);
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-}
-
-.about-features {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
-}
-
-.about-features li {
-  margin-bottom: 1rem;
-  padding-left: 2rem;
-  position: relative;
-  color: #333;
-  line-height: 1.6;
-}
-
-.about-features li::before {
-  content: '\f00c';
-  font-family: 'Font Awesome 6 Free';
-  font-weight: 900;
-  color: var(--honolulu-blue);
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-.about-card a {
-  color: var(--honolulu-blue);
-  text-decoration: none;
-  transition: all 0.3s ease;
-  font-weight: bold;
-}
-
-.about-card a:hover {
-  color: var(--federal-blue);
-  text-decoration: underline;
-}
-
-.shaft-lok-text {
-  font-family: 'DeVinneOrnamentDRegular', serif;
-  color: var(--federal-blue);
-  font-weight: bold;
-}
-
-.stats-grid {
+.stats-band {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
-  margin-top: 0;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 2rem 1.5rem;
+  margin-bottom: 2.5rem;
   text-align: center;
 }
 
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
 .stat-number {
+  font-family: var(--font-display);
   font-size: 2rem;
-  font-weight: bold;
-  color: var(--honolulu-blue);
-  margin-bottom: 0.5rem;
+  font-weight: 700;
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1.1;
 }
 
 .stat-label {
-  color: #333;
-  font-size: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-low);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.story-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.4rem;
+  margin-bottom: 1.4rem;
 }
 
-@media (max-width: 768px) {
-  .product-container {
-    padding: 1rem;
-    margin-top: 6rem;
-  }
+.story-card,
+.features-card {
+  padding: 2rem 2.1rem;
+}
 
-  .about-content {
-    max-width: 100%;
-  }
+.story-card h2,
+.features-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1.25rem;
+  margin: 0 0 1rem;
+}
 
-  .about-card {
-    padding: 1.5rem;
-  }
+.story-card h2 i,
+.features-card h2 i {
+  color: var(--accent);
+  font-size: 1.05rem;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: var(--radius-sm);
+  width: 2.3rem;
+  height: 2.3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 
-  .page-title {
-    font-size: calc(var(--font-size-title) * 0.8);
-  }
+.quote {
+  font-style: italic;
+  color: var(--gold);
+  border-left: 2px solid rgba(245, 198, 107, 0.4);
+  padding-left: 0.9rem;
+}
 
-  .page-description {
-    font-size: calc(var(--font-size-subtitle) * 0.9);
-  }
+.check-list { margin-bottom: 1rem; }
 
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
+@media (max-width: 860px) {
+  .story-grid { grid-template-columns: 1fr; }
+  .stats-band { grid-template-columns: repeat(3, 1fr); row-gap: 1.5rem; }
+}
+
+@media (max-width: 520px) {
+  .stats-band { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
