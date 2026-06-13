@@ -1,0 +1,63 @@
+# Shaft Lok Inc. - Marine Propeller Control Systems
+# robots.txt - Search Engine Crawling Directives
+
+# Allow all search engines to crawl the entire site
+User-agent: *
+Allow: /
+
+# Specific directives for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+# Block access to admin and sensitive areas
+User-agent: *
+Disallow: /adminaccess
+Disallow: /admin/
+Disallow: /private/
+Disallow: /temp/
+Disallow: /tmp/
+
+# Block access to development and build files
+User-agent: *
+Disallow: /.nuxt/
+Disallow: /node_modules/
+Disallow: /.git/
+Disallow: /.env
+Disallow: /package.json
+Disallow: /yarn.lock
+Disallow: /package-lock.json
+
+# Block access to system files
+User-agent: *
+Disallow: /.htaccess
+Disallow: /web.config
+Disallow: /robots.txt.bak
+
+# Allow access to important directories
+User-agent: *
+Allow: /assets/
+Allow: /images/
+Allow: /css/
+Allow: /js/
+
+# Sitemap location
+Sitemap: https://shaftlok.com/sitemap.xml
+
+# Additional sitemaps (if available)
+# Sitemap: https://shaftlok.com/sitemap-images.xml
+# Sitemap: https://shaftlok.com/sitemap-news.xml
+
+# Contact information for crawler issues
+# Contact: webmaster@shaftlok.com
+
+# Host directive (preferred domain)
+Host: https://shaftlok.com

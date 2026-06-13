@@ -1,0 +1,315 @@
+.yacht-container {
+  margin-top: 6rem;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+
+.refresh-button {
+  background: var(--light-cyan);
+  color: var(--federal-blue);
+  border: none;
+  border-radius: 5px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background: white;
+  transform: scale(1.05);
+}
+
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: var(--federal-blue);
+}
+
+.loading-indicator i {
+  margin-right: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  background: #fee;
+  border: 2px solid #fcc;
+  border-radius: 10px;
+  color: #c33;
+  margin-bottom: 2rem;
+}
+
+.error-message i {
+  margin-right: 0.5rem;
+}
+
+.retry-button {
+  background: #c33;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.retry-button:hover {
+  background: #a22;
+}
+
+.table-container {
+  background: white;
+  border: 2px solid var(--federal-blue);
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.yacht-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.yacht-table th {
+  background: var(--federal-blue);
+  color: white;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--honolulu-blue);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.yacht-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.3s ease;
+}
+
+.yacht-table tr:hover td {
+  background-color: rgba(202, 240, 248, 0.3);
+}
+
+.yacht-table tr:last-child td {
+  border-bottom: none;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.sortable:hover {
+  background: var(--honolulu-blue);
+}
+
+.sortable i {
+  margin-left: 0.5rem;
+  opacity: 0.7;
+}
+
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: var(--federal-blue);
+  font-style: italic;
+}
+
+.no-results i {
+  margin-right: 0.5rem;
+  opacity: 0.7;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.pagination-button {
+  background: var(--federal-blue);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  transition: all 0.3s ease;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: var(--honolulu-blue);
+  transform: translateY(-1px);
+}
+
+.pagination-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.page-info {
+  color: var(--federal-blue);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 15px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 2px solid var(--federal-blue);
+  background: var(--federal-blue);
+  color: white;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.modal-body p {
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.modal-body ul {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.modal-body li {
+  margin-bottom: 0.5rem;
+}
+
+.shaftlok-font {
+  font-family: 'DeVinneOrnamentDRegular', serif;
+  color: var(--federal-blue);
+  font-weight: bold;
+}
+
+.discount-text {
+  font-weight: bold;
+  color: var(--honolulu-blue);
+  font-size: 1.3rem;
+}
+
+@media (max-width: 768px) {
+  .yacht-container {
+    padding: 1rem;
+    margin-top: 10rem;
+  }
+
+  .yacht-table {
+    font-size: 0.9rem;
+  }
+
+  .yacht-table th {
+    top: 0;
+  }
+
+  .yacht-table th,
+  .yacht-table td {
+    padding: 0.5rem;
+  }
+
+  .yacht-table thead {
+    display: none;
+  }
+  
+  .yacht-table tr {
+    display: block;
+    border: 1px solid #ddd;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .yacht-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .yacht-table td::before {
+    content: attr(data-cell) ": ";
+    font-weight: bold;
+    color: var(--federal-blue);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+  }
+}

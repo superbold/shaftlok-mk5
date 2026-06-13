@@ -1,0 +1,769 @@
+<template>
+  <div class="signin-page">
+    <!-- Admin Login Header -->
+    <div class="signin-hero">
+      <Transition name="fade" mode="out-in">
+        <div class="hero-content" :key="showForgotPassword ? 'forgot' : 'signin'">
+          <template v-if="showForgotPassword">
+            <h1>Reset Password</h1>
+            <p>Enter your email and we'll send a link to reset your password.</p>
+          </template>
+          <template v-else>
+            <h1>Admin Access</h1>
+            <p>Restricted access for authorized personnel only.</p>
+          </template>
+        </div>
+      </Transition>
+    </div>
+
+    <!-- Sign In / Forgot Password Form -->
+    <div class="signin-form-container">
+      <div class="form-card">
+        <Transition
+          name="collapse"
+          @enter="onCollapseEnter"
+          @after-enter="onCollapseAfterEnter"
+          @leave="onCollapseLeave"
+        >
+          <div v-if="!showForgotPassword" key="signin">
+            <div class="form-header">
+              <h2>Sign In</h2>
+              <p>Enter your credentials to continue</p>
+            </div>
+
+            <form @submit.prevent="handleSignIn" class="signin-form">
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input
+                  id="email"
+                  v-model="form.email"
+                  type="email"
+                  required
+                  class="form-control"
+                  placeholder="Enter your email"
+                  :disabled="loading"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                  id="password"
+                  v-model="form.password"
+                  type="password"
+                  required
+                  class="form-control"
+                  placeholder="Enter your password"
+                  :disabled="loading"
+                >
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" :disabled="loading">
+                  <i class="fas fa-spinner fa-spin" v-if="loading"></i>
+                  {{ loading ? 'Signing In...' : 'Sign In' }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div v-else key="forgot">
+            <div class="form-header">
+              <h2>Reset Your Password</h2>
+              <p>Enter your email address below</p>
+            </div>
+
+            <form @submit.prevent="handleForgotPassword" class="signin-form">
+              <div class="form-group">
+                <label for="reset-email">Email</label>
+                <input
+                  id="reset-email"
+                  v-model="form.email"
+                  type="email"
+                  required
+                  class="form-control"
+                  placeholder="Enter your email"
+                  :disabled="resetEmailSending"
+                >
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" :disabled="resetEmailSending">
+                  <i class="fas fa-spinner fa-spin" v-if="resetEmailSending"></i>
+                  {{ resetEmailSending ? 'Sending...' : 'Send Reset Link' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </Transition>
+
+        <div class="forgot-password">
+          <button
+            type="button"
+            class="link-button"
+            :disabled="loading || resetEmailSending"
+            @click="toggleForgotPassword"
+          >
+            {{ showForgotPassword ? 'Back to Sign In' : 'Forgot password?' }}
+          </button>
+        </div>
+
+        <div v-if="resetMessage" class="success-message">
+          <i class="fas fa-check-circle"></i>
+          {{ resetMessage }}
+        </div>
+
+        <div v-if="error" class="error-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          {{ error }}
+        </div>
+
+        <div class="form-footer">
+          <p>For authorized personnel only</p>
+          <p class="help-text">Contact your system administrator for access</p>
+          <NuxtLink to="/" class="logo-button">
+            <img
+              src="/assets/images/Logo_ShaftLok_whiteBG-landscape.png"
+              alt="Shaft Lok Logo - Return to Site"
+              loading="lazy"
+              class="footer-logo"
+            >
+          </NuxtLink>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard Selection Modal -->
+    <div v-if="showAdminModal" class="modal-overlay" @click="showAdminModal = false">
+      <div class="admin-modal" @click.stop>
+        <div class="admin-modal-header">
+          <h3>Welcome, Admin!</h3>
+          <p>Which area would you like to manage today?</p>
+        </div>
+
+        <div class="admin-modal-body">
+          <div class="radio-group">
+            <label class="radio-option">
+              <input
+                type="radio"
+                v-model="adminChoice"
+                value="yacht-list"
+                name="admin-choice"
+              >
+              <span class="radio-custom"></span>
+              <div class="option-content">
+                <i class="fas fa-ship"></i>
+                <span>Yacht List Management</span>
+              </div>
+            </label>
+
+            <label class="radio-option disabled">
+              <input
+                type="radio"
+                v-model="adminChoice"
+                value="products"
+                name="admin-choice"
+                disabled
+              >
+              <span class="radio-custom"></span>
+              <div class="option-content">
+                <i class="fas fa-cogs"></i>
+                <span>Products Management</span>
+                <small>(Coming Soon)</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button @click="showAdminModal = false" class="btn btn-secondary">
+            Cancel
+          </button>
+          <button @click="proceedToAdminArea" class="btn btn-primary">
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+definePageMeta({
+  layout: 'auth-layout'
+})
+
+const supabase = useSupabaseClient()
+const router = useRouter()
+
+const loading = ref(false)
+const resetEmailSending = ref(false)
+const error = ref('')
+const resetMessage = ref('')
+const showForgotPassword = ref(false)
+const form = ref({
+  email: '',
+  password: ''
+})
+
+const toggleForgotPassword = () => {
+  showForgotPassword.value = !showForgotPassword.value
+  error.value = ''
+  resetMessage.value = ''
+}
+
+const onCollapseEnter = (el) => {
+  el.style.height = '0px'
+  el.style.opacity = '0'
+  void el.offsetHeight
+  el.style.height = `${el.scrollHeight}px`
+  el.style.opacity = '1'
+}
+
+const onCollapseAfterEnter = (el) => {
+  el.style.height = 'auto'
+}
+
+const onCollapseLeave = (el) => {
+  el.style.height = `${el.scrollHeight}px`
+  el.style.opacity = '1'
+  void el.offsetHeight
+  el.style.height = '0px'
+  el.style.opacity = '0'
+}
+
+const handleForgotPassword = async () => {
+  try {
+    resetEmailSending.value = true
+    error.value = ''
+    resetMessage.value = ''
+
+    if (!form.value.email) {
+      error.value = 'Enter your email address.'
+      return
+    }
+
+    const redirectTo = `${window.location.origin}/reset-password`
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(form.value.email, {
+      redirectTo
+    })
+
+    if (resetError) {
+      throw resetError
+    }
+
+    resetMessage.value = 'Password reset email sent. Check your inbox and follow the link.'
+  } catch (err) {
+    console.error('Password reset email error:', err)
+    error.value = err.message || 'Failed to send reset email. Please try again.'
+  } finally {
+    resetEmailSending.value = false
+  }
+}
+
+const showAdminModal = ref(false)
+const adminChoice = ref('yacht-list')
+
+const handleSignIn = async () => {
+  try {
+    loading.value = true
+    error.value = ''
+
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email: form.value.email,
+      password: form.value.password,
+    })
+
+    if (signInError) {
+      throw signInError
+    }
+
+    // Check if user has admin role
+    await checkAdminRoleAndRedirect(data.user)
+  } catch (err) {
+    console.error('Sign in error:', err)
+    error.value = err.message || 'Failed to sign in. Please try again.'
+  } finally {
+    loading.value = false
+  }
+}
+
+const checkAdminRoleAndRedirect = async (user) => {
+  try {
+    // Check if user has admin role in profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile || profile.role !== 'admin') {
+      error.value = 'Access denied. Administrative privileges required.'
+      await supabase.auth.signOut()
+      return
+    }
+
+    // User is admin, show dashboard selection
+    showAdminModal.value = true
+  } catch (error) {
+    console.error('Error checking admin role:', error)
+    error.value = 'Access verification failed. Please try again.'
+    await supabase.auth.signOut()
+  }
+}
+
+const proceedToAdminArea = () => {
+  showAdminModal.value = false
+  if (adminChoice.value === 'yacht-list') {
+    router.push('/yacht-list')
+  } else {
+    // Products page not implemented yet
+    alert('Products management is coming soon!')
+    router.push('/adminaccess')
+  }
+}
+
+useHead({
+  title: 'Admin Access - Shaft Lok',
+  meta: [
+    { name: 'description', content: 'Administrative access for Shaft Lok authorized personnel only.' },
+    { name: 'robots', content: 'noindex, nofollow' },
+    { property: 'og:title', content: 'Admin Access - Shaft Lok' }
+  ]
+})
+</script>
+
+<style scoped>
+.signin-page {
+  width: 100%;
+}
+
+.signin-hero {
+  background: linear-gradient(135deg, var(--federal-blue), var(--honolulu-blue));
+  color: white;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 15px;
+}
+
+.hero-content h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0 0 1rem 0;
+}
+
+.hero-content p {
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.signin-form-container {
+  width: 100%;
+}
+
+.form-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.form-header h2 {
+  color: var(--federal-blue);
+  font-size: 1.8rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.form-header p {
+  color: #6b7280;
+  margin: 0;
+}
+
+.signin-form {
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--federal-blue);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.875rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--honolulu-blue);
+  box-shadow: 0 0 0 3px rgba(202, 240, 248, 0.3);
+}
+
+.form-control:disabled {
+  background-color: #f9fafb;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  margin: 2rem 0 1rem 0;
+}
+
+.btn {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--federal-blue), var(--honolulu-blue));
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(31, 81, 147, 0.3);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.forgot-password {
+  text-align: center;
+  margin-top: 0.75rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--honolulu-blue);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.link-button:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.link-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.success-message {
+  background: #dcfce7;
+  color: #166534;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.form-footer {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 1.5rem;
+}
+
+.form-footer p {
+  color: #6b7280;
+  margin: 0 0 0.5rem 0;
+}
+
+.help-text {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  margin: 0.25rem 0 1rem 0;
+}
+
+.logo-button {
+  display: inline-block;
+  margin-top: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.logo-button:hover {
+  transform: translateY(-2px);
+}
+
+.footer-logo {
+  height: 3.1rem;
+  width: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.footer-logo:hover {
+  box-shadow: 0 4px 8px rgba(31, 81, 147, 0.2);
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: height 0.35s ease, opacity 0.25s ease;
+  overflow: hidden;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 768px) {
+  .signin-hero {
+    padding: 2rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .form-card {
+    padding: 1.5rem;
+  }
+
+  .form-header h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .signin-hero {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .hero-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .form-card {
+    padding: 1.25rem;
+    border-radius: 10px;
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.admin-modal {
+  background: white;
+  border-radius: 15px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.admin-modal-header {
+  text-align: center;
+  padding: 2rem 2rem 1rem 2rem;
+  background: linear-gradient(135deg, var(--federal-blue), var(--honolulu-blue));
+  color: white;
+  border-radius: 15px 15px 0 0;
+}
+
+.admin-modal-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+}
+
+.admin-modal-header p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.admin-modal-body {
+  padding: 2rem;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.radio-option:not(.disabled):hover {
+  border-color: var(--honolulu-blue);
+  background: #f8fafc;
+}
+
+.radio-option.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f9fafb;
+}
+
+.radio-option input[type="radio"] {
+  opacity: 0;
+  position: absolute;
+}
+
+.radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 50%;
+  margin-right: 1rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.radio-option input:checked + .radio-custom {
+  border-color: var(--federal-blue);
+}
+
+.radio-option input:checked + .radio-custom::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: var(--federal-blue);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.option-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.option-content i {
+  font-size: 1.5rem;
+  color: var(--federal-blue);
+  width: 2rem;
+  text-align: center;
+}
+
+.option-content span {
+  font-weight: 500;
+  color: var(--federal-blue);
+}
+
+.option-content small {
+  color: #9ca3af;
+  font-style: italic;
+  margin-left: 0.5rem;
+}
+
+.admin-modal-footer {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem 2rem 2rem 2rem;
+  justify-content: flex-end;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .admin-modal {
+    margin: 1rem;
+  }
+
+  .admin-modal-header {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+  }
+
+  .admin-modal-body {
+    padding: 1.5rem;
+  }
+
+  .admin-modal-footer {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+  }
+}
+</style>

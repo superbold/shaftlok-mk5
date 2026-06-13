@@ -1,0 +1,22 @@
+{
+  "name": "shaftlok-mk4",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "packageManager": "pnpm@10.14.0",
+  "dependencies": {
+    "@nuxtjs/supabase": "^2.0.9",
+    "nuxt": "^4.0.3",
+    "vue": "latest"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "^1.6.1",
+    "typescript": "^5.7.2"
+  }
+}

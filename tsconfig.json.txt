@@ -1,0 +1,22 @@
+// 1. Created tsconfig.json in the root directory that extends the Nuxt-generated TypeScript configuration
+// 2. Added the proper reference comment to the nuxt.config.ts file
+
+// What This Fixes
+
+// - TypeScript Error: The defineNuxtConfig function is now properly recognized by TypeScript
+// - IDE Support: Better IntelliSense and auto-completion in VS Code and other editors
+// - Type Safety: Proper type checking for Nuxt configuration options
+// - Standard Setup: Follows Nuxt 4 best practices for TypeScript configuration
+
+// Why This Was Needed
+
+// In Nuxt 4, the framework generates its own TypeScript configuration in the .nuxt directory, but your IDE
+// and TypeScript language server need a root tsconfig.json file that extends this generated configuration to
+// properly understand the types and auto-imports.
+
+// The TypeScript error should now be resolved. If you're still seeing the error in your IDE, try:
+
+// 1. Restart TypeScript Language Server (in VS Code: Cmd/Ctrl + Shift + P → "TypeScript: Restart TS Server")
+// 2. Reload IDE Window to pick up the new configuration files
+
+// The site should continue to run properly as this was purely a TypeScript/IDE issue, not a runtime problem.
