@@ -372,7 +372,7 @@ useHead({
             name: 'What if I need help during installation?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'We provide comprehensive installation support including detailed instructions, technical support via phone and email, and access to authorized installers. Contact our technical support team at 1-262-786-6800 or email kenneth.nigel@shaftlok.com for assistance with any installation questions or issues.'
+              text: 'We provide comprehensive installation support including detailed instructions, technical support via phone and email, and access to authorized installers. Contact our technical support team at 1-262-786-6800 or email sean.nigel@shaftlok.com for assistance with any installation questions or issues.'
             }
           }
         ]

@@ -47,7 +47,7 @@
         <div class="footer-col footer-contact">
           <h3>Contact</h3>
           <p><i class="fas fa-map-marker-alt"></i> Milwaukee, Wisconsin 53211 USA</p>
-          <p><i class="fas fa-envelope"></i> kenneth.nigel@shaftlok.com</p>
+          <p><i class="fas fa-envelope"></i> sean.nigel@shaftlok.com</p>
           <p><i class="fas fa-phone"></i> 1-262-786-6800</p>
           <p><i class="fas fa-gears"></i> Compatible with Borg Warner, Paragon, Hurth &amp; Volvo Penta transmissions</p>
         </div>

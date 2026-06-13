@@ -20,7 +20,7 @@ This document outlines the improvements made to the yacht list interface, addres
 
 **Solution**: Added complete text including:
 - Updated introductory message
-- Contact email (kenneth.nigel@shaftlok.com)
+- Contact email (sean.nigel@shaftlok.com)
 - Comprehensive boat information checklist (yacht type, propeller details, engine specs, etc.)
 - $50 discount information in a highlighted box
 

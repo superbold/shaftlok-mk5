@@ -31,7 +31,7 @@
         <div class="modal-body">
           <p>We appreciate you taking time to check out yachts that have installed a unit or two (in some cases). Should you find your vessel here that means your boat probably has the space in the engine room necessary to fit your own <span class="shaftlok-font">Shaft Lok</span>.</p>
 
-          <p>Thank you, kenneth.nigel@shaftlok.com</p>
+          <p>Thank you, sean.nigel@shaftlok.com</p>
 
           <p>When contacting <span class="shaftlok-font">Shaft Lok</span> Inc. have the following boat information available:</p>
 

@@ -13,7 +13,7 @@
         <div class="contact-card glass-card hoverable" v-reveal>
           <i class="fas fa-envelope contact-icon"></i>
           <h3>Email</h3>
-          <p><a href="mailto:kenneth.nigel@shaftlok.com">kenneth.nigel@shaftlok.com</a></p>
+          <p><a href="mailto:sean.nigel@shaftlok.com">sean.nigel@shaftlok.com</a></p>
         </div>
         <div class="contact-card glass-card hoverable" v-reveal="80">
           <i class="fas fa-phone contact-icon"></i>
@@ -115,7 +115,7 @@ useHead({
         logo: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png',
         image: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png',
         telephone: '+1-262-786-6800',
-        email: 'kenneth.nigel@shaftlok.com',
+        email: 'sean.nigel@shaftlok.com',
         foundingDate: '1979',
         address: {
           '@type': 'PostalAddress',
@@ -156,7 +156,7 @@ useHead({
           },
           {
             '@type': 'ContactPoint',
-            email: 'kenneth.nigel@shaftlok.com',
+            email: 'sean.nigel@shaftlok.com',
             contactType: 'Sales',
             availableLanguage: 'English',
             areaServed: 'Worldwide'
