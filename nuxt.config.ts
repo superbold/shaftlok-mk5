@@ -9,6 +9,7 @@ export default defineNuxtConfig({
   supabase: {
     redirect: false,
     useSsrCookies: false,
+    types: false,
     redirectOptions: {
       login: '/adminaccess',
       callback: '/yacht-list',

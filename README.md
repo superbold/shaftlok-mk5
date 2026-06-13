@@ -163,6 +163,7 @@ For detailed information about the migration process, architectural decisions, a
 ## 🚀 Future Enhancements
 
 - ~~**Analytics** - Replace the placeholder Google Analytics ID with a production tracking ID~~ (done — `G-XDWZW2TCLR`)
+- **Supabase Types** - Generate `types/database.types.ts` via the Supabase CLI (`supabase gen types typescript --project-id <id> > types/database.types.ts`) and remove `types: false` from `nuxt.config.ts` for full type-safety on `useSupabaseClient<Database>()` calls (`yachts`/`profiles` tables)
 - **Performance** - Progressive Web App (PWA) features and further image optimization
 - **User Experience** - Product comparison tools and richer yacht list filtering
 
