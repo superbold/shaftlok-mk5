@@ -239,24 +239,26 @@ useHead({
 }
 
 .signin-hero {
-  background: linear-gradient(135deg, var(--federal-blue), var(--honolulu-blue));
-  color: white;
   text-align: center;
-  padding: 3rem 1.5rem;
-  margin-bottom: 2rem;
-  border-radius: 15px;
+  padding: 0 1rem 2rem;
 }
 
 .hero-content h1 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin: 0 0 1rem 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .hero-content p {
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: var(--text-mid);
   margin: 0;
-  opacity: 0.9;
 }
 
 .signin-form-container {
@@ -264,11 +266,13 @@ useHead({
 }
 
 .form-card {
-  background: white;
-  border-radius: 15px;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-card);
   padding: 2rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
 }
 
 .form-header {
@@ -277,14 +281,17 @@ useHead({
 }
 
 .form-header h2 {
-  color: var(--federal-blue);
-  font-size: 1.8rem;
-  margin: 0 0 0.5rem 0;
+  font-family: var(--font-display);
+  color: var(--text-hi);
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem;
 }
 
 .form-header p {
-  color: #6b7280;
+  color: var(--text-mid);
   margin: 0;
+  font-size: 0.95rem;
 }
 
 .signin-form {
@@ -298,28 +305,38 @@ useHead({
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--federal-blue);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-mid);
 }
 
 .form-control {
   width: 100%;
   padding: 0.875rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
+  background: rgba(13, 27, 54, 0.65);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-hi);
+  font-family: var(--font-body);
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: white;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control::placeholder {
+  color: var(--text-low);
 }
 
 .form-control:focus {
   outline: none;
-  border-color: var(--honolulu-blue);
-  box-shadow: 0 0 0 3px rgba(202, 240, 248, 0.3);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
 }
 
 .form-control:disabled {
-  background-color: #f9fafb;
+  background: rgba(13, 27, 54, 0.35);
+  color: var(--text-low);
   cursor: not-allowed;
 }
 
@@ -330,12 +347,13 @@ useHead({
 .btn {
   width: 100%;
   padding: 1rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -344,24 +362,25 @@ useHead({
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--federal-blue), var(--honolulu-blue));
-  color: white;
+  background: var(--grad-accent);
+  color: #04121F;
+  box-shadow: 0 8px 24px -8px rgba(56, 189, 248, 0.55);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(31, 81, 147, 0.3);
+  box-shadow: 0 12px 30px -8px rgba(56, 189, 248, 0.7);
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
   transform: none !important;
 }
 
 .status-message {
   text-align: center;
-  color: #6b7280;
+  color: var(--text-mid);
   padding: 2rem 0;
   display: flex;
   align-items: center;
@@ -370,25 +389,27 @@ useHead({
 }
 
 .error-message {
-  background: #fee2e2;
-  color: #dc2626;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #FCA5A5;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   margin-top: 1rem;
   font-size: 0.9rem;
 }
 
 .success-message {
-  background: #dcfce7;
-  color: #166534;
+  background: rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  color: #5EEAD4;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   margin-top: 1rem;
   font-size: 0.9rem;
 }
@@ -396,14 +417,14 @@ useHead({
 .form-footer {
   text-align: center;
   padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--line);
   margin-top: 1.5rem;
 }
 
 .logo-button {
   display: inline-block;
   margin-top: 1rem;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .logo-button:hover {
@@ -414,17 +435,17 @@ useHead({
   height: 3.1rem;
   width: auto;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px -6px rgba(56, 189, 248, 0.35);
+  transition: box-shadow 0.3s ease;
+}
+
+.logo-button:hover .footer-logo {
+  box-shadow: 0 6px 22px -6px rgba(56, 189, 248, 0.55);
 }
 
 @media (max-width: 768px) {
   .signin-hero {
-    padding: 2rem 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .hero-content h1 {
-    font-size: 2rem;
+    padding: 0 0.5rem 1.5rem;
   }
 
   .form-card {
@@ -432,7 +453,7 @@ useHead({
   }
 
   .form-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 }
 </style>

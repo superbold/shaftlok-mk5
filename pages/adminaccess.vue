@@ -339,24 +339,26 @@ useHead({
 }
 
 .signin-hero {
-  background: linear-gradient(135deg, var(--federal-blue), var(--honolulu-blue));
-  color: white;
   text-align: center;
-  padding: 3rem 1.5rem;
-  margin-bottom: 2rem;
-  border-radius: 15px;
+  padding: 0 1rem 2rem;
 }
 
 .hero-content h1 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin: 0 0 1rem 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .hero-content p {
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: var(--text-mid);
   margin: 0;
-  opacity: 0.9;
 }
 
 .signin-form-container {
@@ -364,11 +366,13 @@ useHead({
 }
 
 .form-card {
-  background: white;
-  border-radius: 15px;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-card);
   padding: 2rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
 }
 
 .form-header {
@@ -377,14 +381,17 @@ useHead({
 }
 
 .form-header h2 {
-  color: var(--federal-blue);
-  font-size: 1.8rem;
-  margin: 0 0 0.5rem 0;
+  font-family: var(--font-display);
+  color: var(--text-hi);
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem;
 }
 
 .form-header p {
-  color: #6b7280;
+  color: var(--text-mid);
   margin: 0;
+  font-size: 0.95rem;
 }
 
 .signin-form {
@@ -398,28 +405,38 @@ useHead({
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--federal-blue);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-mid);
 }
 
 .form-control {
   width: 100%;
   padding: 0.875rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
+  background: rgba(13, 27, 54, 0.65);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-hi);
+  font-family: var(--font-body);
   font-size: 1rem;
-  transition: all 0.3s ease;
-  background: white;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control::placeholder {
+  color: var(--text-low);
 }
 
 .form-control:focus {
   outline: none;
-  border-color: var(--honolulu-blue);
-  box-shadow: 0 0 0 3px rgba(202, 240, 248, 0.3);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
 }
 
 .form-control:disabled {
-  background-color: #f9fafb;
+  background: rgba(13, 27, 54, 0.35);
+  color: var(--text-low);
   cursor: not-allowed;
 }
 
@@ -430,30 +447,33 @@ useHead({
 .btn {
   width: 100%;
   padding: 1rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  text-decoration: none;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--federal-blue), var(--honolulu-blue));
-  color: white;
+  background: var(--grad-accent);
+  color: #04121F;
+  box-shadow: 0 8px 24px -8px rgba(56, 189, 248, 0.55);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(31, 81, 147, 0.3);
+  box-shadow: 0 12px 30px -8px rgba(56, 189, 248, 0.7);
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
   transform: none !important;
 }
@@ -466,45 +486,50 @@ useHead({
 .link-button {
   background: none;
   border: none;
-  color: var(--honolulu-blue);
+  color: var(--accent);
   cursor: pointer;
-  font-size: 0.95rem;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
   font-weight: 500;
   padding: 0;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  transition: color 0.2s ease;
 }
 
 .link-button:hover:not(:disabled) {
+  color: var(--accent-2);
   text-decoration: underline;
 }
 
 .link-button:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
 .error-message {
-  background: #fee2e2;
-  color: #dc2626;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #FCA5A5;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   margin-top: 1rem;
   font-size: 0.9rem;
 }
 
 .success-message {
-  background: #dcfce7;
-  color: #166534;
+  background: rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  color: #5EEAD4;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   margin-top: 1rem;
   font-size: 0.9rem;
 }
@@ -512,17 +537,18 @@ useHead({
 .form-footer {
   text-align: center;
   padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--line);
   margin-top: 1.5rem;
 }
 
 .form-footer p {
-  color: #6b7280;
+  color: var(--text-mid);
   margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
 }
 
 .help-text {
-  color: #9ca3af;
+  color: var(--text-low);
   font-size: 0.85rem;
   margin: 0.25rem 0 1rem 0;
 }
@@ -530,7 +556,7 @@ useHead({
 .logo-button {
   display: inline-block;
   margin-top: 1rem;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .logo-button:hover {
@@ -541,12 +567,12 @@ useHead({
   height: 3.1rem;
   width: auto;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px -6px rgba(56, 189, 248, 0.35);
   transition: box-shadow 0.3s ease;
 }
 
-.footer-logo:hover {
-  box-shadow: 0 4px 8px rgba(31, 81, 147, 0.2);
+.logo-button:hover .footer-logo {
+  box-shadow: 0 6px 22px -6px rgba(56, 189, 248, 0.55);
 }
 
 .collapse-enter-active,
@@ -567,12 +593,7 @@ useHead({
 
 @media (max-width: 768px) {
   .signin-hero {
-    padding: 2rem 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .hero-content h1 {
-    font-size: 2rem;
+    padding: 0 0.5rem 1.5rem;
   }
 
   .form-card {
@@ -580,66 +601,64 @@ useHead({
   }
 
   .form-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 }
 
 @media (max-width: 480px) {
-  .signin-hero {
-    padding: 1.5rem 0.75rem;
-  }
-
-  .hero-content h1 {
-    font-size: 1.75rem;
-  }
-
   .hero-content p {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .form-card {
     padding: 1.25rem;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
   }
 }
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background: rgba(2, 8, 23, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  padding: 1rem;
 }
 
 .admin-modal {
-  background: white;
-  border-radius: 15px;
+  background: var(--abyss-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
   max-width: 500px;
-  width: 90%;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  width: 92%;
+  box-shadow: var(--shadow-card), var(--glow-accent);
+  color: var(--text-hi);
 }
 
 .admin-modal-header {
   text-align: center;
-  padding: 2rem 2rem 1rem 2rem;
-  background: linear-gradient(135deg, var(--federal-blue), var(--honolulu-blue));
-  color: white;
-  border-radius: 15px 15px 0 0;
+  padding: 1.8rem 2rem 1.2rem;
+  border-bottom: 1px solid var(--line);
+  background: rgba(13, 27, 54, 0.7);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .admin-modal-header h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
+  margin: 0 0 0.4rem 0;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-hi);
 }
 
 .admin-modal-header p {
   margin: 0;
-  opacity: 0.9;
+  color: var(--text-mid);
+  font-size: 0.95rem;
 }
 
 .admin-modal-body {
@@ -655,23 +674,23 @@ useHead({
 .radio-option {
   display: flex;
   align-items: center;
-  padding: 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   position: relative;
+  background: rgba(13, 27, 54, 0.4);
 }
 
 .radio-option:not(.disabled):hover {
-  border-color: var(--honolulu-blue);
-  background: #f8fafc;
+  border-color: var(--accent);
+  background: rgba(56, 189, 248, 0.08);
 }
 
 .radio-option.disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
-  background: #f9fafb;
 }
 
 .radio-option input[type="radio"] {
@@ -682,22 +701,23 @@ useHead({
 .radio-custom {
   width: 20px;
   height: 20px;
-  border: 2px solid #d1d5db;
+  border: 2px solid var(--line-strong);
   border-radius: 50%;
   margin-right: 1rem;
   position: relative;
-  transition: all 0.3s ease;
+  flex-shrink: 0;
+  transition: border-color 0.25s ease;
 }
 
 .radio-option input:checked + .radio-custom {
-  border-color: var(--federal-blue);
+  border-color: var(--accent);
 }
 
 .radio-option input:checked + .radio-custom::after {
   content: '';
   width: 10px;
   height: 10px;
-  background: var(--federal-blue);
+  background: var(--grad-accent);
   border-radius: 50%;
   position: absolute;
   top: 50%;
@@ -713,19 +733,20 @@ useHead({
 }
 
 .option-content i {
-  font-size: 1.5rem;
-  color: var(--federal-blue);
+  font-size: 1.4rem;
+  color: var(--accent);
   width: 2rem;
   text-align: center;
 }
 
 .option-content span {
+  font-family: var(--font-display);
   font-weight: 500;
-  color: var(--federal-blue);
+  color: var(--text-hi);
 }
 
 .option-content small {
-  color: #9ca3af;
+  color: var(--text-low);
   font-style: italic;
   margin-left: 0.5rem;
 }
@@ -735,17 +756,19 @@ useHead({
   gap: 1rem;
   padding: 1.5rem 2rem 2rem 2rem;
   justify-content: flex-end;
+  border-top: 1px solid var(--line);
 }
 
 .btn-secondary {
-  background: #f3f4f6;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
+  background: rgba(148, 197, 255, 0.07);
+  border-color: var(--line-strong);
+  color: var(--text-mid);
 }
 
 .btn-secondary:hover {
-  background: #e5e7eb;
-  transform: none;
+  background: rgba(148, 197, 255, 0.14);
+  color: var(--text-hi);
+  transform: translateY(-1px);
   box-shadow: none;
 }
 
@@ -755,7 +778,7 @@ useHead({
   }
 
   .admin-modal-header {
-    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    padding: 1.4rem 1.5rem 1rem;
   }
 
   .admin-modal-body {
@@ -763,7 +786,7 @@ useHead({
   }
 
   .admin-modal-footer {
-    padding: 1rem 1.5rem 1.5rem 1.5rem;
+    padding: 1rem 1.5rem 1.5rem;
   }
 }
 </style>
