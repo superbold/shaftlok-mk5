@@ -191,7 +191,7 @@ const checkAdminStatus = async () => {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.value.id)
+      .eq('id', user.value.sub)
       .single()
     
     isAdmin.value = profile?.role === 'admin'
@@ -326,15 +326,15 @@ definePageMeta({
 }
 
 .selected-row td {
-  background-color: rgba(245, 198, 107, 0.08) !important;
+  background-color: rgba(56, 189, 248, 0.08) !important;
 }
 
 .selected-row td:first-child {
-  box-shadow: inset 3px 0 0 var(--gold);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .selected-row:hover td {
-  background-color: rgba(245, 198, 107, 0.14) !important;
+  background-color: rgba(56, 189, 248, 0.14) !important;
 }
 </style>
 

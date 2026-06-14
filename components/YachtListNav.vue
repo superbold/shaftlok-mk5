@@ -133,7 +133,7 @@ const checkAdminStatus = async () => {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.value.id)
+      .eq('id', user.value.sub)
       .single()
 
     isAdmin.value = profile?.role === 'admin'
@@ -357,12 +357,12 @@ header {
 .add-btn:hover { background: rgba(45, 212, 191, 0.24); }
 
 .edit-btn {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: rgba(56, 189, 248, 0.4);
-  color: var(--accent);
+  background: rgba(245, 198, 107, 0.12);
+  border-color: rgba(245, 198, 107, 0.4);
+  color: var(--gold);
 }
 
-.edit-btn:hover { background: rgba(56, 189, 248, 0.24); }
+.edit-btn:hover { background: rgba(245, 198, 107, 0.24); }
 
 .delete-btn {
   background: rgba(248, 113, 113, 0.1);

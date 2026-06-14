@@ -157,19 +157,17 @@
               </div>
             </label>
 
-            <label class="radio-option disabled">
+            <label class="radio-option">
               <input
                 type="radio"
                 v-model="adminChoice"
                 value="products"
                 name="admin-choice"
-                disabled
               >
               <span class="radio-custom"></span>
               <div class="option-content">
                 <i class="fas fa-cogs"></i>
                 <span>Products Management</span>
-                <small>(Coming Soon)</small>
               </div>
             </label>
           </div>
@@ -316,10 +314,8 @@ const proceedToAdminArea = () => {
   showAdminModal.value = false
   if (adminChoice.value === 'yacht-list') {
     router.push('/yacht-list')
-  } else {
-    // Products page not implemented yet
-    alert('Products management is coming soon!')
-    router.push('/adminaccess')
+  } else if (adminChoice.value === 'products') {
+    router.push('/products')
   }
 }
 
@@ -683,14 +679,9 @@ useHead({
   background: rgba(13, 27, 54, 0.4);
 }
 
-.radio-option:not(.disabled):hover {
+.radio-option:hover {
   border-color: var(--accent);
   background: rgba(56, 189, 248, 0.08);
-}
-
-.radio-option.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .radio-option input[type="radio"] {
@@ -743,12 +734,6 @@ useHead({
   font-family: var(--font-display);
   font-weight: 500;
   color: var(--text-hi);
-}
-
-.option-content small {
-  color: var(--text-low);
-  font-style: italic;
-  margin-left: 0.5rem;
 }
 
 .admin-modal-footer {

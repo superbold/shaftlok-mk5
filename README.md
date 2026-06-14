@@ -128,6 +128,7 @@ The MK5 redesign carries the "Deep Ocean Engineering" theme across the entire si
 - New shared `ProductDetail.vue` component generates SEO meta (OpenGraph, Twitter cards, canonical links, JSON-LD BreadcrumbList + Product schema with `additionalProperty` specs) from props
 - All 10 product pages rewritten as thin wrappers around `ProductDetail`, preserving original prose and specs
 - Redesigned product catalog (`/products`) with "Locking Units" and "Controls & Accessories" sections
+- Catalog is now backed by the Supabase `products` table (live data, SSR-fetched via `useAsyncData`), with admin CRUD modals (add/edit/delete) matching the Yacht List pattern
 
 ### Content pages
 - About, Installation, Contact, FAQ, and Testimonials pages restyled with glass cards, step-cards, accordions, and review cards
@@ -163,7 +164,7 @@ For detailed information about the migration process, architectural decisions, a
 ## 🚀 Future Enhancements
 
 - ~~**Analytics** - Replace the placeholder Google Analytics ID with a production tracking ID~~ (done — `G-XDWZW2TCLR`)
-- **Supabase Types** - Generate `types/database.types.ts` via the Supabase CLI (`supabase gen types typescript --project-id <id> > types/database.types.ts`) and remove `types: false` from `nuxt.config.ts` for full type-safety on `useSupabaseClient<Database>()` calls (`yachts`/`profiles` tables)
+- **Supabase Types** - Generate `types/database.types.ts` via the Supabase CLI (`supabase gen types typescript --project-id <id> > types/database.types.ts`) and remove `types: false` from `nuxt.config.ts` for full type-safety on `useSupabaseClient<Database>()` calls (`yachts`/`profiles`/`products` tables)
 - **Performance** - Progressive Web App (PWA) features and further image optimization
 - **User Experience** - Product comparison tools and richer yacht list filtering
 
