@@ -1,67 +1,82 @@
 <template>
   <header v-if="!isAuthPage" :class="{ scrolled: isScrolled, 'menu-open': menuOpen }">
     <div class="nav-inner">
-      <NuxtLink to="/" class="brand" @click="menuOpen = false">
+      <button
+        class="menu-toggle"
+        :aria-expanded="menuOpen"
+        aria-label="Toggle navigation menu"
+        @click="toggleMenu"
+      >
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+
+      <NuxtLink to="/" class="brand" @click="closeMenu">
         <img src="/assets/images/Logo_propeller_only.png" alt="Shaft Lok propeller logo" class="brand-mark">
         <span class="brand-name"><span class="brand-shaft">Shaft Lok</span><span class="brand-inc">INC.</span></span>
       </NuxtLink>
 
-      <nav class="nav-links" aria-label="Primary">
-        <NuxtLink v-for="link in links" :key="link.to" :to="link.to" class="nav-link">
-          {{ link.label }}
-        </NuxtLink>
-      </nav>
-
-      <div class="nav-actions">
-        <button v-if="user" @click="handleSignOut" class="signout-button" title="Sign out">
-          <i class="fas fa-sign-out-alt"></i><span>Sign Out</span>
-        </button>
-        <NuxtLink to="/contact" class="btn btn-primary nav-cta">Get a Quote</NuxtLink>
-        <button
-          class="menu-toggle"
-          :aria-expanded="menuOpen"
-          aria-label="Toggle navigation menu"
-          @click="menuOpen = !menuOpen"
-        >
-          <span class="bar"></span>
-          <span class="bar"></span>
-          <span class="bar"></span>
-        </button>
-      </div>
+      <NuxtLink to="/contact" class="btn btn-primary nav-cta" @click="closeMenu">Get a Quote</NuxtLink>
     </div>
+  </header>
 
-    <Transition name="drop">
-      <nav v-if="menuOpen" class="mobile-menu" aria-label="Mobile">
-        <NuxtLink
-          v-for="link in allLinks"
-          :key="link.to"
-          :to="link.to"
-          class="mobile-link"
-          @click="menuOpen = false"
-        >
-          <i :class="link.icon"></i>{{ link.label }}
-        </NuxtLink>
-        <button v-if="user" @click="handleSignOut" class="mobile-link mobile-signout">
-          <i class="fas fa-sign-out-alt"></i>Sign Out
-        </button>
+  <template v-if="!isAuthPage">
+    <Transition name="fade">
+      <div v-if="menuOpen" class="nav-backdrop" @click="closeMenu"></div>
+    </Transition>
+
+    <Transition name="drawer">
+      <nav v-if="menuOpen" class="nav-panel" aria-label="Primary">
+        <div class="panel-track" :class="{ 'show-products': panelView === 'products' }">
+          <div class="panel-screen">
+            <template v-for="link in mainLinks" :key="link.label">
+              <button v-if="link.expand" class="panel-link panel-expand" @click="panelView = 'products'">
+                <i :class="link.icon"></i>
+                <span>{{ link.label }}</span>
+                <i class="fas fa-chevron-right arrow"></i>
+              </button>
+              <NuxtLink v-else :to="link.to" class="panel-link" @click="closeMenu">
+                <i :class="link.icon"></i>
+                <span>{{ link.label }}</span>
+              </NuxtLink>
+            </template>
+
+            <button v-if="user" @click="handleSignOut" class="panel-link panel-signout">
+              <i class="fas fa-sign-out-alt"></i><span>Sign Out</span>
+            </button>
+
+            <NuxtLink to="/contact" class="btn btn-primary panel-cta" @click="closeMenu">Get a Quote</NuxtLink>
+          </div>
+
+          <div class="panel-screen">
+            <button class="panel-back" @click="panelView = 'main'">
+              <i class="fas fa-chevron-left arrow"></i>
+              <span>All Products</span>
+            </button>
+
+            <NuxtLink
+              v-for="product in navProducts"
+              :key="product.slug"
+              :to="`/products/${product.slug}`"
+              class="panel-link panel-product"
+              @click="closeMenu"
+            >
+              {{ product.name }}
+            </NuxtLink>
+          </div>
+        </div>
       </nav>
     </Transition>
-  </header>
+  </template>
 </template>
 
 <script setup>
 const route = useRoute()
 const isAuthPage = computed(() => route.path.startsWith('/auth'))
 
-const links = [
-  { to: '/products', label: 'Products' },
-  { to: '/installation', label: 'Installation' },
-  { to: '/yacht-list', label: 'Yacht List' },
-  { to: '/about', label: 'About' }
-]
-
-const allLinks = [
-  { to: '/products', label: 'Products', icon: 'fas fa-cogs' },
+const mainLinks = [
+  { label: 'Products', icon: 'fas fa-cogs', expand: true },
   { to: '/installation', label: 'Installation', icon: 'fas fa-wrench' },
   { to: '/yacht-list', label: 'Yacht List', icon: 'fas fa-ship' },
   { to: '/faq', label: 'FAQ', icon: 'fas fa-question-circle' },
@@ -71,7 +86,11 @@ const allLinks = [
 ]
 
 const menuOpen = ref(false)
+const panelView = ref('main')
 const isScrolled = ref(false)
+
+const toggleMenu = () => { menuOpen.value = !menuOpen.value }
+const closeMenu = () => { menuOpen.value = false }
 
 const onScroll = () => { isScrolled.value = window.scrollY > 12 }
 
@@ -85,6 +104,12 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 // Close menu when navigating
 watch(() => route.path, () => { menuOpen.value = false })
 
+// Lock body scroll while the panel is open, and reset to the main panel on close
+watch(menuOpen, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
+  if (!open) panelView.value = 'main'
+})
+
 // Authentication state
 const user = useSupabaseUser()
 const supabase = useSupabaseClient()
@@ -93,12 +118,24 @@ const handleSignOut = async () => {
   try {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
+    closeMenu()
     await navigateTo('/')
   } catch (error) {
     console.error('Error signing out:', error)
     alert('Error signing out: ' + error.message)
   }
 }
+
+// Products list for the slide-out panel
+const { data: navProducts } = await useAsyncData('nav-products', async () => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('name, slug')
+    .order('id', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}, { default: () => [] })
 </script>
 
 <style scoped>
@@ -122,27 +159,29 @@ header.menu-open {
 }
 
 .nav-inner {
+  position: relative;
   max-width: 1200px;
   margin: 0 auto;
   height: var(--nav-height);
   padding: 0 1.5rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
 }
 
 .brand {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   gap: 0.7rem;
   text-decoration: none;
-  flex-shrink: 0;
 }
 
 .brand-mark {
-  height: 2.4rem;
-  width: 2.4rem;
+  height: 3.1rem;
+  width: 3.1rem;
   object-fit: contain;
   background: #fff;
   border-radius: 10px;
@@ -152,88 +191,40 @@ header.menu-open {
 
 .brand-name {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
   line-height: 1;
 }
 
 .brand-shaft {
   font-family: var(--font-brand);
-  font-size: 1.45rem;
+  font-size: 2.1rem;
   color: var(--text-hi);
 }
 
 .brand-inc {
   font-family: var(--font-display);
-  font-size: 0.58rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  letter-spacing: 0.46em;
+  letter-spacing: 0.42em;
   color: var(--accent);
-  margin-top: 0.18rem;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.nav-link {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-mid);
-  text-decoration: none;
-  padding: 0.55rem 1rem;
-  border-radius: 999px;
-  transition: color 0.25s ease, background 0.25s ease;
-  white-space: nowrap;
-}
-
-.nav-link:hover {
-  color: var(--text-hi);
-  background: rgba(148, 197, 255, 0.08);
-}
-
-.nav-link.router-link-active {
-  color: var(--accent);
-  background: rgba(56, 189, 248, 0.1);
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  flex-shrink: 0;
+  margin-top: 0.3rem;
 }
 
 .nav-cta {
+  margin-left: auto;
   padding: 0.6rem 1.4rem;
   font-size: 0.92rem;
 }
 
-.signout-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.4);
-  color: #FCA5A5;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 0.85rem;
-  padding: 0.55rem 1.1rem;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.25s ease, transform 0.25s ease;
-}
-
-.signout-button:hover {
-  background: rgba(248, 113, 113, 0.2);
-  transform: translateY(-1px);
+@media (max-width: 560px) {
+  .nav-cta { display: none; }
 }
 
 .menu-toggle {
-  display: none;
+  position: relative;
+  z-index: 1;
+  display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 5px;
@@ -261,16 +252,64 @@ header.menu-open {
 .menu-open .menu-toggle .bar:nth-child(2) { opacity: 0; }
 .menu-open .menu-toggle .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-.mobile-menu {
-  display: flex;
-  flex-direction: column;
-  padding: 0.75rem 1.25rem 1.25rem;
-  border-top: 1px solid var(--line);
-  max-height: calc(100vh - var(--nav-height));
-  overflow-y: auto;
+/* Backdrop */
+.nav-backdrop {
+  position: fixed;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(2, 8, 23, 0.6);
+  z-index: 999;
 }
 
-.mobile-link {
+.fade-enter-active,
+.fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from,
+.fade-leave-to { opacity: 0; }
+
+/* Sliding panel */
+.nav-panel {
+  position: fixed;
+  top: var(--nav-height);
+  left: 0;
+  bottom: 0;
+  width: min(360px, 85vw);
+  background: rgba(4, 10, 24, 0.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-right: 1px solid var(--line);
+  box-shadow: 12px 0 40px -18px rgba(2, 8, 23, 0.9);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.drawer-enter-active,
+.drawer-leave-active { transition: transform 0.35s ease; }
+.drawer-enter-from,
+.drawer-leave-to { transform: translateX(-100%); }
+
+.panel-track {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  transition: transform 0.35s ease;
+}
+
+.panel-track.show-products { transform: translateX(-50%); }
+
+.panel-screen {
+  width: 50%;
+  flex-shrink: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.panel-link {
   display: flex;
   align-items: center;
   gap: 0.9rem;
@@ -283,41 +322,76 @@ header.menu-open {
   border-radius: var(--radius-sm);
   background: none;
   border: none;
+  width: 100%;
   cursor: pointer;
   text-align: left;
   transition: color 0.2s ease, background 0.2s ease;
 }
 
-.mobile-link i {
+.panel-link i:not(.arrow) {
   width: 1.4rem;
   text-align: center;
   color: var(--accent);
 }
 
-.mobile-link:hover,
-.mobile-link.router-link-active {
+.panel-link span { flex: 1; }
+
+.panel-link:hover,
+.panel-link.router-link-active {
   color: var(--text-hi);
   background: rgba(56, 189, 248, 0.1);
 }
 
-.mobile-signout { color: #FCA5A5; }
-.mobile-signout i { color: #FCA5A5; }
-
-.drop-enter-active, .drop-leave-active { transition: opacity 0.25s ease, transform 0.25s ease; }
-.drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-8px); }
-
-@media (max-width: 920px) {
-  .nav-links { display: none; }
-  .menu-toggle { display: flex; }
-  .signout-button span { display: none; }
+.panel-expand .arrow {
+  flex: none;
+  font-size: 0.8rem;
+  color: var(--text-mid);
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
-@media (max-width: 560px) {
-  .nav-cta { display: none; }
-  .nav-inner { padding: 0 1rem; }
+.panel-expand:hover .arrow {
+  color: var(--accent);
+  transform: translateX(3px);
 }
 
-@media (min-width: 921px) {
-  .mobile-menu { display: none; }
+.panel-back {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.panel-back .arrow { font-size: 0.8rem; }
+
+.panel-back:hover { background: rgba(56, 189, 248, 0.08); }
+
+.panel-product { padding-left: 1.25rem; }
+
+.panel-signout {
+  margin-top: 0.5rem;
+  color: #FCA5A5;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  padding-top: 1rem;
+}
+
+.panel-signout i { color: #FCA5A5; }
+
+.panel-cta {
+  margin-top: auto;
+  display: block;
+  text-align: center;
 }
 </style>
