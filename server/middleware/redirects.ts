@@ -15,9 +15,11 @@ export default defineEventHandler(async (event) => {
     '/mod-ii-easylok-high-torque.html': '/products/mod-ii-easylok-high-torque',
     '/mod-iii-easylok.html': '/products/mod-iii-easylok',
     '/mod-iii-easylok-high-torque.html': '/products/mod-iii-easylok-high-torque',
-    '/mod-iv.html': '/products/mod-iv',
-    '/mod-v.html': '/products/mod-v',
+    '/mod-iv.html': '/products',
+    '/mod-v.html': '/products',
     '/mod-vi.html': '/products/mod-vi',
+    '/products/mod-iv': '/products',
+    '/products/mod-v': '/products',
     '/simple-spring-locking-system.html': '/products/simple-spring-locking-system',
     '/marine-control-cable.html': '/products/marine-control-cable'
   }

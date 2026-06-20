@@ -107,6 +107,7 @@ const { data: products, error: productsError, refresh: refreshProducts } = await
   const { data, error } = await supabase
     .from('products')
     .select('*')
+    .eq('display', true)
     .order('id', { ascending: true })
 
   if (error) throw error
@@ -169,7 +170,8 @@ const emptyProductForm = () => ({
   alt: '',
   max_bore_size_mm: '',
   badge: '',
-  description: ''
+  description: '',
+  display: true
 })
 
 const productForm = ref(emptyProductForm())
@@ -192,7 +194,8 @@ const openEditModal = (product) => {
     alt: product.alt,
     max_bore_size_mm: product.max_bore_size_mm,
     badge: product.badge,
-    description: product.description
+    description: product.description,
+    display: product.display !== false
   }
   showCrudModal.value = true
 }
@@ -222,7 +225,8 @@ const saveProduct = async () => {
         ? null
         : Number(productForm.value.max_bore_size_mm),
       badge: productForm.value.badge || null,
-      description: productForm.value.description
+      description: productForm.value.description,
+      display: productForm.value.display !== false
     }
 
     if (crudMode.value === 'create') {

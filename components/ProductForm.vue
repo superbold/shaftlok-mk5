@@ -100,6 +100,24 @@
         ></textarea>
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-group display-toggle">
+        <label class="toggle-label">
+          <input
+            type="checkbox"
+            :checked="modelValue.display !== false"
+            @change="updateField('display', $event.target.checked)"
+            class="toggle-input"
+          >
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+          <span class="toggle-text">
+            {{ modelValue.display !== false ? 'Visible on site' : 'Hidden from site' }}
+          </span>
+        </label>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -189,6 +207,65 @@ select.form-control {
     font-size: 1rem;
     border-radius: 6px;
   }
+}
+
+.display-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-track {
+  position: relative;
+  width: 2.6rem;
+  height: 1.4rem;
+  background: rgba(13, 27, 54, 0.65);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  transition: background 0.25s ease, border-color 0.25s ease;
+  flex-shrink: 0;
+}
+
+.toggle-input:checked + .toggle-track {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: var(--accent);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1rem;
+  height: 1rem;
+  background: var(--text-low);
+  border-radius: 50%;
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.toggle-input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(1.2rem);
+  background: var(--accent);
+}
+
+.toggle-text {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-mid);
 }
 
 @media (max-width: 480px) {

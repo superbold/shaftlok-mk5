@@ -131,6 +131,7 @@ const { data: navProducts } = await useAsyncData('nav-products', async () => {
   const { data, error } = await supabase
     .from('products')
     .select('name, slug')
+    .eq('display', true)
     .order('id', { ascending: true })
 
   if (error) throw error
