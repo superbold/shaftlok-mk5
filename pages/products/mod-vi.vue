@@ -5,7 +5,7 @@
     tagline="Next-generation locking for advanced marine systems"
     description="Shaft Lok Mod VI - Custom marine propeller control system for specialized applications. Tailored solutions for unique vessel requirements and extreme environments."
     og-title="Shaft Lok Mod VI - Custom Marine Propeller Control System"
-    image="/assets/images/shaftlok-mod-purple.jpg"
+    image="/assets/images/shaftlok-mod-bigBlack.jpg"
     image-alt="Shaft Lok Mod VI marine propeller control system - custom design for specialized applications and unique vessel requirements with extreme environment capabilities"
     bore='6.5" (165.1mm)'
     category="Custom Mega-Yacht Series"
