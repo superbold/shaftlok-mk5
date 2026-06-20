@@ -13,7 +13,7 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/adminaccess',
       callback: '/yacht-list',
-      exclude: ['/', '/adminaccess', '/reset-password', '/products', '/installation', '/contact', '/faq', '/testimonials', '/about']
+      exclude: ['/', '/adminaccess', '/reset-password', '/products', '/installation', '/contact', '/quote', '/privacy', '/faq', '/testimonials', '/about']
     },
     clientOptions: {
       auth: {

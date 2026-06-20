@@ -13,6 +13,7 @@
   "dependencies": {
     "@nuxtjs/supabase": "^2.0.9",
     "nuxt": "^4.0.3",
+    "resend": "^6.14.0",
     "vue": "latest"
   },
   "devDependencies": {

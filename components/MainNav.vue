@@ -17,7 +17,7 @@
         <span class="brand-name"><span class="brand-shaft">Shaft Lok</span><span class="brand-inc">INC.</span></span>
       </NuxtLink>
 
-      <NuxtLink to="/contact" class="btn btn-primary nav-cta" @click="closeMenu">Get a Quote</NuxtLink>
+      <NuxtLink to="/quote" class="btn btn-primary nav-cta" @click="closeMenu">Get a Quote</NuxtLink>
     </div>
   </header>
 
@@ -46,7 +46,7 @@
               <i class="fas fa-sign-out-alt"></i><span>Sign Out</span>
             </button>
 
-            <NuxtLink to="/contact" class="btn btn-primary panel-cta" @click="closeMenu">Get a Quote</NuxtLink>
+            <NuxtLink to="/quote" class="btn btn-primary panel-cta" @click="closeMenu">Get a Quote</NuxtLink>
           </div>
 
           <div class="panel-screen">

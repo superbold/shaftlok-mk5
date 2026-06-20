@@ -65,6 +65,8 @@ pnpm generate
 - **Home** (`/`) - Hero section with split-screen design and company overview
 - **About** (`/about`) - Company history, patents, and technical expertise
 - **Contact** (`/contact`) - Contact information with Google Maps integration
+- **Get a Quote** (`/quote`) - Vessel questionnaire form; submits to sean.nigel@shaftlok.com via Resend
+- **Privacy Policy** (`/privacy`) - Data collection disclosure; required for GDPR compliance
 - **Installation** (`/installation`) - Complete installation guide and procedures
 - **FAQ** (`/faq`) - Frequently asked questions with expandable sections
 - **Testimonials** (`/testimonials`) - Customer testimonials and success stories
@@ -97,6 +99,8 @@ pnpm generate
 
 - `nuxt` - Framework
 - `vue` - Frontend framework
+- `@nuxtjs/supabase` - Auth and database (yacht list, products, admin CRUD)
+- `resend` - Transactional email for the quote form
 - `@nuxt/devtools` - Development tools
 
 ## 🏗️ Build & Deploy
@@ -143,6 +147,44 @@ The MK5 redesign carries the "Deep Ocean Engineering" theme across the entire si
 - `pnpm build` completes successfully (`.output/` ≈ 2.97 MB, ~703 kB gzip)
 - Visually verified via headless-Chrome screenshots of home, products catalog, product detail, yacht list, and FAQ pages
 
+## 📬 Quote Form & Email
+
+The "Get a Quote" nav button (previously pointing to `/contact`) now routes to `/quote`, a vessel questionnaire that collects ten fields covering the boat's propeller, engine, and hull specs. On submission, a Nitro server route (`server/api/quote.post.ts`) sends a formatted HTML email to `sean.nigel@shaftlok.com` via **Resend**, with `Reply-To` set to the customer's email so Sean can reply directly.
+
+**Email flow:**
+1. Customer fills out `/quote` and submits
+2. `POST /api/quote` fires (Nitro serverless function on Vercel)
+3. Resend delivers a styled HTML email to `sean.nigel@shaftlok.com`
+4. Sean replies directly to the customer
+
+**Configuration:**
+- Sending domain: `contact.shaftlok.com` (verified in Resend)
+- From address: `quote@contact.shaftlok.com`
+- Environment variable: `RESEND_API_KEY` — set in `.env` locally and in Vercel project environment variables
+- The API key is a secret and must never be committed to the repository
+
+## 🔒 Privacy Policy
+
+A Privacy Policy page (`/privacy`) was added to satisfy **GDPR** obligations that arise when collecting personal data (name, email) from visitors in the European Union or UK.
+
+**Why it was added:**
+- The quote form collects personal data (name, email address), which triggers GDPR disclosure requirements for EU residents
+- GA4 analytics cookies are in use site-wide, which also requires disclosure even though `anonymize_ip: true` is set
+- A Privacy Policy is the minimum practical compliance step for a US business that may receive inquiries from European sailors
+
+**What it covers:**
+- Data collected via the quote form and why (to respond to the inquiry — no mailing list)
+- GA4 analytics usage (aggregated, anonymized)
+- Resend named as the third-party email processor
+- Data retention (email inbox only, no separate database storage)
+- EU/UK user rights (access, correction, deletion within 30 days)
+- Cookie disclosure (`_ga`, `_ga_XDWZW2TCLR`)
+
+**What was deliberately omitted:**
+- A cookie consent banner — enforcement risk for a small US-based marine hardware business with primarily US customers is negligible. The `anonymize_ip: true` GA4 config further reduces exposure. Revisit if active EU marketing begins.
+
+**Discoverability:** The Privacy Policy link appears in two places in `AppFooter.vue` — the Company navigation column and the bottom copyright bar — so it is reachable from every page on the site.
+
 ## 📊 Analytics
 
 The site uses Google Analytics 4 (GA4) via the `gtag.js` snippet, configured in [nuxt.config.ts](./nuxt.config.ts) under `app.head.script`. Because this is part of the global Nuxt head config, it's automatically injected into the `<head>` of every server-rendered page — no per-page setup needed.
@@ -150,7 +192,28 @@ The site uses Google Analytics 4 (GA4) via the `gtag.js` snippet, configured in 
 - **Measurement ID**: `G-XDWZW2TCLR` (Shaft Lok Inc. GA4 property)
 - **Config**: `gtag('config', 'G-XDWZW2TCLR', { anonymize_ip: true })` — `anonymize_ip` truncates visitor IP addresses for privacy
 - **Updating the ID**: change both occurrences of the Measurement ID in `nuxt.config.ts` (the `script src` URL and the `gtag('config', ...)` call) if the GA4 property ever changes
-- A GA4 Measurement ID is not a secret — it's visible in the rendered page source — so it's safe to reference here
+- A GA4 Measurement ID is not a secret — it's visible in the rendered page source — so it's safe to reference here.
+
+The Measurement ID isn't a secret — it's embedded in the rendered HTML that gets sent to every visitor's browser. When the page loads, this literally appears in the page source:
+
+```js
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XDWZW2TCLR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XDWZW2TCLR', { anonymize_ip: true });
+</script>
+```
+So the flow is:
+
+1. Visitor's browser loads your page
+2. The gtag.js script is fetched from Google's servers
+3. That script reads the G-XDWZW2TCLR ID from the gtag('config', ...) call
+4. It sends pageview/event data back to Google's collection servers, tagged with that ID
+5. Google routes the data into the matching GA4 property in your account
+
+The ID is Google's way of knowing which GA4 account/property the data belongs to. It's intentionally public — anyone can view-source on shaftlok.com and see it, which is fine. The only thing that keeps others from accessing your GA4 reports is your Google account login.
 
 ## 📝 License
 
@@ -170,8 +233,8 @@ For detailed information about the migration process, architectural decisions, a
 
 ## 🔗 Related
 
-- **Original Site**: ShaftLok MK3 (HTML/CSS) - Static website predecessor
-- **Company**: [ShaftLok Inc.](https://shaftlok.com) - Marine propeller control systems
+- **Original Site**: Shaft Lok MK3 (HTML/CSS) - Static website predecessor
+- **Company**: [Shaft Lok Inc.](https://shaftlok.com) - Marine propeller control systems
 - **Patents**: [#4389199](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4389199) and [#D271583](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/D271583)
 
 ## 🏗️ Architecture

@@ -1,0 +1,86 @@
+import { Resend } from 'resend'
+
+export default defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const {
+    name, email,
+    yachtType, yachtName, displacement, maxHullSpeed,
+    shaftDiameter, propDiameter, numBlades, propType,
+    engine, transmission, notes
+  } = body
+
+  if (!name || !email) {
+    throw createError({ statusCode: 400, statusMessage: 'Name and email are required.' })
+  }
+
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    throw createError({ statusCode: 500, statusMessage: 'Email service is not configured.' })
+  }
+
+  const resend = new Resend(apiKey)
+
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding:6px 12px 6px 0;color:#94C5FF;font-family:sans-serif;font-size:14px;white-space:nowrap;vertical-align:top"><strong>${label}</strong></td><td style="padding:6px 0;color:#EFF6FF;font-family:sans-serif;font-size:14px">${value || '<em style="color:#6B7FA8">not provided</em>'}</td></tr>`
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="background:#040A18;margin:0;padding:32px 16px">
+  <div style="max-width:600px;margin:0 auto;background:#081226;border:1px solid rgba(56,189,248,0.2);border-radius:16px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#0D1B36,#071020);padding:28px 32px;border-bottom:1px solid rgba(56,189,248,0.15)">
+      <p style="margin:0 0 4px;font-family:sans-serif;font-size:12px;letter-spacing:0.12em;color:#38BDF8;text-transform:uppercase">Shaft Lok Inc.</p>
+      <h1 style="margin:0;font-family:sans-serif;font-size:22px;color:#EFF6FF">New Quote Request</h1>
+    </div>
+
+    <div style="padding:28px 32px">
+      <p style="margin:0 0 20px;font-family:sans-serif;font-size:14px;color:#A8BEDC">
+        From: <strong style="color:#EFF6FF">${name}</strong> &lt;<a href="mailto:${email}" style="color:#38BDF8">${email}</a>&gt;
+      </p>
+
+      <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Vessel</h2>
+      <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
+        ${row('Yacht Type & Length', yachtType)}
+        ${row('Yacht Name (stern)', yachtName)}
+        ${row('Displacement', displacement)}
+        ${row('Max Hull Speed', maxHullSpeed)}
+      </table>
+
+      <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Propeller</h2>
+      <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
+        ${row('Shaft Diameter', shaftDiameter)}
+        ${row('Propeller Diameter', propDiameter)}
+        ${row('Number of Blades', numBlades)}
+        ${row('Fixed / Folding / Feathering', propType)}
+      </table>
+
+      <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Engine & Transmission</h2>
+      <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
+        ${row('Engine Make & HP', engine)}
+        ${row('Transmission Make & Ratio', transmission)}
+      </table>
+
+      ${notes ? `
+      <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Additional Notes</h2>
+      <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px">${notes.replace(/\n/g, '<br>')}</p>
+      ` : ''}
+    </div>
+
+    <div style="padding:16px 32px;border-top:1px solid rgba(56,189,248,0.1);background:rgba(4,10,24,0.5)">
+      <p style="margin:0;font-family:sans-serif;font-size:12px;color:#6B7FA8">Sent via the Shaft Lok quote form at shaftlok.com · Reply to this email to respond to ${name}.</p>
+    </div>
+  </div>
+</body>
+</html>`
+
+  await resend.emails.send({
+    from: 'Shaft Lok Quote Form <quote@contact.shaftlok.com>',
+    to: 'sean.nigel@shaftlok.com',
+    replyTo: email,
+    subject: `Quote Request — ${yachtType || 'vessel'} from ${name}`,
+    html
+  })
+
+  return { ok: true }
+})
