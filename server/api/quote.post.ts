@@ -3,11 +3,17 @@ import { Resend } from 'resend'
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const {
-    name, email,
+    name, email, phone, phoneRegion, address,
     yachtType, yachtName, displacement, maxHullSpeed,
-    shaftDiameter, propDiameter, numBlades, propType,
-    engine, transmission, notes
+    shaftDiameter, propDiameter, numBlades, numPropellers, propType,
+    engine, transmission, lockingSystem, cableLength, notes
   } = body
+
+  const lockingSystemLabel = lockingSystem === 'cable'
+    ? `Marine Control Cable${cableLength ? ` — ${cableLength} ft` : ''}`
+    : lockingSystem === 'spring'
+      ? 'Simple Spring Locking System'
+      : ''
 
   if (!name || !email) {
     throw createError({ statusCode: 400, statusMessage: 'Name and email are required.' })
@@ -39,6 +45,12 @@ export default defineEventHandler(async (event) => {
         From: <strong style="color:#EFF6FF">${name}</strong> &lt;<a href="mailto:${email}" style="color:#38BDF8">${email}</a>&gt;
       </p>
 
+      <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Contact</h2>
+      <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
+        ${row('Phone', phone ? `${phone}${phoneRegion === 'europe' ? ' (Europe / International)' : ' (US / Canada)'}` : '')}
+        ${row('Address', address ? address.replace(/\n/g, '<br>') : '')}
+      </table>
+
       <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Vessel</h2>
       <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
         ${row('Yacht Type & Length', yachtType)}
@@ -52,6 +64,7 @@ export default defineEventHandler(async (event) => {
         ${row('Shaft Diameter', shaftDiameter)}
         ${row('Propeller Diameter', propDiameter)}
         ${row('Number of Blades', numBlades)}
+        ${row('Number of Propellers / Shafts', numPropellers)}
         ${row('Fixed / Folding / Feathering', propType)}
       </table>
 
@@ -59,6 +72,11 @@ export default defineEventHandler(async (event) => {
       <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
         ${row('Engine Make & HP', engine)}
         ${row('Transmission Make & Ratio', transmission)}
+      </table>
+
+      <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Locking System</h2>
+      <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
+        ${row('Interested In', lockingSystemLabel)}
       </table>
 
       ${notes ? `

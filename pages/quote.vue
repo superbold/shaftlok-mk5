@@ -23,6 +23,31 @@
               <input id="email" v-model="form.email" type="email" class="form-control" placeholder="you@example.com" required />
             </div>
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input id="phone" v-model="form.phone" type="tel" class="form-control" placeholder="e.g. (954) 555-0142" />
+            </div>
+            <div class="form-group">
+              <label>Phone Region</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" v-model="form.phoneRegion" value="us" name="phoneRegion" />
+                  <span>US / Canada</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" v-model="form.phoneRegion" value="europe" name="phoneRegion" />
+                  <span>Europe / International</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label for="address">Address <span class="optional">(optional)</span></label>
+              <textarea id="address" v-model="form.address" class="form-control" rows="2" placeholder="Street, City, State/Province, Postal Code, Country"></textarea>
+            </div>
+          </div>
         </div>
 
         <div class="form-section">
@@ -66,7 +91,11 @@
             </div>
           </div>
           <div class="form-row">
-            <div class="form-group full-width">
+            <div class="form-group">
+              <label for="numPropellers">Number of Propellers / Shafts</label>
+              <input id="numPropellers" v-model="form.numPropellers" type="text" class="form-control" placeholder="e.g. 1 (2 for twin-shaft boats)" />
+            </div>
+            <div class="form-group">
               <label for="propType">Fixed, Folding, or Feathering?</label>
               <input id="propType" v-model="form.propType" type="text" class="form-control" placeholder="e.g. Feathering – Brunton Autoprop" />
             </div>
@@ -87,10 +116,38 @@
           </div>
         </div>
 
+        <div class="form-section">
+          <h2 class="section-label"><i class="fas fa-lock"></i> Locking System</h2>
+          <div class="form-row">
+            <div class="form-group full-width">
+              <label>Are you interested in the Simple Spring Locking System or the Marine Control Cable?</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" v-model="form.lockingSystem" value="spring" name="lockingSystem" />
+                  <span>Simple Spring Locking System</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" v-model="form.lockingSystem" value="cable" name="lockingSystem" />
+                  <span>Marine Control Cable</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row" v-if="form.lockingSystem === 'cable'">
+            <div class="form-group">
+              <label for="cableLength">Cable Length Needed (feet)</label>
+              <input id="cableLength" v-model="form.cableLength" type="text" class="form-control" placeholder="e.g. 12 ft" />
+            </div>
+          </div>
+          <p v-if="form.lockingSystem === 'cable'" class="hint-note">
+            The Marine Control Cable adds to the base quote — Sean will factor the length above into your pricing.
+          </p>
+        </div>
+
         <div class="form-section no-border">
           <div class="form-group full-width">
             <label for="notes">Additional Notes <span class="optional">(optional)</span></label>
-            <textarea id="notes" v-model="form.notes" class="form-control" rows="4" placeholder="Anything else you'd like us to know — shipping address, questions, etc."></textarea>
+            <textarea id="notes" v-model="form.notes" class="form-control" rows="4" placeholder="Anything else you'd like us to know…"></textarea>
           </div>
         </div>
 
@@ -125,6 +182,9 @@
 const form = reactive({
   name: '',
   email: '',
+  phone: '',
+  phoneRegion: 'us',
+  address: '',
   yachtType: '',
   yachtName: '',
   displacement: '',
@@ -132,9 +192,12 @@ const form = reactive({
   shaftDiameter: '',
   propDiameter: '',
   numBlades: '',
+  numPropellers: '',
   propType: '',
   engine: '',
   transmission: '',
+  lockingSystem: '',
+  cableLength: '',
   notes: ''
 })
 
@@ -266,6 +329,38 @@ definePageMeta({ layout: 'default' })
 }
 
 textarea.form-control { resize: vertical; min-height: 100px; }
+
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  height: 100%;
+  min-height: 2.6rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-mid);
+  cursor: pointer;
+}
+
+.radio-option input[type='radio'] {
+  accent-color: var(--accent);
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+.hint-note {
+  font-size: 0.82rem;
+  color: var(--text-low);
+  margin: 0.9rem 0 0;
+  line-height: 1.5;
+}
 
 .form-error {
   background: rgba(252, 165, 165, 0.1);
