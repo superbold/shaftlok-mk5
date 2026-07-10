@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { serverSupabaseServiceRole } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -17,6 +18,32 @@ export default defineEventHandler(async (event) => {
 
   if (!name || !email) {
     throw createError({ statusCode: 400, statusMessage: 'Name and email are required.' })
+  }
+
+  const supabase = serverSupabaseServiceRole(event)
+  const { error: insertError } = await supabase.from('quotes').insert({
+    status: 'new',
+    name, email, phone,
+    phone_region: phoneRegion,
+    address,
+    yacht_type: yachtType,
+    yacht_name: yachtName,
+    displacement,
+    max_hull_speed: maxHullSpeed,
+    shaft_diameter: shaftDiameter,
+    prop_diameter: propDiameter,
+    num_blades: numBlades,
+    num_propellers: numPropellers,
+    prop_type: propType,
+    engine, transmission,
+    locking_system: lockingSystem,
+    cable_length: cableLength,
+    notes
+  })
+
+  if (insertError) {
+    console.error('Error saving quote request:', insertError)
+    throw createError({ statusCode: 500, statusMessage: 'Failed to save quote request.' })
   }
 
   const apiKey = process.env.RESEND_API_KEY

@@ -147,6 +147,20 @@
               <input
                 type="radio"
                 v-model="adminChoice"
+                value="qms"
+                name="admin-choice"
+              >
+              <span class="radio-custom"></span>
+              <div class="option-content">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Quote Management</span>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input
+                type="radio"
+                v-model="adminChoice"
                 value="yacht-list"
                 name="admin-choice"
               >
@@ -260,7 +274,7 @@ const handleForgotPassword = async () => {
 }
 
 const showAdminModal = ref(false)
-const adminChoice = ref('yacht-list')
+const adminChoice = ref('qms')
 
 const handleSignIn = async () => {
   try {
@@ -312,7 +326,9 @@ const checkAdminRoleAndRedirect = async (user) => {
 
 const proceedToAdminArea = () => {
   showAdminModal.value = false
-  if (adminChoice.value === 'yacht-list') {
+  if (adminChoice.value === 'qms') {
+    router.push('/qms')
+  } else if (adminChoice.value === 'yacht-list') {
     router.push('/yacht-list')
   } else if (adminChoice.value === 'products') {
     router.push('/products')
