@@ -324,15 +324,17 @@ const checkAdminRoleAndRedirect = async (user) => {
   }
 }
 
-const proceedToAdminArea = () => {
-  showAdminModal.value = false
+const proceedToAdminArea = async () => {
+  // Keep the modal up (instead of revealing the sign-in form underneath)
+  // until the destination route's middleware has actually resolved.
   if (adminChoice.value === 'qms') {
-    router.push('/qms')
+    await router.push('/qms')
   } else if (adminChoice.value === 'yacht-list') {
-    router.push('/yacht-list')
+    await router.push('/yacht-list')
   } else if (adminChoice.value === 'products') {
-    router.push('/products')
+    await router.push('/products')
   }
+  showAdminModal.value = false
 }
 
 useHead({
