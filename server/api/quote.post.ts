@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   } = body
 
   const lockingSystemLabel = lockingSystem === 'cable'
-    ? `Marine Control Cable${cableLength ? ` — ${cableLength} ft` : ''}`
+    ? `Marine Control Cable${cableLength ? ` — ${escapeHtml(cableLength)} ft` : ''}`
     : lockingSystem === 'spring'
       ? 'Simple Spring Locking System'
       : ''
@@ -53,6 +53,8 @@ export default defineEventHandler(async (event) => {
 
   const resend = new Resend(apiKey)
 
+  // `value` is expected to already be HTML-safe (escaped, with any <br> tags
+  // intentionally inserted) by the time it reaches this helper.
   const row = (label: string, value: string) =>
     `<tr><td style="padding:6px 12px 6px 0;color:#94C5FF;font-family:sans-serif;font-size:14px;white-space:nowrap;vertical-align:top"><strong>${label}</strong></td><td style="padding:6px 0;color:#EFF6FF;font-family:sans-serif;font-size:14px">${value || '<em style="color:#6B7FA8">not provided</em>'}</td></tr>`
 
@@ -69,36 +71,36 @@ export default defineEventHandler(async (event) => {
 
     <div style="padding:28px 32px">
       <p style="margin:0 0 20px;font-family:sans-serif;font-size:14px;color:#A8BEDC">
-        From: <strong style="color:#EFF6FF">${name}</strong> &lt;<a href="mailto:${email}" style="color:#38BDF8">${email}</a>&gt;
+        From: <strong style="color:#EFF6FF">${escapeHtml(name)}</strong> &lt;<a href="mailto:${escapeHtml(email)}" style="color:#38BDF8">${escapeHtml(email)}</a>&gt;
       </p>
 
       <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Contact</h2>
       <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
-        ${row('Phone', phone ? `${phone}${phoneRegion === 'europe' ? ' (Europe / International)' : ' (US / Canada)'}` : '')}
-        ${row('Address', address ? address.replace(/\n/g, '<br>') : '')}
+        ${row('Phone', phone ? `${escapeHtml(phone)}${phoneRegion === 'europe' ? ' (Europe / International)' : ' (US / Canada)'}` : '')}
+        ${row('Address', address ? escapeHtml(address).replace(/\n/g, '<br>') : '')}
       </table>
 
       <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Vessel</h2>
       <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
-        ${row('Yacht Type & Length', yachtType)}
-        ${row('Yacht Name (stern)', yachtName)}
-        ${row('Displacement', displacement)}
-        ${row('Max Hull Speed', maxHullSpeed)}
+        ${row('Yacht Type & Length', escapeHtml(yachtType))}
+        ${row('Yacht Name (stern)', escapeHtml(yachtName))}
+        ${row('Displacement', escapeHtml(displacement))}
+        ${row('Max Hull Speed', escapeHtml(maxHullSpeed))}
       </table>
 
       <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Propeller</h2>
       <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
-        ${row('Shaft Diameter', shaftDiameter)}
-        ${row('Propeller Diameter', propDiameter)}
-        ${row('Number of Blades', numBlades)}
-        ${row('Number of Propellers / Shafts', numPropellers)}
-        ${row('Fixed / Folding / Feathering', propType)}
+        ${row('Shaft Diameter', escapeHtml(shaftDiameter))}
+        ${row('Propeller Diameter', escapeHtml(propDiameter))}
+        ${row('Number of Blades', escapeHtml(numBlades))}
+        ${row('Number of Propellers / Shafts', escapeHtml(numPropellers))}
+        ${row('Fixed / Folding / Feathering', escapeHtml(propType))}
       </table>
 
       <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Engine & Transmission</h2>
       <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
-        ${row('Engine Make & HP', engine)}
-        ${row('Transmission Make & Ratio', transmission)}
+        ${row('Engine Make & HP', escapeHtml(engine))}
+        ${row('Transmission Make & Ratio', escapeHtml(transmission))}
       </table>
 
       <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Locking System</h2>
@@ -108,7 +110,7 @@ export default defineEventHandler(async (event) => {
 
       ${notes ? `
       <h2 style="margin:0 0 10px;font-family:sans-serif;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:8px">Additional Notes</h2>
-      <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px">${notes.replace(/\n/g, '<br>')}</p>
+      <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px">${escapeHtml(notes).replace(/\n/g, '<br>')}</p>
       ` : ''}
     </div>
 
@@ -121,7 +123,7 @@ export default defineEventHandler(async (event) => {
 
   await resend.emails.send({
     from: 'Shaft Lok Quote Form <quote@contact.shaftlok.com>',
-    to: 'sean.nigel@shaftlok.com',
+    to: ['sean.nigel@shaftlok.com', 'shaftlok@att.net'],
     replyTo: email,
     subject: `Quote Request — ${yachtType || 'vessel'} from ${name}`,
     html

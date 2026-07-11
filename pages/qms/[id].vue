@@ -120,7 +120,7 @@ const saveError = ref(false)
 const editForm = ref({ status: 'new', quoted_price: '', quote_notes: '' })
 
 const statusLabels = {
-  new: 'New', in_review: 'In Review', quoted: 'Quoted', sent: 'Quote Sent', won: 'Won', lost: 'Lost'
+  new: 'New', quoted: 'Drafting Quote', in_review: 'In Review', sent: 'Quote Sent', won: 'Won', lost: 'Lost'
 }
 const statusLabel = (status) => statusLabels[status] || status
 const formatDate = (value) => value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'

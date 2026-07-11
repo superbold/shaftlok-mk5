@@ -45,8 +45,16 @@ export default defineEventHandler(async (event) => {
 
   const resend = new Resend(apiKey)
 
+  // Whichever admin sends the quote becomes the reply-to (so sailor replies
+  // land with whoever actually handled it); the other admin is cc'd.
+  const ADMIN_EMAILS = ['sean.nigel@shaftlok.com', 'shaftlok@att.net']
+  const senderEmail = ADMIN_EMAILS.includes(user.email) ? user.email : ADMIN_EMAILS[0]
+  const ccEmails = ADMIN_EMAILS.filter((adminEmail) => adminEmail !== senderEmail)
+
   const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(quote.quoted_price)
-  const vesselLine = [quote.yacht_type, quote.yacht_name].filter(Boolean).join(' — ')
+  const vesselLine = escapeHtml([quote.yacht_type, quote.yacht_name].filter(Boolean).join(' — '))
+  const safeName = escapeHtml(quote.name)
+  const safeQuoteNotes = escapeHtml(quote.quote_notes)
 
   const html = `
 <!DOCTYPE html>
@@ -61,7 +69,7 @@ export default defineEventHandler(async (event) => {
 
     <div style="padding:28px 32px">
       <p style="margin:0 0 20px;font-family:sans-serif;font-size:14px;color:#A8BEDC">
-        Hi ${quote.name}, thanks for your interest${vesselLine ? ` in outfitting <strong style="color:#EFF6FF">${vesselLine}</strong>` : ''}. Here's your quote:
+        Hi ${safeName}, thanks for your interest${vesselLine ? ` in outfitting <strong style="color:#EFF6FF">${vesselLine}</strong>` : ''}. Here's your quote:
       </p>
 
       <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:18px 20px;margin-bottom:24px">
@@ -69,10 +77,10 @@ export default defineEventHandler(async (event) => {
         <p style="margin:6px 0 0;font-family:sans-serif;font-size:28px;font-weight:700;color:#EFF6FF">${formattedPrice}</p>
       </div>
 
-      <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px;white-space:pre-wrap">${quote.quote_notes}</p>
+      <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px;white-space:pre-wrap">${safeQuoteNotes}</p>
 
       <p style="margin:0;font-family:sans-serif;font-size:14px;color:#A8BEDC">
-        Questions? Just reply to this email and Sean will help you out.
+        Questions? Just reply to this email and we'll help you out.
       </p>
     </div>
 
@@ -86,7 +94,8 @@ export default defineEventHandler(async (event) => {
   await resend.emails.send({
     from: 'Shaft Lok Quotes <quote@contact.shaftlok.com>',
     to: quote.email,
-    replyTo: 'sean.nigel@shaftlok.com',
+    replyTo: senderEmail,
+    cc: ccEmails,
     subject: 'Your Shaft Lok Quote',
     html
   })
