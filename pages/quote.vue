@@ -8,6 +8,11 @@
       <p>Tell us about your vessel and we'll find the right Shaft Lok solution for you.</p>
     </div>
 
+    <div v-if="discountApplied" class="discount-banner glass-card" v-reveal>
+      <i class="fas fa-circle-check"></i>
+      <span>$50 off applied — thanks for checking out our Yacht List!</span>
+    </div>
+
     <div class="quote-wrap">
       <form v-if="!submitted" class="quote-form glass-card" @submit.prevent="submitForm">
 
@@ -179,6 +184,9 @@
 </template>
 
 <script setup>
+const route = useRoute()
+const discountApplied = computed(() => route.query.discount === 'yacht-list-50')
+
 const form = reactive({
   name: '',
   email: '',
@@ -198,7 +206,7 @@ const form = reactive({
   transmission: '',
   lockingSystem: '',
   cableLength: '',
-  notes: ''
+  notes: discountApplied.value ? 'Found via the Yacht List page — please apply the $50 "I got all the info" discount.\n\n' : ''
 })
 
 const loading = ref(false)
@@ -233,6 +241,23 @@ definePageMeta({ layout: 'default' })
 </script>
 
 <style scoped>
+.discount-banner {
+  max-width: 760px;
+  margin: 0 auto 1.5rem;
+  padding: 0.9rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: rgba(245, 198, 107, 0.1);
+  border: 1px solid rgba(245, 198, 107, 0.4);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.discount-banner i { font-size: 1.1rem; }
+
 .quote-wrap {
   max-width: 760px;
   margin: 0 auto;

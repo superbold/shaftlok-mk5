@@ -50,6 +50,9 @@
 
           <div class="discount-box">
             <p class="discount-text">Ask for the $50.00 "I got all the info" discount!</p>
+            <NuxtLink to="/quote?discount=yacht-list-50" class="discount-cta" @click="showModal = false">
+              Get a Quote &amp; Save $50 <i class="fas fa-arrow-right"></i>
+            </NuxtLink>
           </div>
         </div>
       </div>
@@ -286,12 +289,35 @@ provide('yachtCrud', {
   background: rgba(245, 198, 107, 0.08);
   border: 1px solid rgba(245, 198, 107, 0.4);
   border-radius: var(--radius-md);
-  padding: 0.9rem;
+  padding: 1.1rem;
   margin-top: 1.5rem;
   text-align: center;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.9rem;
+}
+
+.discount-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(120deg, #38BDF8, #2DD4BF);
+  color: #04121F;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.65rem 1.3rem;
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 8px 22px -8px rgba(56, 189, 248, 0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.discount-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -8px rgba(56, 189, 248, 0.75);
 }
 
 .boat-info-list {
