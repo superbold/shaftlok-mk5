@@ -1,24 +1,53 @@
 import { Resend } from 'resend'
 import { serverSupabaseServiceRole } from '#supabase/server'
 
+// Random-string bot fill tends to scatter capitals mid-word (e.g.
+// "dHyguUkdYCpiJjmITIi") and skimp on vowels, unlike real names — which may
+// have one legitimate mid-word capital (McDonald, DeShawn) but not several.
+function looksLikeGibberish(name: string): boolean {
+  const words = name.trim().split(/[\s'-]+/).filter(w => w.length > 0)
+  let midSwitches = 0
+  let letterCount = 0
+  let vowelCount = 0
+  for (const word of words) {
+    for (let i = 0; i < word.length; i++) {
+      const ch = word.charAt(i)
+      if (!/[a-zA-Z]/.test(ch)) continue
+      letterCount++
+      if (/[aeiouAEIOU]/.test(ch)) vowelCount++
+      if (i > 0 && /[a-z]/.test(word.charAt(i - 1)) && /[A-Z]/.test(ch)) midSwitches++
+    }
+  }
+  if (letterCount < 6) return false
+  if (midSwitches >= 3) return true
+  return vowelCount / letterCount < 0.2
+}
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const {
+    company, // honeypot — real visitors never fill this in
     name, email, phone, phoneRegion, address,
     yachtType, yachtName, displacement, maxHullSpeed,
     shaftDiameter, propDiameter, numBlades, numPropellers, propType,
     engine, transmission, lockingSystem, cableLength, notes
   } = body
 
+  if (!name || !email) {
+    throw createError({ statusCode: 400, statusMessage: 'Name and email are required.' })
+  }
+
+  // Silently pretend success for bots so they don't learn to adjust — don't
+  // save to Supabase or notify Sean.
+  if (company || looksLikeGibberish(name)) {
+    return { ok: true }
+  }
+
   const lockingSystemLabel = lockingSystem === 'cable'
     ? `Marine Control Cable${cableLength ? ` — ${escapeHtml(cableLength)} ft` : ''}`
     : lockingSystem === 'spring'
       ? 'Simple Spring Locking System'
       : ''
-
-  if (!name || !email) {
-    throw createError({ statusCode: 400, statusMessage: 'Name and email are required.' })
-  }
 
   const supabase = serverSupabaseServiceRole(event)
   const { error: insertError } = await supabase.from('quotes').insert({

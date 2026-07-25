@@ -16,6 +16,12 @@
     <div class="quote-wrap">
       <form v-if="!submitted" class="quote-form glass-card" @submit.prevent="submitForm">
 
+        <!-- Honeypot: hidden from real visitors, bots tend to fill every input they find -->
+        <div class="hp-field" aria-hidden="true">
+          <label for="company">Leave this field blank</label>
+          <input id="company" v-model="form.company" type="text" tabindex="-1" autocomplete="off" />
+        </div>
+
         <div class="form-section">
           <h2 class="section-label"><i class="fas fa-user"></i> Your Contact Info</h2>
           <div class="form-row">
@@ -188,6 +194,7 @@ const route = useRoute()
 const discountApplied = computed(() => route.query.discount === 'yacht-list-50')
 
 const form = reactive({
+  company: '', // honeypot — must stay empty
   name: '',
   email: '',
   phone: '',
@@ -241,6 +248,14 @@ definePageMeta({ layout: 'default' })
 </script>
 
 <style scoped>
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .discount-banner {
   max-width: 760px;
   margin: 0 auto 1.5rem;
