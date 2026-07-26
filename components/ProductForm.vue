@@ -90,6 +90,19 @@
     </div>
     <div class="form-row">
       <div class="form-group">
+        <label for="product-summary">Card Summary</label>
+        <textarea
+          id="product-summary"
+          :value="modelValue.summary"
+          @input="updateField('summary', $event.target.value)"
+          rows="2"
+          class="form-control"
+          placeholder="Short opener + key spec shown on the product card"
+        ></textarea>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
         <label for="product-description">Description</label>
         <textarea
           id="product-description"

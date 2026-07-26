@@ -43,7 +43,7 @@
             <span v-if="product.bore" class="bore-tag">{{ product.bore }}</span>
           </div>
           <p>{{ product.blurb }}</p>
-          <span class="card-link">View details <i class="fas fa-arrow-right"></i></span>
+          <span class="card-link">Read more <i class="fas fa-arrow-right"></i></span>
         </div>
       </NuxtLink>
     </div>
@@ -73,7 +73,7 @@
             <h3>{{ product.name }}</h3>
           </div>
           <p>{{ product.blurb }}</p>
-          <span class="card-link">View details <i class="fas fa-arrow-right"></i></span>
+          <span class="card-link">Read more <i class="fas fa-arrow-right"></i></span>
         </div>
       </NuxtLink>
     </div>
@@ -118,8 +118,10 @@ const mapProduct = (product) => ({
   ...product,
   to: `/products/${product.slug}`,
   image: product.image_url,
-  bore: product.max_bore_size_mm ? `${Math.round(product.max_bore_size_mm)}mm` : null,
-  blurb: product.description
+  bore: product.max_bore_size_mm
+    ? `${Math.round(product.max_bore_size_mm)}mm`
+    : (product.category === 'Locking Units' ? 'Custom' : null),
+  blurb: product.summary || product.description
 })
 
 const lockingUnits = computed(() =>
@@ -170,6 +172,7 @@ const emptyProductForm = () => ({
   alt: '',
   max_bore_size_mm: '',
   badge: '',
+  summary: '',
   description: '',
   display: true
 })
@@ -194,6 +197,7 @@ const openEditModal = (product) => {
     alt: product.alt,
     max_bore_size_mm: product.max_bore_size_mm,
     badge: product.badge,
+    summary: product.summary,
     description: product.description,
     display: product.display !== false
   }
@@ -225,6 +229,7 @@ const saveProduct = async () => {
         ? null
         : Number(productForm.value.max_bore_size_mm),
       badge: productForm.value.badge || null,
+      summary: productForm.value.summary || null,
       description: productForm.value.description,
       display: productForm.value.display !== false
     }
@@ -487,6 +492,10 @@ definePageMeta({
   font-size: 0.93rem;
   margin: 0 0 1.2rem;
   flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-link {
