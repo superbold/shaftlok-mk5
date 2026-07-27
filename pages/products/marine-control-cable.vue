@@ -5,8 +5,6 @@
     tagline="Standard control cable for propeller locking systems"
     description="Shaft Lok Marine Control Cable - durable marine-grade control cables for convenient cockpit operation. Compatible with all Shaft Lok propeller locking systems."
     og-title="Marine Control Cable - ShaftLok System Controls"
-    image="/assets/images/marine-control-cable.png"
-    image-alt="Shaft Lok Marine Control Cable - durable marine-grade control cables for convenient cockpit operation of propeller locking systems without engine room access"
     category="Control Accessory"
     :features="features"
     :specs="specs"

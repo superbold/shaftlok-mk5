@@ -5,8 +5,6 @@
     tagline="Sailboats: 45 to 130 feet with fewer engine room space restrictions"
     description="ShaftLok Mod II EasyLok High Torque - Heavy-duty marine propeller control system designed for high-torque applications. Maximum propeller control for commercial vessels."
     og-title="Shaft Lok Mod II EasyLok High Torque - Heavy-Duty Marine Propeller Control"
-    image="/assets/images/shaftlok-mod-purple.jpg"
-    image-alt="Shaft Lok Mod II EasyLok High Torque marine propeller control system - heavy-duty design for high-torque applications and commercial vessels with enhanced locking mechanism"
     bore='2.25" (57mm)'
     :features="features"
     :specs="specs"

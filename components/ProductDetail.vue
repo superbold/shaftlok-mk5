@@ -64,8 +64,6 @@ const props = withDefaults(defineProps<{
   tagline: string
   description: string
   ogTitle?: string
-  image: string
-  imageAlt: string
   bore?: string
   category?: string
   features: Feature[]
@@ -74,8 +72,24 @@ const props = withDefaults(defineProps<{
   category: 'Propeller Control System'
 })
 
+const supabase = useSupabaseClient()
+
+const { data: productImage } = await useAsyncData(`product-image-${props.slug}`, async () => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('image_url, alt')
+    .eq('slug', props.slug)
+    .single()
+
+  if (error) throw error
+  return data
+})
+
+const image = computed(() => productImage.value?.image_url)
+const imageAlt = computed(() => productImage.value?.alt)
+
 const pageUrl = `https://shaftlok.com/products/${props.slug}`
-const ogImage = `https://shaftlok.com${props.image}`
+const ogImage = `https://shaftlok.com${image.value}`
 const ogTitle = props.ogTitle || `Shaft Lok ${props.name} - Marine Propeller Control System`
 
 useHead({

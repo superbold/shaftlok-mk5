@@ -5,8 +5,6 @@
     tagline="Simple, reliable, manual locking system for Shaft Lok"
     description="Shaft Lok Simple Spring Locking System - cost-effective marine propeller control solution. Easy installation, reliable locking for smaller vessels. Inexpensive alternative."
     og-title="Shaft Lok Simple Spring Locking System - Cost-Effective Marine Propeller Control"
-    image="/assets/images/SpringLockingSystem_withHandle.jpg"
-    image-alt="Shaft Lok Simple Spring Locking System - cost-effective marine propeller control solution with manual operation and easy installation for smaller vessels"
     category="Control Accessory"
     :features="features"
     :specs="specs"

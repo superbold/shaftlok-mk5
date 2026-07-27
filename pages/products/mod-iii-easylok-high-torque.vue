@@ -5,8 +5,6 @@
     tagline="Large Sailboats with no engine room space restrictions"
     description="Shaft Lok Mod III EasyLok High Torque - Ultimate high-torque marine propeller control system for large vessels. Maximum reliability and performance for demanding applications."
     og-title="Shaft Lok Mod III EasyLok High Torque - Ultimate Marine Propeller Control"
-    image="/assets/images/shaftlok-mod-red.jpg"
-    image-alt="Shaft Lok Mod III EasyLok High Torque marine propeller control system - ultimate high-torque design for large vessels with maximum reliability and performance for demanding applications"
     bore='3.15" (80mm)'
     :features="features"
     :specs="specs"

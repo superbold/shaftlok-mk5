@@ -5,8 +5,6 @@
     tagline="Large Sailboats with no engine room space restrictions"
     description="Shaft Lok Mod III EasyLok - advanced propeller control for large vessels. Maximum torque handling with rotating disc assembly for superior marine performance."
     og-title="Shaft Lok Mod III EasyLok - Advanced Marine Propeller Control"
-    image="/assets/images/shaftlok-mod-black.jpg"
-    image-alt="Shaft Lok Mod III EasyLok marine propeller control system - advanced design for large vessels with maximum torque handling and large rotating disc assembly for superior performance"
     bore='3.15" (80mm)'
     :features="features"
     :specs="specs"

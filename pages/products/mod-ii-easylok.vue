@@ -5,8 +5,6 @@
     tagline="Sailboats: 20 to 100 feet with some engine room space restrictions"
     description="Shaft Lok Mod II EasyLok - enhanced marine propeller control system with improved locking features. Perfect for medium-duty sailboats 20-100 feet. 70% market share."
     og-title="Shaft Lok Mod II EasyLok - Enhanced Marine Propeller Control System"
-    image="/assets/images/shaftlok-mod-orange.jpg"
-    image-alt="Shaft Lok Mod II EasyLok marine propeller control system - enhanced design for medium-duty sailboats 20-100 feet with 70% market share and improved locking features"
     bore='2.25" (57.15mm)'
     :features="features"
     :specs="specs"

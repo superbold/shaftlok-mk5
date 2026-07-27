@@ -5,8 +5,6 @@
     tagline="Small sailboats with engine room space restrictions"
     description="Shaft Lok Mod I EasyLok - original marine propeller control system since 1979. Easy installation, reliable locking, proven performance for small sailboats."
     og-title="Shaft Lok Mod I EasyLok - Original Marine Propeller Control System"
-    image="/assets/images/shaftlok-mod-black.jpg"
-    image-alt="Shaft Lok Mod I EasyLok marine propeller control system - original compact design for small sailboats with engine room space restrictions since 1979"
     bore='1.77" (45mm)'
     :features="features"
     :specs="specs"
