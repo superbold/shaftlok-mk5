@@ -34,7 +34,7 @@
         </div>
 
         <div class="product-cta" v-reveal="250">
-          <NuxtLink to="/contact" class="btn btn-primary">
+          <NuxtLink to="/quote" class="btn btn-primary">
             <i class="fas fa-envelope"></i> Request Price &amp; Delivery
           </NuxtLink>
           <NuxtLink to="/installation" class="btn btn-ghost">
