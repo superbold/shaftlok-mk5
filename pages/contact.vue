@@ -5,8 +5,8 @@
     <div class="section-head" v-reveal>
       <span class="eyebrow"><i class="fas fa-envelope"></i> Get in touch</span>
       <h1>Contact <span class="shaftlok-font grad-text">Shaft Lok</span></h1>
-      <p>For support please call or email — Sean or Kenneth will get back to you.</p>
-      <p>Please click the "Get a Quote" button above to request a quote.</p>
+      <p>Have questions or need support? Reach out to Sean or Kenneth by phone or email.</p>
+      <p>If you’d like a quote, simply click the “Get a Quote” button above.</p>
     </div>
 
     <div class="contact-layout">
