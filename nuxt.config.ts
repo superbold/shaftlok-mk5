@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   ],
   supabase: {
     redirect: false,
-    useSsrCookies: false,
+    useSsrCookies: true,
     types: false,
     redirectOptions: {
       login: '/adminaccess',
