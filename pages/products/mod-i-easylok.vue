@@ -12,7 +12,7 @@
     <p>Boats with engine room space restrictions.</p>
     <p>Maximum Bore: 45mm, 1.77"</p>
     <p>This a standard stocked unit. About half the size of the Mod II Easy Lok Unit.</p>
-    <p>It is the smallest physical size but can handle yachts with a maximum propeller shaft diameter of (45mm) 1.771 inches. One of the most popular propeller sizes is 1 ¾" so our new Mod I can handle it.</p>
+    <p>It is the smallest physical size but can handle yachts with a maximum propeller shaft diameter of (45mm) 1.771 inches. One of the most popular propeller shaft sizes is 1 ¾" so our new Mod I can handle it.</p>
     <p>This was the first unit to hit the market in 1979.</p>
     <p>In late 2023 Shaft Lok Inc. upgraded the Mod I with a larger deep-groove ball bearing 6911ZZ by Nachi to include maintenance free double shielded bearing. The Basic Dynamic Load Rating is 3,600 Pounds.</p>
     <p>The Mod I Housing, is made of hard marine urethane which is imperious to salt air. The unit's housing will last decades.</p>
