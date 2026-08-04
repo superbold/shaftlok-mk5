@@ -25,6 +25,9 @@ node_modules
 # pnpm
 .pnpm-store
 
+# Supabase CLI
+supabase/.temp
+
 # IDE
 .vscode/*
 !.vscode/settings.json

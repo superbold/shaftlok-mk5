@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
   // Whichever admin sends the quote becomes the reply-to (so sailor replies
   // land with whoever actually handled it); the other admin is cc'd.
   const ADMIN_EMAILS = ['sean.nigel@shaftlok.com', 'shaftlok@att.net']
-  const senderEmail = ADMIN_EMAILS.includes(user.email) ? user.email : ADMIN_EMAILS[0]
+  const senderEmail = ADMIN_EMAILS.includes(user.email ?? '') ? user.email! : ADMIN_EMAILS[0]
   const ccEmails = ADMIN_EMAILS.filter((adminEmail) => adminEmail !== senderEmail)
 
   const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(quote.quoted_price)

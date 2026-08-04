@@ -52,8 +52,12 @@
           <div class="panel-screen">
             <button class="panel-back" @click="panelView = 'main'">
               <i class="fas fa-chevron-left arrow"></i>
-              <span>All Products</span>
+              <span>Back to Main</span>
             </button>
+
+            <NuxtLink to="/products" class="panel-link" @click="closeMenu">
+              <span>Explore All Products</span>
+            </NuxtLink>
 
             <NuxtLink
               v-for="product in navProducts"

@@ -85,8 +85,8 @@ const { data: productImage } = await useAsyncData(`product-image-${props.slug}`,
   return data
 })
 
-const image = computed(() => productImage.value?.image_url)
-const imageAlt = computed(() => productImage.value?.alt)
+const image = computed(() => productImage.value?.image_url ?? undefined)
+const imageAlt = computed(() => productImage.value?.alt ?? undefined)
 
 const pageUrl = `https://shaftlok.com/products/${props.slug}`
 const ogImage = `https://shaftlok.com${image.value}`

@@ -8,5 +8,5 @@ const HTML_ESCAPES: Record<string, string> = {
 
 export const escapeHtml = (value: unknown) => {
   if (value === null || value === undefined) return ''
-  return String(value).replace(/[&<>"']/g, (char) => HTML_ESCAPES[char])
+  return String(value).replace(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char)
 }
