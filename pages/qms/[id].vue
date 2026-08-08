@@ -22,76 +22,131 @@
           <span class="status-badge" :class="`status-${quote.status}`">{{ statusLabel(quote.status) }}</span>
         </div>
 
-        <div class="detail-grid">
-          <div class="summary-column">
-            <div v-for="section in sections" :key="section.title" class="glass-card summary-card">
-              <h2 class="section-label"><i :class="section.icon"></i> {{ section.title }}</h2>
-              <dl>
-                <template v-for="[label, value] in section.fields" :key="label">
-                  <div class="field-row">
-                    <dt>{{ label }}</dt>
-                    <dd>{{ value || '—' }}</dd>
-                  </div>
-                </template>
-              </dl>
-            </div>
+        <section id="inquiry-section" class="detail-section">
+          <h2 class="section-heading">Inquiry</h2>
 
-            <div v-if="quote.notes" class="glass-card summary-card">
-              <h2 class="section-label"><i class="fas fa-sticky-note"></i> Sailor's Notes</h2>
-              <p class="notes-text">{{ quote.notes }}</p>
-            </div>
+          <div v-for="section in sections" :key="section.title" class="glass-card summary-card">
+            <h2 class="section-label"><i :class="section.icon"></i> {{ section.title }}</h2>
+            <dl>
+              <template v-for="[label, value] in section.fields" :key="label">
+                <div class="field-row">
+                  <dt>{{ label }}</dt>
+                  <dd>{{ value || '—' }}</dd>
+                </div>
+              </template>
+            </dl>
           </div>
 
-          <div class="action-column">
-            <div class="glass-card action-card">
-              <h2 class="section-label"><i class="fas fa-file-invoice-dollar"></i> Quote</h2>
+          <div v-if="quote.notes" class="glass-card summary-card">
+            <h2 class="section-label"><i class="fas fa-sticky-note"></i> Sailor's Notes</h2>
+            <p class="notes-text">{{ quote.notes }}</p>
+          </div>
+        </section>
 
-              <div class="form-group">
-                <label for="status" class="status-label">
-                  Status
-                  <QuoteStatusLegend />
-                </label>
-                <select id="status" v-model="editForm.status" class="form-control">
-                  <option value="new">New</option>
-                  <option value="quoted">Drafting Quote</option>
-                  <option value="in_review">In Review</option>
-                  <option value="sent">Quote Sent</option>
-                  <option value="won">Won</option>
-                  <option value="lost">Lost</option>
+        <section id="quote-section" class="detail-section">
+          <h2 class="section-heading section-heading-quote">Quote</h2>
+
+          <div class="glass-card action-card">
+            <div class="form-group">
+              <label for="status" class="status-label">
+                Status
+                <QuoteStatusLegend />
+              </label>
+              <select id="status" v-model="editForm.status" class="form-control">
+                <option value="new">New</option>
+                <option value="quoted">Drafting Quote</option>
+                <option value="in_review">In Review</option>
+                <option value="finished">Quote Finished</option>
+                <option value="sent">Quote Sent</option>
+                <option value="won">Won</option>
+                <option value="lost">Lost</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="quoted-price">Price ($)</label>
+              <input id="quoted-price" v-model="editForm.quoted_price" type="number" step="0.01" min="0" class="form-control" placeholder="e.g. 850.00" />
+            </div>
+
+            <div class="form-group">
+              <label>Items Quoted</label>
+              <div v-for="(item, i) in editForm.line_items" :key="i" class="line-item-row">
+                <select
+                  class="form-control"
+                  :value="item.product_slug"
+                  @change="onLineItemProductChange(i, $event.target.value)"
+                >
+                  <option value="" disabled>Select a product…</option>
+                  <option v-for="p in pickableProducts" :key="p.slug" :value="p.slug">{{ p.name }}</option>
                 </select>
-              </div>
-
-              <div class="form-group">
-                <label for="quoted-price">Price ($)</label>
-                <input id="quoted-price" v-model="editForm.quoted_price" type="number" step="0.01" min="0" class="form-control" placeholder="e.g. 850.00" />
-              </div>
-
-              <div class="form-group">
-                <label for="quote-notes">Message to Sailor</label>
-                <textarea id="quote-notes" v-model="editForm.quote_notes" rows="6" class="form-control" placeholder="What's included, lead time, anything else the sailor should know..."></textarea>
-              </div>
-
-              <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
-
-              <div class="action-buttons">
-                <button @click="saveQuote" class="btn btn-secondary" :disabled="saving">
-                  <i class="fas fa-spinner fa-spin" v-if="saving"></i>
-                  {{ saving ? 'Saving...' : 'Save' }}
-                </button>
-                <button @click="sendQuote" class="btn btn-primary" :disabled="sending || !editForm.quoted_price || !editForm.quote_notes">
-                  <i class="fas fa-spinner fa-spin" v-if="sending"></i>
-                  <i class="fas fa-paper-plane" v-else></i>
-                  {{ sending ? 'Sending...' : 'Send Quote to Sailor' }}
+                <input
+                  v-model="item.detail"
+                  type="text"
+                  class="form-control"
+                  :placeholder="detailPlaceholder(item.product_slug)"
+                />
+                <button type="button" class="btn btn-secondary btn-icon" @click="removeLineItem(i)" aria-label="Remove item">
+                  <i class="fas fa-times"></i>
                 </button>
               </div>
+              <button type="button" class="btn btn-secondary" @click="addLineItem">
+                <i class="fas fa-plus"></i> Add Item
+              </button>
+            </div>
 
-              <div v-if="['sent', 'won', 'lost'].includes(quote.status)" class="decision-buttons">
-                <button @click="markDecision('won')" class="btn btn-won" :disabled="deciding">Mark Won</button>
-                <button @click="markDecision('lost')" class="btn btn-lost" :disabled="deciding">Mark Lost</button>
+            <div class="form-group">
+              <label for="quote-notes">Message to Sailor</label>
+              <textarea id="quote-notes" v-model="editForm.quote_notes" rows="6" class="form-control" placeholder="What's included, lead time, anything else the sailor should know..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Warnings That Will Be Included</label>
+              <div v-if="applicableWarnings.length" class="preview-stack">
+                <div v-for="warning in applicableWarnings" :key="warning.title" class="preview-block">
+                  <p class="preview-title">{{ warning.title }}</p>
+                  <p v-for="(p, i) in warning.paragraphs" :key="i" class="preview-text">{{ p }}</p>
+                </div>
+              </div>
+              <p v-else class="preview-empty">No item-specific warnings for the currently selected items.</p>
+            </div>
+
+            <div class="form-group">
+              <label>Payment Info Sent With Every Quote</label>
+              <div class="preview-block">
+                <p class="preview-text">{{ PAYMENT_INFO.intro }}</p>
+                <p class="preview-text">{{ PAYMENT_INFO.method }}</p>
+                <p class="preview-text">{{ PAYMENT_INFO.bank.name }}, {{ PAYMENT_INFO.bank.phone }} · Swift {{ PAYMENT_INFO.bank.swift }} · Routing {{ PAYMENT_INFO.bank.routing }}</p>
+                <p class="preview-text">{{ PAYMENT_INFO.bank.address }}</p>
+                <p class="preview-text">{{ PAYMENT_INFO.beneficiary.name }} — {{ PAYMENT_INFO.beneficiary.accountType }} #{{ PAYMENT_INFO.beneficiary.accountNumber }}</p>
               </div>
             </div>
+
+            <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
+
+            <div class="action-buttons">
+              <button @click="saveQuote" class="btn btn-secondary" :disabled="saving">
+                <i class="fas fa-spinner fa-spin" v-if="saving"></i>
+                {{ saving ? 'Saving...' : 'Save' }}
+              </button>
+              <button @click="sendQuote" class="btn btn-primary" :disabled="sending || !editForm.quoted_price || !editForm.quote_notes || editForm.status !== 'finished'">
+                <i class="fas fa-spinner fa-spin" v-if="sending"></i>
+                <i class="fas fa-paper-plane" v-else></i>
+                {{ sending ? 'Sending...' : 'Send Quote to Sailor' }}
+              </button>
+            </div>
+
+            <div v-if="['sent', 'won', 'lost'].includes(quote.status)" class="decision-buttons">
+              <button @click="markDecision('won')" class="btn btn-won" :disabled="deciding">Mark Won</button>
+              <button @click="markDecision('lost')" class="btn btn-lost" :disabled="deciding">Mark Lost</button>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <section v-if="quote.sent_html" id="sent-section" class="detail-section">
+          <h2 class="section-heading">Sent to Sailor</h2>
+          <p class="section-sub">Exactly what {{ quote.name }} received{{ quote.sent_at ? ` on ${formatDate(quote.sent_at)}` : '' }}.</p>
+          <EmailFrame :html="quote.sent_html" :title="`Quote sent to ${quote.name}`" />
+        </section>
       </template>
     </div>
   </div>
@@ -117,13 +172,30 @@ const deciding = ref(false)
 const saveMessage = ref('')
 const saveError = ref(false)
 
-const editForm = ref({ status: 'new', quoted_price: '', quote_notes: '' })
+const editForm = ref({ status: 'new', quoted_price: '', quote_notes: '', line_items: [] })
+const pickableProducts = ref([])
 
 const statusLabels = {
-  new: 'New', quoted: 'Drafting Quote', in_review: 'In Review', sent: 'Quote Sent', won: 'Won', lost: 'Lost'
+  new: 'New', quoted: 'Drafting Quote', in_review: 'In Review', finished: 'Quote Finished', sent: 'Quote Sent', won: 'Won', lost: 'Lost'
 }
 const statusLabel = (status) => statusLabels[status] || status
 const formatDate = (value) => value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
+
+const addLineItem = () => {
+  editForm.value.line_items.push({ product_slug: '', product_name: '', detail: '' })
+}
+const removeLineItem = (i) => {
+  editForm.value.line_items.splice(i, 1)
+}
+const onLineItemProductChange = (i, slug) => {
+  const product = pickableProducts.value.find((p) => p.slug === slug)
+  editForm.value.line_items[i].product_slug = slug
+  editForm.value.line_items[i].product_name = product?.name ?? ''
+}
+const detailPlaceholder = (slug) =>
+  slug === 'marine-control-cable' ? 'e.g. 15 ft' : 'e.g. x2 (optional)'
+
+const applicableWarnings = computed(() => getApplicableWarnings(editForm.value.line_items))
 
 const lockingSystemLabel = computed(() => {
   if (!quote.value) return ''
@@ -131,6 +203,7 @@ const lockingSystemLabel = computed(() => {
     return `Marine Control Cable${quote.value.cable_length ? ` — ${quote.value.cable_length} ft` : ''}`
   }
   if (quote.value.locking_system === 'spring') return 'Simple Spring Locking System'
+  if (quote.value.locking_system === 'unsure') return 'Not sure — needs guidance'
   return ''
 })
 
@@ -164,7 +237,7 @@ const sections = computed(() => {
     },
     {
       title: 'Propeller',
-      icon: 'fas fa-cog',
+      icon: 'fas fa-fan',
       fields: [
         ['Shaft Diameter', q.shaft_diameter],
         ['Propeller Diameter', q.prop_diameter],
@@ -208,7 +281,8 @@ const loadQuote = async () => {
     editForm.value = {
       status: data.status,
       quoted_price: data.quoted_price ?? '',
-      quote_notes: data.quote_notes ?? ''
+      quote_notes: data.quote_notes ?? '',
+      line_items: Array.isArray(data.line_items) ? data.line_items : []
     }
   } catch (err) {
     console.error('Error loading quote:', err)
@@ -230,6 +304,7 @@ const saveQuote = async () => {
         status: editForm.value.status,
         quoted_price: editForm.value.quoted_price === '' ? null : editForm.value.quoted_price,
         quote_notes: editForm.value.quote_notes || null,
+        line_items: editForm.value.line_items.filter((li) => li.product_slug),
         updated_at: new Date().toISOString()
       })
       .eq('id', quote.value.id)
@@ -254,14 +329,18 @@ const sendQuote = async () => {
     saveError.value = false
 
     // Persist any pending edits before sending
-    await supabase
+    const { error: updateError } = await supabase
       .from('quotes')
       .update({
+        status: editForm.value.status,
         quoted_price: editForm.value.quoted_price === '' ? null : editForm.value.quoted_price,
         quote_notes: editForm.value.quote_notes || null,
+        line_items: editForm.value.line_items.filter((li) => li.product_slug),
         updated_at: new Date().toISOString()
       })
       .eq('id', quote.value.id)
+
+    if (updateError) throw updateError
 
     await $fetch('/api/qms/send-quote', { method: 'POST', body: { quoteId: quote.value.id } })
 
@@ -270,7 +349,7 @@ const sendQuote = async () => {
   } catch (err) {
     console.error('Error sending quote:', err)
     saveError.value = true
-    saveMessage.value = err.data?.statusMessage || 'Failed to send quote.'
+    saveMessage.value = err.data?.statusMessage || err.message || 'Failed to send quote.'
   } finally {
     sending.value = false
   }
@@ -296,7 +375,20 @@ const markDecision = async (decision) => {
   }
 }
 
-onMounted(loadQuote)
+const loadPickableProducts = async () => {
+  const { data } = await supabase
+    .from('products')
+    .select('id, name, slug')
+    .eq('display', true)
+    .order('id', { ascending: true })
+
+  pickableProducts.value = data || []
+}
+
+onMounted(() => {
+  loadQuote()
+  loadPickableProducts()
+})
 
 useHead({
   title: 'Quote Detail',
@@ -329,17 +421,30 @@ useHead({
   font-size: 0.9rem;
 }
 
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-.summary-column {
+.detail-section {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  margin-bottom: 2rem;
+  scroll-margin-top: calc(var(--nav-height) + 1.5rem);
+}
+
+.section-heading {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-hi);
+  margin: 0;
+}
+
+.section-heading-quote {
+  color: var(--gold);
+}
+
+.section-sub {
+  margin: -0.75rem 0 0;
+  color: var(--text-mid);
+  font-size: 0.9rem;
 }
 
 .summary-card, .action-card {
@@ -347,8 +452,8 @@ useHead({
 }
 
 .action-card {
-  position: sticky;
-  top: calc(var(--nav-height) + 1.5rem);
+  background: rgba(245, 198, 107, 0.05);
+  border-color: rgba(245, 198, 107, 0.3);
 }
 
 .section-label {
@@ -432,6 +537,59 @@ dl { margin: 0; }
 }
 
 textarea.form-control { resize: vertical; }
+
+.line-item-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.line-item-row select.form-control { flex: 2; }
+.line-item-row input.form-control { flex: 1; }
+
+.btn-icon {
+  flex: none;
+  padding: 0.65rem 0.9rem;
+}
+
+.preview-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.preview-block {
+  padding: 0.9rem 1rem;
+  background: rgba(245, 198, 107, 0.06);
+  border: 1px solid rgba(245, 198, 107, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+.preview-title {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.preview-text {
+  margin: 0 0 0.5rem;
+  color: var(--text-mid);
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+
+.preview-text:last-child { margin-bottom: 0; }
+
+.preview-empty {
+  margin: 0;
+  color: var(--text-low);
+  font-size: 0.87rem;
+  font-style: italic;
+}
 
 .save-message {
   font-size: 0.85rem;
@@ -518,12 +676,9 @@ textarea.form-control { resize: vertical; }
 .status-new { background: rgba(56, 189, 248, 0.16); color: #38BDF8; }
 .status-in_review { background: rgba(245, 198, 107, 0.16); color: var(--gold); }
 .status-quoted { background: rgba(148, 197, 255, 0.16); color: #94C5FF; }
+.status-finished { background: rgba(196, 181, 253, 0.16); color: #C4B5FD; }
 .status-sent { background: rgba(45, 212, 191, 0.16); color: #5EEAD4; }
 .status-won { background: rgba(74, 222, 128, 0.18); color: #4ADE80; }
 .status-lost { background: rgba(248, 113, 113, 0.16); color: #FCA5A5; }
 
-@media (max-width: 900px) {
-  .detail-grid { grid-template-columns: 1fr; }
-  .action-card { position: static; }
-}
 </style>

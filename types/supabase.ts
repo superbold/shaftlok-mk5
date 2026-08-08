@@ -132,6 +132,7 @@ export type Database = {
           email: string
           engine: string | null
           id: string
+          line_items: Json
           locking_system: string | null
           max_hull_speed: string | null
           name: string
@@ -146,6 +147,7 @@ export type Database = {
           quoted_at: string | null
           quoted_price: number | null
           sent_at: string | null
+          sent_html: string | null
           shaft_diameter: string | null
           status: string
           transmission: string | null
@@ -162,6 +164,7 @@ export type Database = {
           email: string
           engine?: string | null
           id?: string
+          line_items?: Json
           locking_system?: string | null
           max_hull_speed?: string | null
           name: string
@@ -176,6 +179,7 @@ export type Database = {
           quoted_at?: string | null
           quoted_price?: number | null
           sent_at?: string | null
+          sent_html?: string | null
           shaft_diameter?: string | null
           status?: string
           transmission?: string | null
@@ -192,6 +196,7 @@ export type Database = {
           email?: string
           engine?: string | null
           id?: string
+          line_items?: Json
           locking_system?: string | null
           max_hull_speed?: string | null
           name?: string
@@ -206,6 +211,7 @@ export type Database = {
           quoted_at?: string | null
           quoted_price?: number | null
           sent_at?: string | null
+          sent_html?: string | null
           shaft_diameter?: string | null
           status?: string
           transmission?: string | null

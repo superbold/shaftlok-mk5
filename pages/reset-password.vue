@@ -121,46 +121,13 @@ const form = ref({
 })
 
 const establishRecoverySession = async () => {
-  const hash = window.location.hash.substring(1)
-  if (hash) {
-    const params = new URLSearchParams(hash)
+  const tokenHash = route.query.token_hash
+  const type = route.query.type
 
-    if (params.get('error')) {
-      const errorCode = params.get('error_code')
-      history.replaceState(null, '', window.location.pathname)
-
-      if (errorCode === 'otp_expired') {
-        throw new Error('This reset link has expired. Please request a new one.')
-      }
-
-      throw new Error(params.get('error_description') || 'This reset link is invalid. Please request a new one.')
-    }
-
-    if (params.get('type') === 'recovery') {
-      const accessToken = params.get('access_token')
-      const refreshToken = params.get('refresh_token')
-
-      if (accessToken && refreshToken) {
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken
-        })
-
-        if (sessionError) {
-          throw sessionError
-        }
-
-        history.replaceState(null, '', window.location.pathname)
-        return true
-      }
-    }
-  }
-
-  const code = route.query.code
-  if (typeof code === 'string') {
-    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-    if (exchangeError) {
-      throw exchangeError
+  if (typeof tokenHash === 'string' && type === 'recovery') {
+    const { error: verifyError } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+    if (verifyError) {
+      throw verifyError
     }
 
     await router.replace({ path: '/reset-password', query: {} })

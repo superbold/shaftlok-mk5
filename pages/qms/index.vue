@@ -23,6 +23,7 @@
               <option value="new">New</option>
               <option value="quoted">Drafting Quote</option>
               <option value="in_review">In Review</option>
+              <option value="finished">Quote Finished</option>
               <option value="sent">Quote Sent</option>
               <option value="won">Won</option>
               <option value="lost">Lost</option>
@@ -44,6 +45,10 @@
                   SUBMITTED
                   <i class="fas fa-sort" :class="getSortIcon('created_at')"></i>
                 </th>
+                <th @click="sortBy('sent_at')" class="sortable">
+                  SENT
+                  <i class="fas fa-sort" :class="getSortIcon('sent_at')"></i>
+                </th>
                 <th @click="sortBy('status')" class="sortable">
                   STATUS
                   <i class="fas fa-sort" :class="getSortIcon('status')"></i>
@@ -63,6 +68,7 @@
                 <td :data-cell="'sailor'">{{ quote.name }}</td>
                 <td :data-cell="'yacht'">{{ [quote.yacht_type, quote.yacht_name].filter(Boolean).join(' — ') || '—' }}</td>
                 <td :data-cell="'submitted'">{{ formatDate(quote.created_at) }}</td>
+                <td :data-cell="'sent'">{{ formatDate(quote.sent_at) }}</td>
                 <td :data-cell="'status'">
                   <span class="status-badge" :class="`status-${quote.status}`">{{ statusLabel(quote.status) }}</span>
                 </td>
@@ -74,7 +80,7 @@
                 </td>
               </tr>
               <tr v-if="filteredQuotes.length === 0 && !loading">
-                <td :colspan="6" class="no-results">
+                <td :colspan="7" class="no-results">
                   <i class="fas fa-search"></i>
                   No quotes found.
                 </td>
@@ -111,6 +117,7 @@ const statusLabels = {
   new: 'New',
   quoted: 'Drafting Quote',
   in_review: 'In Review',
+  finished: 'Quote Finished',
   sent: 'Quote Sent',
   won: 'Won',
   lost: 'Lost'
@@ -249,6 +256,7 @@ useHead({
 .status-new { background: rgba(56, 189, 248, 0.16); color: #38BDF8; }
 .status-in_review { background: rgba(245, 198, 107, 0.16); color: var(--gold); }
 .status-quoted { background: rgba(148, 197, 255, 0.16); color: #94C5FF; }
+.status-finished { background: rgba(196, 181, 253, 0.16); color: #C4B5FD; }
 .status-sent { background: rgba(45, 212, 191, 0.16); color: #5EEAD4; }
 .status-won { background: rgba(74, 222, 128, 0.18); color: #4ADE80; }
 .status-lost { background: rgba(248, 113, 113, 0.16); color: #FCA5A5; }

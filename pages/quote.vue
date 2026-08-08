@@ -86,7 +86,7 @@
         </div>
 
         <div class="form-section">
-          <h2 class="section-label"><i class="fas fa-cog"></i> Propeller</h2>
+          <h2 class="section-label"><i class="fas fa-fan"></i> Propeller</h2>
           <div class="form-row three-col">
             <div class="form-group">
               <label for="shaftDiameter">Shaft Diameter</label>
@@ -134,12 +134,16 @@
               <label>Are you interested in the Simple Spring Locking System or the Marine Control Cable?</label>
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" v-model="form.lockingSystem" value="spring" name="lockingSystem" />
+                  <input type="radio" v-model="form.lockingSystem" value="spring" name="lockingSystem" required />
                   <span>Simple Spring Locking System</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" v-model="form.lockingSystem" value="cable" name="lockingSystem" />
+                  <input type="radio" v-model="form.lockingSystem" value="cable" name="lockingSystem" required />
                   <span>Marine Control Cable</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" v-model="form.lockingSystem" value="unsure" name="lockingSystem" required />
+                  <span>Not sure — please explain my options</span>
                 </label>
               </div>
             </div>

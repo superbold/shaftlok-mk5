@@ -47,7 +47,9 @@ export default defineEventHandler(async (event) => {
     ? `Marine Control Cable${cableLength ? ` — ${escapeHtml(cableLength)} ft` : ''}`
     : lockingSystem === 'spring'
       ? 'Simple Spring Locking System'
-      : ''
+      : lockingSystem === 'unsure'
+        ? 'Not sure — needs guidance'
+        : ''
 
   const supabase = serverSupabaseServiceRole(event)
   const { error: insertError } = await supabase.from('quotes').insert({

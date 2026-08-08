@@ -33,6 +33,7 @@ const items = [
   { status: 'new', label: 'New', description: 'Just submitted by the sailor, not yet reviewed.' },
   { status: 'quoted', label: 'Drafting Quote', description: "Pricing is being worked out, hasn't been sent yet." },
   { status: 'in_review', label: 'In Review', description: 'Double-checking details before finalizing the price.' },
+  { status: 'finished', label: 'Quote Finished', description: 'Reviewed and ready to send — sending unlocks once a quote reaches this status.' },
   { status: 'sent', label: 'Quote Sent', description: 'The priced quote has been emailed to the sailor.' },
   { status: 'won', label: 'Won', description: 'The sailor accepted the quote.' },
   { status: 'lost', label: 'Lost', description: 'The sailor declined or went elsewhere.' }
@@ -120,6 +121,7 @@ const items = [
 .status-new { background: rgba(56, 189, 248, 0.16); color: #38BDF8; }
 .status-quoted { background: rgba(148, 197, 255, 0.16); color: #94C5FF; }
 .status-in_review { background: rgba(245, 198, 107, 0.16); color: var(--gold); }
+.status-finished { background: rgba(196, 181, 253, 0.16); color: #C4B5FD; }
 .status-sent { background: rgba(45, 212, 191, 0.16); color: #5EEAD4; }
 .status-won { background: rgba(74, 222, 128, 0.18); color: #4ADE80; }
 .status-lost { background: rgba(248, 113, 113, 0.16); color: #FCA5A5; }

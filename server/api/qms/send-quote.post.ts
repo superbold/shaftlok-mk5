@@ -38,6 +38,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Set a price and quote message before sending.' })
   }
 
+  if (quote.status !== 'finished') {
+    throw createError({ statusCode: 400, statusMessage: 'Mark the quote as Quote Finished before sending.' })
+  }
+
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
     throw createError({ statusCode: 500, statusMessage: 'Email service is not configured.' })
@@ -55,6 +59,26 @@ export default defineEventHandler(async (event) => {
   const vesselLine = escapeHtml([quote.yacht_type, quote.yacht_name].filter(Boolean).join(' — '))
   const safeName = escapeHtml(quote.name)
   const safeQuoteNotes = escapeHtml(quote.quote_notes)
+
+  const lineItems = Array.isArray(quote.line_items)
+    ? (quote.line_items as { product_slug: string; product_name: string; detail: string | null }[])
+    : []
+
+  const itemsHtml = lineItems.length
+    ? `
+      <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
+        <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Items Quoted</p>
+        ${lineItems.map((item) => `<p style="margin:0 0 6px;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6">${escapeHtml(item.product_name)}${item.detail ? ` — ${escapeHtml(item.detail)}` : ''}</p>`).join('')}
+      </div>`
+    : ''
+
+  const warningsHtml = getApplicableWarnings(lineItems)
+    .map((warning) => `
+      <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
+        <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">${escapeHtml(warning.title)}</p>
+        ${warning.paragraphs.map((p) => `<p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.7">${p}</p>`).join('')}
+      </div>`)
+    .join('')
 
   const html = `
 <!DOCTYPE html>
@@ -76,8 +100,25 @@ export default defineEventHandler(async (event) => {
         <p style="margin:0;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Quoted Price</p>
         <p style="margin:6px 0 0;font-family:sans-serif;font-size:28px;font-weight:700;color:#EFF6FF">${formattedPrice}</p>
       </div>
-
+      ${itemsHtml}
       <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px;white-space:pre-wrap">${safeQuoteNotes}</p>
+      ${warningsHtml}
+      <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
+        <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Payment</p>
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6">${PAYMENT_INFO.intro}</p>
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6">${PAYMENT_INFO.method}</p>
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.7">
+          Bank: ${PAYMENT_INFO.bank.name}, Phone ${PAYMENT_INFO.bank.phone.replace(/ /g, '&nbsp;')}<br>
+          Swift ${PAYMENT_INFO.bank.swift} &nbsp;&nbsp; ABA Routing No: ${PAYMENT_INFO.bank.routing}<br>
+          ${PAYMENT_INFO.bank.address}
+        </p>
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.7">
+          Beneficiary:<br>
+          Account Number: ${PAYMENT_INFO.beneficiary.accountNumber}, ${PAYMENT_INFO.beneficiary.accountType}<br>
+          Name: ${PAYMENT_INFO.beneficiary.name}, ${PAYMENT_INFO.beneficiary.address}
+        </p>
+        <p style="margin:0;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6">${PAYMENT_INFO.support}</p>
+      </div>
 
       <p style="margin:0;font-family:sans-serif;font-size:14px;color:#A8BEDC">
         Questions? Just reply to this email and we'll help you out.
@@ -103,7 +144,7 @@ export default defineEventHandler(async (event) => {
   const sentAt = new Date().toISOString()
   const { error: updateError } = await supabase
     .from('quotes')
-    .update({ status: 'sent', sent_at: sentAt, updated_at: sentAt })
+    .update({ status: 'sent', sent_at: sentAt, sent_html: html, updated_at: sentAt })
     .eq('id', quoteId)
 
   if (updateError) {
