@@ -20,13 +20,7 @@
             <label for="status-filter">Status</label>
             <select id="status-filter" v-model="statusFilter" class="form-control">
               <option value="all">All</option>
-              <option value="new">New</option>
-              <option value="quoted">Drafting Quote</option>
-              <option value="in_review">In Review</option>
-              <option value="finished">Quote Finished</option>
-              <option value="sent">Quote Sent</option>
-              <option value="won">Won</option>
-              <option value="lost">Lost</option>
+              <option v-for="s in QUOTE_STATUSES" :key="s.value" :value="s.value">{{ s.label }}</option>
             </select>
             <QuoteStatusLegend />
           </div>
@@ -70,7 +64,7 @@
                 <td :data-cell="'submitted'">{{ formatDate(quote.created_at) }}</td>
                 <td :data-cell="'sent'">{{ formatDate(quote.sent_at) }}</td>
                 <td :data-cell="'status'">
-                  <span class="status-badge" :class="`status-${quote.status}`">{{ statusLabel(quote.status) }}</span>
+                  <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
                 </td>
                 <td :data-cell="'price'">{{ quote.quoted_price ? formatPrice(quote.quoted_price) : '—' }}</td>
                 <td :data-cell="'actions'" class="actions-cell">
@@ -113,16 +107,7 @@ const statusFilter = ref('all')
 const sortColumn = ref('created_at')
 const sortDirection = ref('desc')
 
-const statusLabels = {
-  new: 'New',
-  quoted: 'Drafting Quote',
-  in_review: 'In Review',
-  finished: 'Quote Finished',
-  sent: 'Quote Sent',
-  won: 'Won',
-  lost: 'Lost'
-}
-const statusLabel = (status) => statusLabels[status] || status
+const statusLabel = quoteStatusLabel
 
 const formatDate = (value) => value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
 const formatPrice = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
@@ -253,13 +238,13 @@ useHead({
   letter-spacing: 0.04em;
 }
 
-.status-new { background: rgba(56, 189, 248, 0.16); color: #38BDF8; }
-.status-in_review { background: rgba(245, 198, 107, 0.16); color: var(--gold); }
-.status-quoted { background: rgba(148, 197, 255, 0.16); color: #94C5FF; }
-.status-finished { background: rgba(196, 181, 253, 0.16); color: #C4B5FD; }
-.status-sent { background: rgba(45, 212, 191, 0.16); color: #5EEAD4; }
-.status-won { background: rgba(74, 222, 128, 0.18); color: #4ADE80; }
-.status-lost { background: rgba(248, 113, 113, 0.16); color: #FCA5A5; }
+.status-new { background: var(--status-new-bg); color: var(--status-new-fg); }
+.status-in_review { background: var(--status-in_review-bg); color: var(--status-in_review-fg); }
+.status-quoted { background: var(--status-quoted-bg); color: var(--status-quoted-fg); }
+.status-finished { background: var(--status-finished-bg); color: var(--status-finished-fg); }
+.status-sent { background: var(--status-sent-bg); color: var(--status-sent-fg); }
+.status-won { background: var(--status-won-bg); color: var(--status-won-fg); }
+.status-lost { background: var(--status-lost-bg); color: var(--status-lost-fg); }
 
 .actions-cell { width: 1%; }
 

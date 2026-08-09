@@ -9,12 +9,10 @@ Feasible from existing product data, but a few decision boundaries need resolvin
 - Mod V has no fixed bore spec ("sized to the application") — needs a rule for how the quiz handles it.
 - Any other cases where two products both technically fit need a tiebreaker (e.g. space restriction level).
 
-## Rename `NUXT_SUPABASE_SERVICE_KEY` → `NUXT_SUPABASE_SECRET_KEY`
+## "Already Sent" confirmation before re-sending a quote
 
-`@nuxtjs/supabase` warns on every dev server start that `SUPABASE_SERVICE_KEY` is deprecated in favor of `NUXT_SUPABASE_SECRET_KEY` (Supabase renamed "service key" to "secret key" terminology). It's a pure rename — same value in `.env`, just needs the key renamed from `NUXT_SUPABASE_SERVICE_KEY` to `NUXT_SUPABASE_SECRET_KEY`. Low priority since the deprecated name still works today, but worth doing before Supabase removes support for it.
+On `pages/qms/[id].vue`, nothing currently warns an admin before they re-send a quote that's already gone out. Once `quote.sent_html` exists, clicking "Send Quote to Sailor" again silently overwrites it (and `sent_at`) with the new content — by design (documented in `docs/QMS_Store-and-View_plan.md` — "most recent send wins"), but there's no explicit heads-up in the moment it happens.
 
-## Single source of truth for quote status metadata
+A confirmation modal — "This quote was already sent to {{ sailor }} on {{ sent_at }}. Send the updated version instead?" — shown only when `quote.sent_html` is already set, would catch an admin re-sending by accident while just meaning to edit/save. The "Sent to Sailor" section further down the page shows the last-sent version, which helps, but isn't in the direct path of clicking Send.
 
-Quote status metadata (the value list, display labels, and badge colors for `new`/`quoted`/`in_review`/`finished`/`sent`/`won`/`lost`) is currently duplicated across three files: `pages/qms/[id].vue`, `components/QuoteStatusLegend.vue`, and `pages/qms/index.vue`. Each has its own copy of the dropdown options, `statusLabels` map, and `.status-*` badge CSS.
-
-Adding or changing a status today means updating all three consistently by hand (as happened when `finished` was added). A shared `utils/quoteStatus.ts` exporting the status list, labels, and color tokens once — imported by all three — would remove that risk. Nuxt auto-imports `utils/` on both client and server, matching the pattern already used for `utils/quoteItemWarnings.ts` and `utils/paymentInfo.ts`.
+Related, smaller polish noted in the same conversation: the Send button gives no explanation when it's disabled by the "Quote Finished" status gate — an inline hint (e.g. "Set status to Quote Finished to enable sending") would help, as would a plain confirm-before-send for the general misclick case, independent of the re-send scenario above.

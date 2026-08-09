@@ -24,6 +24,22 @@
     --grad-accent: linear-gradient(120deg, #38BDF8, #2DD4BF);
     --grad-text: linear-gradient(110deg, #7DD3FC 10%, #38BDF8 45%, #2DD4BF 90%);
 
+    /* --- Quote status badge colors (single source of truth — see utils/quoteStatus.ts) --- */
+    --status-new-bg: rgba(56, 189, 248, 0.16);
+    --status-new-fg: #38BDF8;
+    --status-quoted-bg: rgba(148, 197, 255, 0.16);
+    --status-quoted-fg: #94C5FF;
+    --status-in_review-bg: rgba(245, 198, 107, 0.16);
+    --status-in_review-fg: var(--gold);
+    --status-finished-bg: rgba(196, 181, 253, 0.16);
+    --status-finished-fg: #C4B5FD;
+    --status-sent-bg: rgba(45, 212, 191, 0.16);
+    --status-sent-fg: #5EEAD4;
+    --status-won-bg: rgba(74, 222, 128, 0.18);
+    --status-won-fg: #4ADE80;
+    --status-lost-bg: rgba(248, 113, 113, 0.16);
+    --status-lost-fg: #FCA5A5;
+
     /* --- Glass surfaces --- */
     --glass: rgba(13, 27, 54, 0.62);
     --glass-hi: rgba(20, 40, 76, 0.72);
