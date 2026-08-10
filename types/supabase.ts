@@ -148,6 +148,9 @@ export type Database = {
           quoted_price: number | null
           sent_at: string | null
           sent_html: string | null
+          sent_line_items: Json | null
+          sent_quote_notes: string | null
+          sent_quoted_price: number | null
           shaft_diameter: string | null
           status: string
           transmission: string | null
@@ -180,6 +183,9 @@ export type Database = {
           quoted_price?: number | null
           sent_at?: string | null
           sent_html?: string | null
+          sent_line_items?: Json | null
+          sent_quote_notes?: string | null
+          sent_quoted_price?: number | null
           shaft_diameter?: string | null
           status?: string
           transmission?: string | null
@@ -212,6 +218,9 @@ export type Database = {
           quoted_price?: number | null
           sent_at?: string | null
           sent_html?: string | null
+          sent_line_items?: Json | null
+          sent_quote_notes?: string | null
+          sent_quoted_price?: number | null
           shaft_diameter?: string | null
           status?: string
           transmission?: string | null

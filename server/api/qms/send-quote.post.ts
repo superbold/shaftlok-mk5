@@ -144,7 +144,15 @@ export default defineEventHandler(async (event) => {
   const sentAt = new Date().toISOString()
   const { error: updateError } = await supabase
     .from('quotes')
-    .update({ status: 'sent', sent_at: sentAt, sent_html: html, updated_at: sentAt })
+    .update({
+      status: 'sent',
+      sent_at: sentAt,
+      sent_html: html,
+      sent_quoted_price: quote.quoted_price,
+      sent_quote_notes: quote.quote_notes,
+      sent_line_items: quote.line_items,
+      updated_at: sentAt
+    })
     .eq('id', quoteId)
 
   if (updateError) {

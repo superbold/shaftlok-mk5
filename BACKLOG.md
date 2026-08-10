@@ -11,8 +11,9 @@ Feasible from existing product data, but a few decision boundaries need resolvin
 
 ## "Already Sent" confirmation before re-sending a quote
 
-On `pages/qms/[id].vue`, nothing currently warns an admin before they re-send a quote that's already gone out. Once `quote.sent_html` exists, clicking "Send Quote to Sailor" again silently overwrites it (and `sent_at`) with the new content — by design (documented in `docs/QMS_Store-and-View_plan.md` — "most recent send wins"), but there's no explicit heads-up in the moment it happens.
+Done: `pages/qms/[id].vue` now shows a confirmation modal when `quote.sent_html` is already set, before "Send Quote to Sailor" overwrites it. It also distinguishes an actual content change from an identical re-send by comparing the current draft against `sent_quoted_price`/`sent_quote_notes`/`sent_line_items` (snapshot columns written at send time, see `supabase/migrations/20260809_add_quote_sent_snapshot.sql`) — the modal copy differs depending on whether anything actually changed.
 
-A confirmation modal — "This quote was already sent to {{ sailor }} on {{ sent_at }}. Send the updated version instead?" — shown only when `quote.sent_html` is already set, would catch an admin re-sending by accident while just meaning to edit/save. The "Sent to Sailor" section further down the page shows the last-sent version, which helps, but isn't in the direct path of clicking Send.
-
-Related, smaller polish noted in the same conversation: the Send button gives no explanation when it's disabled by the "Quote Finished" status gate — an inline hint (e.g. "Set status to Quote Finished to enable sending") would help, as would a plain confirm-before-send for the general misclick case, independent of the re-send scenario above.
+Still open, smaller polish noted in the same conversation:
+- The Send button gives no explanation when it's disabled by the "Quote Finished" status gate — an inline hint (e.g. "Set status to Quote Finished to enable sending") would help.
+- A plain confirm-before-send for the general misclick case (i.e. even on a first-ever send), independent of the re-send scenario above.
+- Minor: a reason-text field on the re-send modal, so the admin notes *why* they're resending (sailor says they never got it, price changed, etc.) as a paper trail. Not needed for the spam concern itself — change-detection above already covers that — so **ask ADMIN** whether this is wanted before building it.

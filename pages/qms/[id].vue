@@ -122,7 +122,7 @@
                 <i class="fas fa-spinner fa-spin" v-if="saving"></i>
                 {{ saving ? 'Saving...' : 'Save' }}
               </button>
-              <button @click="sendQuote" class="btn btn-primary" :disabled="sending || !editForm.quoted_price || !editForm.quote_notes || editForm.status !== 'finished'">
+              <button @click="handleSendClick" class="btn btn-primary" :disabled="sending || !editForm.quoted_price || !editForm.quote_notes || editForm.status !== 'finished'">
                 <i class="fas fa-spinner fa-spin" v-if="sending"></i>
                 <i class="fas fa-paper-plane" v-else></i>
                 {{ sending ? 'Sending...' : 'Send Quote to Sailor' }}
@@ -141,6 +141,22 @@
           <p class="section-sub">Exactly what {{ quote.name }} received{{ quote.sent_at ? ` on ${formatDate(quote.sent_at)}` : '' }}.</p>
           <EmailFrame :html="quote.sent_html" :title="`Quote sent to ${quote.name}`" />
         </section>
+
+        <div v-if="showAlreadySentModal" class="modal" @click="showAlreadySentModal = false">
+          <div class="modal-content" @click.stop>
+            <h2 class="modal-title">Already Sent</h2>
+            <p class="modal-text" v-if="quoteContentUnchanged">Nothing has changed since this quote was sent to {{ quote.name }} on {{ formatDate(quote.sent_at) }}. Sending now will resend the exact same quote — continue?</p>
+            <p class="modal-text" v-else>This quote was already sent to {{ quote.name }} on {{ formatDate(quote.sent_at) }}. Send the updated version instead?</p>
+            <div class="modal-actions">
+              <button @click="showAlreadySentModal = false" class="btn btn-secondary">Cancel</button>
+              <button @click="confirmSend" class="btn btn-primary" :disabled="sending">
+                <i class="fas fa-spinner fa-spin" v-if="sending"></i>
+                <i class="fas fa-paper-plane" v-else></i>
+                {{ sending ? 'Sending...' : 'Send Updated Quote' }}
+              </button>
+            </div>
+          </div>
+        </div>
       </template>
     </div>
   </div>
@@ -165,6 +181,7 @@ const sending = ref(false)
 const deciding = ref(false)
 const saveMessage = ref('')
 const saveError = ref(false)
+const showAlreadySentModal = ref(false)
 
 const editForm = ref({ status: 'new', quoted_price: '', quote_notes: '', line_items: [] })
 const pickableProducts = ref([])
@@ -187,6 +204,26 @@ const detailPlaceholder = (slug) =>
   slug === 'marine-control-cable' ? 'e.g. 15 ft' : 'e.g. x2 (optional)'
 
 const applicableWarnings = computed(() => getApplicableWarnings(editForm.value.line_items))
+
+const normalizeLineItems = (items) => (Array.isArray(items) ? items : [])
+  .filter((li) => li?.product_slug)
+  .map((li) => ({ product_slug: li.product_slug, product_name: li.product_name ?? '', detail: li.detail || null }))
+
+// Legacy quotes sent before the sent_* snapshot columns existed have
+// sent_quoted_price === null even though sent_html is set — treat those as
+// "unknown" rather than "unchanged" so we don't under-warn on old data.
+const quoteContentUnchanged = computed(() => {
+  const q = quote.value
+  if (!q || !q.sent_html || q.sent_quoted_price == null) return false
+
+  const currentPrice = editForm.value.quoted_price === '' ? null : Number(editForm.value.quoted_price)
+  const sentPrice = Number(q.sent_quoted_price)
+  if (currentPrice !== sentPrice) return false
+
+  if ((editForm.value.quote_notes || null) !== (q.sent_quote_notes || null)) return false
+
+  return JSON.stringify(normalizeLineItems(editForm.value.line_items)) === JSON.stringify(normalizeLineItems(q.sent_line_items))
+})
 
 const lockingSystemLabel = computed(() => {
   if (!quote.value) return ''
@@ -344,6 +381,19 @@ const sendQuote = async () => {
   } finally {
     sending.value = false
   }
+}
+
+const handleSendClick = () => {
+  if (quote.value?.sent_html) {
+    showAlreadySentModal.value = true
+  } else {
+    sendQuote()
+  }
+}
+
+const confirmSend = () => {
+  showAlreadySentModal.value = false
+  sendQuote()
 }
 
 const markDecision = async (decision) => {
@@ -662,6 +712,51 @@ textarea.form-control { resize: vertical; }
   font-weight: 600;
   letter-spacing: 0.04em;
   flex-shrink: 0;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 8, 23, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: var(--abyss-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  max-width: 480px;
+  width: 92%;
+  padding: 1.6rem 1.8rem;
+  box-shadow: var(--shadow-card), var(--glow-accent);
+  color: var(--text-hi);
+}
+
+.modal-title {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.modal-text {
+  margin: 0;
+  color: var(--text-mid);
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.6rem;
 }
 
 .status-new { background: var(--status-new-bg); color: var(--status-new-fg); }
