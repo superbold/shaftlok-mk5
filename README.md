@@ -187,33 +187,7 @@ A Privacy Policy page (`/privacy`) was added to satisfy **GDPR** obligations tha
 
 ## 📊 Analytics
 
-The site uses Google Analytics 4 (GA4) via the `gtag.js` snippet, configured in [nuxt.config.ts](./nuxt.config.ts) under `app.head.script`. Because this is part of the global Nuxt head config, it's automatically injected into the `<head>` of every server-rendered page — no per-page setup needed.
-
-- **Measurement ID**: `G-XDWZW2TCLR` (Shaft Lok Inc. GA4 property)
-- **Config**: `gtag('config', 'G-XDWZW2TCLR', { anonymize_ip: true })` — `anonymize_ip` truncates visitor IP addresses for privacy
-- **Updating the ID**: change both occurrences of the Measurement ID in `nuxt.config.ts` (the `script src` URL and the `gtag('config', ...)` call) if the GA4 property ever changes
-- A GA4 Measurement ID is not a secret — it's visible in the rendered page source — so it's safe to reference here.
-
-The Measurement ID isn't a secret — it's embedded in the rendered HTML that gets sent to every visitor's browser. When the page loads, this literally appears in the page source:
-
-```js
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XDWZW2TCLR"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-XDWZW2TCLR', { anonymize_ip: true });
-</script>
-```
-So the flow is:
-
-1. Visitor's browser loads your page
-2. The gtag.js script is fetched from Google's servers
-3. That script reads the G-XDWZW2TCLR ID from the gtag('config', ...) call
-4. It sends pageview/event data back to Google's collection servers, tagged with that ID
-5. Google routes the data into the matching GA4 property in your account
-
-The ID is Google's way of knowing which GA4 account/property the data belongs to. It's intentionally public — anyone can view-source on shaftlok.com and see it, which is fine. The only thing that keeps others from accessing your GA4 reports is your Google account login.
+The site uses Google Analytics 4 (GA4), Measurement ID `G-XDWZW2TCLR`. See the [Google Analytics section](./docs/_Shaft-Lok-WebSite-Handbook.md#google-analytics-ga4) of the Handbook for how it's wired up, how to update the ID, and known data-quality caveats.
 
 ## 📝 License
 
@@ -226,10 +200,7 @@ For detailed information about the migration process, architectural decisions, a
 
 ## 🚀 Future Enhancements
 
-- ~~**Analytics** - Replace the placeholder Google Analytics ID with a production tracking ID~~ (done — `G-XDWZW2TCLR`)
-- **Supabase Types** - Generate `types/database.types.ts` via the Supabase CLI (`supabase gen types typescript --project-id <id> > types/database.types.ts`) and remove `types: false` from `nuxt.config.ts` for full type-safety on `useSupabaseClient<Database>()` calls (`yachts`/`profiles`/`products` tables)
-- **Performance** - Progressive Web App (PWA) features and further image optimization
-- **User Experience** - Product comparison tools and richer yacht list filtering
+See [BACKLOG.md](./BACKLOG.md) for planned work and open ideas.
 
 ## 🔗 Related
 

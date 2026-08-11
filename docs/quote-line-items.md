@@ -38,7 +38,7 @@ Array of objects:
 
 **1. Product catalog** — the admin picker at `/qms/:id` queries the same `products` table (filtered to `display = true`, ordered by `id`) that `components/MainNav.vue` already uses for the public nav, so it never drifts from the real product list.
 
-**2. Warning registry** — `server/utils/quoteItemWarnings.ts`, a plain object keyed by `product_slug`:
+**2. Warning registry** — `utils/quoteItemWarnings.ts`, a plain object keyed by `product_slug`:
 
 ```ts
 export const QUOTE_ITEM_WARNINGS: Record<string, QuoteItemWarning> = {
@@ -47,7 +47,7 @@ export const QUOTE_ITEM_WARNINGS: Record<string, QuoteItemWarning> = {
 }
 ```
 
-Nuxt auto-imports everything in `server/utils/`, so this needs no import statement anywhere it's used (same convention as the pre-existing `escapeHtml.ts`). Adding a third product-specific warning later is a one-entry addition here — no branching logic elsewhere.
+Nuxt auto-imports everything in `utils/`, so this needs no import statement anywhere it's used — client or server, which matters here since the admin-page live preview (`pages/qms/[id].vue`) needs it too, not just the send endpoint (unlike `server/utils/`, which is server-only, e.g. the pre-existing `escapeHtml.ts`). Adding a third product-specific warning later is a one-entry addition here — no branching logic elsewhere.
 
 The two entries above are the original combined cable/SSLS block, split by product with every sentence preserved and reattributed to whichever product it actually describes.
 
@@ -66,11 +66,11 @@ For any quote with `line_items = []` — every existing quote as of the migratio
 ## Files Touched
 
 - `supabase/migrations/20260805_add_quote_line_items.sql` — new column
-- `server/utils/quoteItemWarnings.ts` — new warning registry
+- `utils/quoteItemWarnings.ts` — new warning registry
 - `server/api/qms/send-quote.post.ts` — itemized list + conditional warnings
 - `pages/qms/[id].vue` — Items Quoted picker UI
 - `types/supabase.ts` — regenerated after the migration was applied (see `docs/supabase_types.md` for how/why this file is generated, not hand-written)
 
 ## Extending This Later
 
-To add a warning for a new product: add one entry to `QUOTE_ITEM_WARNINGS` in `server/utils/quoteItemWarnings.ts`, keyed by that product's `slug`. Nothing else needs to change — the email and the admin picker are both already driven by the live `products` table and this registry.
+To add a warning for a new product: add one entry to `QUOTE_ITEM_WARNINGS` in `utils/quoteItemWarnings.ts`, keyed by that product's `slug`. Nothing else needs to change — the email and the admin picker are both already driven by the live `products` table and this registry.

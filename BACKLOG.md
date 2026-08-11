@@ -17,3 +17,20 @@ Still open, smaller polish noted in the same conversation:
 - The Send button gives no explanation when it's disabled by the "Quote Finished" status gate — an inline hint (e.g. "Set status to Quote Finished to enable sending") would help.
 - A plain confirm-before-send for the general misclick case (i.e. even on a first-ever send), independent of the re-send scenario above.
 - Minor: a reason-text field on the re-send modal, so the admin notes *why* they're resending (sailor says they never got it, price changed, etc.) as a paper trail. Not needed for the spam concern itself — change-detection above already covers that — so **ask ADMIN** whether this is wanted before building it.
+
+## GA4 conversion tracking and ad campaign
+
+- Add a GA4 event/conversion for quote form submissions, so ad campaign performance can actually be measured rather than just tracking raw traffic.
+- Evaluate Google Search ads targeting high-intent terms (e.g. "propeller shaft lock", "shaft lok") to drive more quote requests.
+
+## Supabase Types
+
+Generate `types/database.types.ts` via the Supabase CLI (`supabase gen types typescript --project-id <id> > types/database.types.ts`) and remove `types: false` from `nuxt.config.ts` for full type-safety on `useSupabaseClient<Database>()` calls (`yachts`/`profiles`/`products` tables).
+
+## Performance
+
+Progressive Web App (PWA) features and further image optimization.
+
+## User Experience
+
+Product comparison tools and richer yacht list filtering.
