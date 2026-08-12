@@ -40,6 +40,8 @@ They drifted once already: `finished` was added to `QUOTE_STATUSES` (it gates se
 
 In `pages/qms/[id].vue`, the Send button is disabled unless *all three* are true: `editForm.status === 'finished'`, `editForm.quoted_price` is set, and `editForm.quote_notes` is set. It reads from local `editForm` state, so a status change (or price/notes edit) must be saved before the button's disabled state reflects it. The server endpoint (`server/api/qms/send-quote.post.ts:38-42`) independently re-checks price/notes and `status === 'finished'`, returning `400` if either is missing — the client-side gating is a UX convenience, not the actual enforcement.
 
+Whichever of the three are still missing is spelled out for the admin, not just a disabled button with no explanation. `missingSendRequirements` (computed) lists which of the three are unmet; `sendRequirementsHint` turns that into one sentence — e.g. "Before sending, you still need a price and a message to the sailor." — shown both as a `<p class="send-hint">` under the buttons and as the button's `title` tooltip. It's a single combined sentence listing everything missing, not one message per missing field.
+
 ## Google Analytics (GA4)
 
 Tracking is wired up via the standard `gtag.js` snippet in `nuxt.config.ts` under `app.head.script` (Measurement ID `G-XDWZW2TCLR`). Because it lives in the global Nuxt head config, it's injected into every server-rendered page automatically — no per-page setup needed. The corresponding cookies (`_ga`, `_ga_XDWZW2TCLR`) are documented for sailors in `pages/privacy.vue`.

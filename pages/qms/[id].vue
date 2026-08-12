@@ -122,12 +122,18 @@
                 <i class="fas fa-spinner fa-spin" v-if="saving"></i>
                 {{ saving ? 'Saving...' : 'Save' }}
               </button>
-              <button @click="handleSendClick" class="btn btn-primary" :disabled="sending || !editForm.quoted_price || !editForm.quote_notes || editForm.status !== 'finished'">
+              <button
+                @click="handleSendClick"
+                class="btn btn-primary"
+                :disabled="sending || missingSendRequirements.length > 0"
+                :title="sendRequirementsHint"
+              >
                 <i class="fas fa-spinner fa-spin" v-if="sending"></i>
                 <i class="fas fa-paper-plane" v-else></i>
                 {{ sending ? 'Sending...' : 'Send Quote to Sailor' }}
               </button>
             </div>
+            <p v-if="missingSendRequirements.length" class="send-hint">{{ sendRequirementsHint }}</p>
 
             <div v-if="['sent', 'won', 'lost'].includes(quote.status)" class="decision-buttons">
               <button @click="markDecision('won')" class="btn btn-won" :disabled="deciding">Mark Won</button>
@@ -204,6 +210,23 @@ const detailPlaceholder = (slug) =>
   slug === 'marine-control-cable' ? 'e.g. 15 ft' : 'e.g. x2 (optional)'
 
 const applicableWarnings = computed(() => getApplicableWarnings(editForm.value.line_items))
+
+const missingSendRequirements = computed(() => {
+  const missing = []
+  if (editForm.value.status !== 'finished') missing.push('the status set to "Quote Finished"')
+  if (!editForm.value.quoted_price) missing.push('a price')
+  if (!editForm.value.quote_notes) missing.push('a message to the sailor')
+  return missing
+})
+
+const sendRequirementsHint = computed(() => {
+  const missing = missingSendRequirements.value
+  if (missing.length === 0) return ''
+  if (missing.length === 1) return `Before sending, you still need ${missing[0]}.`
+  const last = missing[missing.length - 1]
+  const rest = missing.slice(0, -1)
+  return `Before sending, you still need ${rest.join(', ')} and ${last}.`
+})
 
 const normalizeLineItems = (items) => (Array.isArray(items) ? items : [])
   .filter((li) => li?.product_slug)
@@ -639,6 +662,12 @@ textarea.form-control { resize: vertical; }
 }
 
 .save-message.save-error { color: #FCA5A5; }
+
+.send-hint {
+  font-size: 0.85rem;
+  color: var(--text-low);
+  margin: -0.3rem 0 0;
+}
 
 .action-buttons {
   display: flex;
