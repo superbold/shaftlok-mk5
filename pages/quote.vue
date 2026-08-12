@@ -230,6 +230,10 @@ async function submitForm() {
   try {
     await $fetch('/api/quote', { method: 'POST', body: form })
     submitted.value = true
+    window.gtag?.('event', 'generate_lead', {
+      lock_type: form.lockingSystem,
+      via_yacht_list_discount: discountApplied.value
+    })
   } catch {
     error.value = 'Something went wrong. Please try again or email sean.nigel@shaftlok.com directly.'
   } finally {
