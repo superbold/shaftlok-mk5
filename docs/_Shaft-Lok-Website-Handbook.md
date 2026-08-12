@@ -28,11 +28,29 @@ The "Send Quote to Sailor" email can include warning/info blocks about how to op
 
 Legacy quotes sent before the snapshot columns existed (`sent_quoted_price` null despite `sent_html` being set) fall back to the normal wording rather than misreporting "unchanged."
 
+### Status list: app vs. database
+
+`utils/quoteStatus.ts` (`QUOTE_STATUSES`) is the source of truth for valid quote statuses in the UI: `new`, `quoted`, `in_review`, `finished`, `sent`, `won`, `lost`. The `quotes` table has its own `quotes_status_check` CHECK constraint that must independently allow the same set — the two aren't kept in sync automatically.
+
+They drifted once already: `finished` was added to `QUOTE_STATUSES` (it gates sending — see below) without a matching migration, so saving a quote as "Quote Finished" threw `new row for relation "quotes" violates check constraint "quotes_status_check"`. Fixed 2026-08-11 via `supabase/migrations/20260811_add_finished_to_quote_status_check.sql`, which drops and recreates the constraint with `finished` included (Postgres has no `ALTER CONSTRAINT ADD VALUE` for `CHECK` constraints — drop-and-recreate in one statement is the normal way to widen one, and it only affects future writes, not existing rows).
+
+**If `QUOTE_STATUSES` ever gains another value, add a migration to widen `quotes_status_check` to match in the same change** — otherwise saving that status will fail with the same constraint violation.
+
+### "Send Quote to Sailor" button gating
+
+In `pages/qms/[id].vue`, the Send button is disabled unless *all three* are true: `editForm.status === 'finished'`, `editForm.quoted_price` is set, and `editForm.quote_notes` is set. It reads from local `editForm` state, so a status change (or price/notes edit) must be saved before the button's disabled state reflects it. The server endpoint (`server/api/qms/send-quote.post.ts:38-42`) independently re-checks price/notes and `status === 'finished'`, returning `400` if either is missing — the client-side gating is a UX convenience, not the actual enforcement.
+
 ## Google Analytics (GA4)
 
 Tracking is wired up via the standard `gtag.js` snippet in `nuxt.config.ts` under `app.head.script` (Measurement ID `G-XDWZW2TCLR`). Because it lives in the global Nuxt head config, it's injected into every server-rendered page automatically — no per-page setup needed. The corresponding cookies (`_ga`, `_ga_XDWZW2TCLR`) are documented for sailors in `pages/privacy.vue`.
 
 There's no environment gating: `nuxt dev` and production both fire the same snippet into the same GA4 property, so local browsing during development mixes into real traffic data. Worth keeping in mind when reading reports — see the bot-traffic note below for a related "don't take the raw numbers at face value" case.
+
+### Conversion tracking: `generate_lead`
+
+`pages/quote.vue` fires `gtag('event', 'generate_lead', { lock_type, via_yacht_list_discount })` right after a quote form submission succeeds (`submitted.value = true`), using the global `window.gtag` set up by the snippet above — no separate GA4 wiring needed. `lock_type` is the sailor's chosen locking system (`spring` / `cable` / `unsure`); `via_yacht_list_discount` flags whether they arrived via the Yacht List $50-off link.
+
+This event has to be **manually marked as a conversion** in the GA4 UI (Admin → Events) before GA4 will count it — and it only becomes selectable there after it's fired at least once. Marking it applies retroactively to all future `generate_lead` events by exact name match; it isn't a pattern GA4 "learns," and no further examples are needed once it's toggled on.
 
 ### Known data quality issue: bot traffic inflating country/user counts
 
