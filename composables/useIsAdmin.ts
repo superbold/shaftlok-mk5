@@ -25,5 +25,5 @@ export const useIsAdmin = () => {
 
   watch(user, checkAdminStatus, { immediate: true })
 
-  return { isAdmin: readonly(isAdmin), checkAdminStatus }
+  return { isAdmin: readonly(isAdmin) }
 }

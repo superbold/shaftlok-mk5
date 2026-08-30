@@ -27,7 +27,7 @@ const isProductSpec = (value: unknown): value is ProductSpec =>
   && typeof value.name === 'string'
   && typeof value.value === 'string'
 
-export const formatProductBore = (product: Pick<ProductRow, 'max_bore_size_mm' | 'max_bore_size_inch'>) => {
+const formatProductBore = (product: Pick<ProductRow, 'max_bore_size_mm' | 'max_bore_size_inch'>) => {
   if (product.max_bore_size_inch) {
     return product.max_bore_size_inch
   }
@@ -39,7 +39,7 @@ export const formatProductBore = (product: Pick<ProductRow, 'max_bore_size_mm' |
   return undefined
 }
 
-export const parseProductFeatures = (value: ProductRow['features']): ProductFeature[] | null => {
+const parseProductFeatures = (value: ProductRow['features']): ProductFeature[] | null => {
   if (!Array.isArray(value)) return null
   return (value as unknown[]).filter(isProductFeature)
 }
@@ -49,7 +49,7 @@ export const parseProductSpecs = (value: ProductRow['specs']): ProductSpec[] | n
   return (value as unknown[]).filter(isProductSpec)
 }
 
-export const defaultProductFeatures = (product: Pick<ProductRow, 'max_bore_size_mm' | 'max_bore_size_inch' | 'category'>): ProductFeature[] => {
+const defaultProductFeatures = (product: Pick<ProductRow, 'max_bore_size_mm' | 'max_bore_size_inch' | 'category'>): ProductFeature[] => {
   const features: ProductFeature[] = []
   const bore = formatProductBore(product)
 
@@ -79,7 +79,7 @@ export const formatProductPrice = (price: number | null | undefined) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 }
 
-export type ProductDetailBlock =
+type ProductDetailBlock =
   | { type: 'paragraph'; text: string }
   | { type: 'list'; items: string[] }
 
@@ -91,14 +91,14 @@ export const getProductTagline = (
   return product.summary?.trim() || ''
 }
 
-export const getProductDetailsText = (
+const getProductDetailsText = (
   product: Pick<ProductRow, 'details' | 'description'>
 ): string | null | undefined => {
   if (product.details?.trim()) return product.details
   return product.description
 }
 
-export const parseProductDetails = (details: string | null | undefined): ProductDetailBlock[] => {
+const parseProductDetails = (details: string | null | undefined): ProductDetailBlock[] => {
   if (!details?.trim()) return []
 
   return details
@@ -131,10 +131,10 @@ export const parseProductDetails = (details: string | null | undefined): Product
     })
 }
 
-export const formatSpecBullet = (spec: ProductSpec) =>
+const formatSpecBullet = (spec: ProductSpec) =>
   spec.name.trim() ? `${spec.name.trim()}: ${spec.value.trim()}` : spec.value.trim()
 
-export const splitLegacyDetails = (details: string | null | undefined) => {
+const splitLegacyDetails = (details: string | null | undefined) => {
   const introParts: string[] = []
   const specs: ProductSpec[] = []
 

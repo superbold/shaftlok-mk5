@@ -1,5 +1,7 @@
 # Responsive Navigation Breakpoints
 
+> **Deprecated (August 2026):** This document describes an older `MainNav` layout (center-column Products / Yacht List / Contact buttons at progressive breakpoints). The current nav is a **slide-out drawer** — hamburger opens a left panel with main links, and Products expands to a second panel listing catalog items from Supabase. See `components/MainNav.vue` for current behavior. Kept for historical reference only.
+
 This document outlines the responsive navigation behavior for the MainNav component across different screen sizes.
 
 ## Navigation Structure

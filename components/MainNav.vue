@@ -1,5 +1,5 @@
 <template>
-  <header v-if="!isAuthPage" :class="{ scrolled: isScrolled, 'menu-open': menuOpen }">
+  <header :class="{ scrolled: isScrolled, 'menu-open': menuOpen }">
     <div class="nav-inner">
       <button
         class="menu-toggle"
@@ -21,8 +21,7 @@
     </div>
   </header>
 
-  <template v-if="!isAuthPage">
-    <Transition name="fade">
+  <Transition name="fade">
       <div v-if="menuOpen" class="nav-backdrop" @click="closeMenu"></div>
     </Transition>
 
@@ -72,13 +71,9 @@
         </div>
       </nav>
     </Transition>
-  </template>
 </template>
 
 <script setup>
-const route = useRoute()
-const isAuthPage = computed(() => route.path.startsWith('/auth'))
-
 const mainLinks = [
   { label: 'Products', icon: 'fas fa-cogs', expand: true },
   { to: '/installation', label: 'Installation', icon: 'fas fa-wrench' },
@@ -92,6 +87,7 @@ const mainLinks = [
 const menuOpen = ref(false)
 const panelView = ref('main')
 const isScrolled = ref(false)
+const route = useRoute()
 
 const toggleMenu = () => { menuOpen.value = !menuOpen.value }
 const closeMenu = () => { menuOpen.value = false }

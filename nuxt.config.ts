@@ -3,10 +3,6 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-08-16',
   devtools: { enabled: true },
-  routeRules: {
-    '/products/mod-iv': { redirect: '/products' },
-    '/products/mod-v': { redirect: '/products' },
-  },
   modules: [
     '@nuxtjs/supabase',
   ],

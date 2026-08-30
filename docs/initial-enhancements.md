@@ -1,5 +1,7 @@
 # Shaft Lok MK4 - Nuxt Migration & Enhancements
 
+> **Historical note (August 2026):** This document captures the MK3 → MK4 migration. Several sections are outdated — notably **static product pages** under `pages/products/*.vue`, which were replaced by Supabase-driven `/products/[slug]` and admin editing at `/products/manage`. For current product behavior, see `docs/_Shaft-Lok-Website-Handbook.md` (Product Management section).
+
 ## Overview
 
 This document outlines the comprehensive migration and enhancement process from Shaft Lok MK3 (HTML/CSS) to MK4 (Nuxt 4.0) project, including architectural decisions, design patterns, and implementation details.

@@ -125,10 +125,12 @@ Turning on real types didn't just clear the `never` errors — it surfaced two g
 
 ### Bug 1 — `ProductDetail.vue` treated `null` and `undefined` as the same thing
 
+At the time, the component loaded image fields from a nested query result. The same mismatch applies to the current single-row fetch — `image_url` and `alt` are `string | null` in Postgres but `<img>` bindings expect `string | undefined`.
+
 ```ts
 // before
-const image = computed(() => productImage.value?.image_url)
-const imageAlt = computed(() => productImage.value?.alt)
+const image = computed(() => productData.value.image_url)
+const imageAlt = computed(() => productData.value.alt)
 ```
 
 The real schema says `image_url` and `alt` are `string | null` — a deliberate, valid database state for a product with no image yet. But the component's `<img :src>` / `:alt>` bindings expect `string | undefined`. `null` and `undefined` are not interchangeable to TypeScript, and only the schema-accurate type revealed that this component had never actually accounted for the "no image set" case in a type-safe way.
@@ -136,8 +138,8 @@ The real schema says `image_url` and `alt` are `string | null` — a deliberate,
 **Fix:**
 
 ```ts
-const image = computed(() => productImage.value?.image_url ?? undefined)
-const imageAlt = computed(() => productImage.value?.alt ?? undefined)
+const image = computed(() => productData.value.image_url ?? undefined)
+const imageAlt = computed(() => productData.value.alt ?? productData.value.name)
 ```
 
 ### Bug 2 — `send-quote.post.ts` assumed the logged-in admin's email always exists

@@ -42,6 +42,58 @@ In `pages/qms/[id].vue`, the Send button is disabled unless *all three* are true
 
 Whichever of the three are still missing is spelled out for the admin, not just a disabled button with no explanation. `missingSendRequirements` (computed) lists which of the three are unmet; `sendRequirementsHint` turns that into one sentence — e.g. "Before sending, you still need a price and a message to the sailor." — shown both as a `<p class="send-hint">` under the buttons and as the button's `title` tooltip. It's a single combined sentence listing everything missing, not one message per missing field.
 
+## Product Management
+
+Admin-facing product catalog editing at `/products/manage`, linked from `/adminaccess`. Public sailors see `/products` (catalog) and `/products/[slug]` (detail pages). All copy and specs live in the Supabase `products` table — there are no static per-product Vue pages anymore.
+
+### Who can edit
+
+`/products/manage` uses the `admin` middleware (`middleware/admin.ts`). Saves require the admin write RLS policies from `supabase/migrations/20260829_products_admin_write_policies.sql` — without them, updates appear to succeed but return zero rows.
+
+### Admin form fields → database columns
+
+| Form label | Column | Where it shows publicly |
+|---|---|---|
+| Tagline | `tagline` | Subtitle under the product title (wins over Card Summary when set) |
+| Card Summary | `summary` | `/products` catalog card; fallback subtitle if Tagline is blank |
+| Search & Social Preview | `description` | Google / email / social link previews only — **not** on the product page |
+| Details Intro | `details` | Opening paragraph in the Details section |
+| Highlight Cards | `features` (JSON) | Icon spec cards above Details (`icon`, `title`, `text` per row) |
+| Detail Bullets | `specs` (JSON) | Bullet list under the intro (`name`, `value` per row → rendered as `Label: Text`) |
+| Max Bore Size (mm / display) | `max_bore_size_mm`, `max_bore_size_inch` | Used for default highlight cards when `features` is empty; also JSON-LD |
+| Price (USD) | `price` | Chip under the product image; blank = "Request Price & Delivery" |
+| Visibility toggle | `display` | `false` hides the product from the public catalog and detail routes |
+
+Locking-unit construction lines (Housing, Shaft collar, Rotating disc) belong in **Detail Bullets**, not Highlight Cards. Controls & Accessories (SSLS, Marine Control Cable) typically skip bore fields and use compatibility-style bullets instead.
+
+### Save behavior
+
+Edits run through `layouts/products-manage-layout.vue` → `CrudModal` → `ProductForm`. **Update** stays disabled until the form is dirty (`isSaveDisabled`). On save, the full normalized payload (including `features` and `specs` JSON) is written to Supabase and `clearNuxtData('product-detail-${slug}')` busts the public page cache.
+
+### Legacy migration on edit
+
+Products saved before the structured form may still have intro + bullets combined in the plain `details` text column. Opening a row in the edit modal runs `hydrateProductFormContent()` (`utils/productDisplay.ts`), which splits legacy `-` bullet lines into **Detail Bullets** and pre-fills **Highlight Cards** from bore/category when `features` is empty. **Re-save once** to persist structured JSON — display still works from legacy text until then via `buildProductDetailBlocks()` fallback.
+
+### Public rendering
+
+- **Route**: `pages/products/[slug].vue` → `components/ProductDetail.vue`
+- **Display logic**: `utils/productDisplay.ts` — `getProductTagline`, `getProductFeaturesForDisplay`, `buildProductDetailBlocks`, `formatProductPrice`
+- **Structured data**: JSON-LD Product schema uses `specs` for `additionalProperty` even though bullets are the visible UI
+
+### Hidden / redirected products
+
+Mod IV and Mod V are obsolete (superseded by Mod VI). `/products/mod-iv` and `/products/mod-v` 301 to `/products` via `server/middleware/redirects.ts`. Mod VI is the public megayacht offering. `/products/manage` is disallowed in `public/robots.txt`.
+
+### Schema migrations (product page fields)
+
+Run in Supabase if not already applied:
+
+- `supabase/migrations/20260829_add_product_page_fields.sql` — `tagline`, `details`, `features`, `specs`
+- `supabase/migrations/20260829_add_product_price.sql` — `price`
+- `supabase/migrations/20260829_products_admin_write_policies.sql` — admin INSERT/UPDATE/DELETE
+
+Regenerate `types/supabase.ts` after schema changes (see `docs/supabase_types.md`).
+
 ## Google Analytics (GA4)
 
 Tracking is wired up via the standard `gtag.js` snippet in `nuxt.config.ts` under `app.head.script` (Measurement ID `G-XDWZW2TCLR`). Because it lives in the global Nuxt head config, it's injected into every server-rendered page automatically — no per-page setup needed. The corresponding cookies (`_ga`, `_ga_XDWZW2TCLR`) are documented for sailors in `pages/privacy.vue`.
@@ -53,6 +105,10 @@ There's no environment gating: `nuxt dev` and production both fire the same snip
 `pages/quote.vue` fires `gtag('event', 'generate_lead', { lock_type, via_yacht_list_discount })` right after a quote form submission succeeds (`submitted.value = true`), using the global `window.gtag` set up by the snippet above — no separate GA4 wiring needed. `lock_type` is the sailor's chosen locking system (`spring` / `cable` / `unsure`); `via_yacht_list_discount` flags whether they arrived via the Yacht List $50-off link.
 
 This event has to be **manually marked as a conversion** in the GA4 UI (Admin → Events) before GA4 will count it — and it only becomes selectable there after it's fired at least once. Marking it applies retroactively to all future `generate_lead` events by exact name match; it isn't a pattern GA4 "learns," and no further examples are needed once it's toggled on.
+
+**Checking that it fired, via Reports → Realtime:** look at the **"Event count by Event name"** card specifically — not the "Views by Page title and screen name" card, which only shows that `/quote` was visited, not that the submission event itself fired.
+
+**The "aged out" gotcha:** Realtime only shows roughly the last 30 minutes of activity. Submitting one test quote and then coming back to check Realtime later — after getting pulled into unrelated debugging, a meeting, etc. — will show "No data available" even though the event fired and tracked correctly at the time. That's not a tracking failure, just Realtime's window closing. To verify tracking, submit a fresh test quote and check Realtime within a couple minutes of doing so, rather than relying on an earlier submission.
 
 ### Known data quality issue: bot traffic inflating country/user counts
 
