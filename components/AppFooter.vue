@@ -25,7 +25,7 @@
             <li><NuxtLink to="/products/mod-i-easylok">Mod I EasyLok</NuxtLink></li>
             <li><NuxtLink to="/products/mod-ii-easylok">Mod II EasyLok</NuxtLink></li>
             <li><NuxtLink to="/products/mod-iii-easylok">Mod III EasyLok</NuxtLink></li>
-            <li><NuxtLink to="/products/mod-iv">Mod IV – VI Custom</NuxtLink></li>
+            <li><NuxtLink to="/products/mod-vi">Mod VI - Custom</NuxtLink></li>
             <li><NuxtLink to="/products/marine-control-cable">Marine Control Cable</NuxtLink></li>
             <li><NuxtLink to="/products/simple-spring-locking-system">Spring Locking System</NuxtLink></li>
           </ul>

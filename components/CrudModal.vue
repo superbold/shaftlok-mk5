@@ -28,7 +28,7 @@
           <slot name="form" :form-data="formData" :mode="mode"></slot>
           <div class="modal-actions">
             <button type="button" @click="close" class="btn btn-secondary">Cancel</button>
-            <button type="submit" class="btn btn-primary" :disabled="loading">
+            <button type="submit" class="btn btn-primary" :disabled="loading || saveDisabled">
               <i class="fas fa-spinner fa-spin" v-if="loading"></i>
               {{ loading ? 'Saving...' : (mode === 'create' ? 'Create' : 'Update') }}
             </button>
@@ -63,6 +63,10 @@ const props = defineProps({
     required: true
   },
   loading: {
+    type: Boolean,
+    default: false
+  },
+  saveDisabled: {
     type: Boolean,
     default: false
   }
@@ -108,7 +112,7 @@ const handleDelete = () => emit('delete')
   background: var(--abyss-soft);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
-  max-width: 620px;
+  max-width: 720px;
   width: 92%;
   max-height: 82vh;
   overflow-y: auto;

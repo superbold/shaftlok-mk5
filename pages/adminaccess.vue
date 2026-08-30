@@ -181,7 +181,7 @@
               <span class="radio-custom"></span>
               <div class="option-content">
                 <i class="fas fa-cogs"></i>
-                <span>Products Management</span>
+                <span>Product Management</span>
               </div>
             </label>
           </div>
@@ -332,7 +332,7 @@ const proceedToAdminArea = async () => {
   } else if (adminChoice.value === 'yacht-list') {
     await router.push('/yacht-list')
   } else if (adminChoice.value === 'products') {
-    await router.push('/products')
+    await router.push('/products/manage')
   }
   showAdminModal.value = false
 }

@@ -3,6 +3,10 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-08-16',
   devtools: { enabled: true },
+  routeRules: {
+    '/products/mod-iv': { redirect: '/products' },
+    '/products/mod-v': { redirect: '/products' },
+  },
   modules: [
     '@nuxtjs/supabase',
   ],
@@ -13,7 +17,7 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/adminaccess',
       callback: '/yacht-list',
-      exclude: ['/', '/adminaccess', '/reset-password', '/products', '/installation', '/contact', '/quote', '/privacy', '/faq', '/testimonials', '/about']
+      exclude: ['/', '/adminaccess', '/reset-password', '/products/manage', '/products', '/installation', '/contact', '/quote', '/privacy', '/faq', '/testimonials', '/about']
     },
     clientOptions: {
       auth: {

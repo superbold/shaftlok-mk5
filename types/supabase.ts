@@ -21,14 +21,19 @@ export type Database = {
           category: string | null
           created_at: string
           description: string | null
+          details: string | null
           display: boolean | null
+          features: Json | null
           id: number
           image_url: string | null
           max_bore_size_inch: string | null
           max_bore_size_mm: number | null
           name: string
+          price: number | null
           slug: string | null
+          specs: Json | null
           summary: string | null
+          tagline: string | null
           updated_at: string | null
         }
         Insert: {
@@ -37,14 +42,19 @@ export type Database = {
           category?: string | null
           created_at?: string
           description?: string | null
+          details?: string | null
           display?: boolean | null
+          features?: Json | null
           id?: number
           image_url?: string | null
           max_bore_size_inch?: string | null
           max_bore_size_mm?: number | null
           name?: string
+          price?: number | null
           slug?: string | null
+          specs?: Json | null
           summary?: string | null
+          tagline?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -53,14 +63,19 @@ export type Database = {
           category?: string | null
           created_at?: string
           description?: string | null
+          details?: string | null
           display?: boolean | null
+          features?: Json | null
           id?: number
           image_url?: string | null
           max_bore_size_inch?: string | null
           max_bore_size_mm?: number | null
           name?: string
+          price?: number | null
           slug?: string | null
+          specs?: Json | null
           summary?: string | null
+          tagline?: string | null
           updated_at?: string | null
         }
         Relationships: []

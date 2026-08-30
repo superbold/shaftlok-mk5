@@ -21,6 +21,7 @@ Crawl-delay: 1
 # Block access to admin and sensitive areas
 User-agent: *
 Disallow: /adminaccess
+Disallow: /products/manage
 Disallow: /admin/
 Disallow: /private/
 Disallow: /temp/

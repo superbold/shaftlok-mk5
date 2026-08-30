@@ -1,26 +1,36 @@
 <template>
   <div class="page-shell">
-    <BreadcrumbNav :items="[{ name: 'Products', to: '/products' }, { name: name }]" />
+    <BreadcrumbNav :items="[{ name: 'Products', to: '/products' }, { name: product.name }]" />
 
     <div class="product-hero" v-reveal>
-      <span class="eyebrow"><i class="fas fa-fan"></i> {{ category }}</span>
-      <h1>{{ name }}</h1>
-      <p class="tagline">{{ tagline }}</p>
+      <span class="eyebrow"><i class="fas fa-fan"></i> {{ categoryLabel }}</span>
+      <h1>{{ product.name }}</h1>
+      <p v-if="tagline" class="tagline">{{ tagline }}</p>
     </div>
 
     <div class="product-layout">
       <div class="product-media" v-reveal="100">
         <div class="media-frame glass-card">
-          <img :src="image" :alt="imageAlt" loading="lazy">
+          <img v-if="image" :src="image" :alt="imageAlt" loading="lazy">
+          <div v-else class="media-placeholder">
+            <i class="fas fa-image"></i>
+            <span>No product image</span>
+          </div>
         </div>
-        <div v-if="bore" class="bore-chip">
-          <i class="fas fa-ruler"></i>
-          <span>Max bore <strong>{{ bore }}</strong></span>
+        <div class="media-chip">
+          <template v-if="formattedPrice">
+            <i class="fas fa-tag"></i>
+            <span>Price <strong>{{ formattedPrice }}</strong></span>
+          </template>
+          <NuxtLink v-else to="/quote" class="media-chip-link">
+            <i class="fas fa-envelope"></i>
+            <span>Request Price &amp; Delivery</span>
+          </NuxtLink>
         </div>
       </div>
 
       <div class="product-info">
-        <div class="spec-grid" v-reveal="150">
+        <div v-if="features.length" class="spec-grid" v-reveal="150">
           <div v-for="(feature, i) in features" :key="i" class="spec-card glass-card hoverable">
             <i :class="[feature.icon, 'spec-icon']"></i>
             <h3>{{ feature.title }}</h3>
@@ -28,9 +38,14 @@
           </div>
         </div>
 
-        <div class="product-body glass-card prose" v-reveal="200">
+        <div v-if="detailBlocks.length" class="product-body glass-card prose" v-reveal="200">
           <h2><i class="fas fa-circle-info"></i> Details</h2>
-          <slot />
+          <template v-for="(block, i) in detailBlocks" :key="i">
+            <p v-if="block.type === 'paragraph'">{{ block.text }}</p>
+            <ul v-else>
+              <li v-for="(item, j) in block.items" :key="j">{{ item }}</li>
+            </ul>
+          </template>
         </div>
 
         <div class="product-cta" v-reveal="250">
@@ -47,66 +62,82 @@
 </template>
 
 <script setup lang="ts">
-interface Feature {
-  icon: string
-  title: string
-  text: string
-}
+import type { Database } from '~~/types/supabase'
 
-interface Spec {
-  name: string
-  value: string
-}
+type ProductRow = Database['public']['Tables']['products']['Row']
 
-const props = withDefaults(defineProps<{
-  name: string
+const props = defineProps<{
   slug: string
-  tagline: string
-  description: string
-  ogTitle?: string
-  bore?: string
-  category?: string
-  features: Feature[]
-  specs?: Spec[]
-}>(), {
-  category: 'Propeller Control System'
-})
+}>()
 
 const supabase = useSupabaseClient()
 
-const { data: productImage } = await useAsyncData(`product-image-${props.slug}`, async () => {
-  const { data, error } = await supabase
-    .from('products')
-    .select('image_url, alt')
-    .eq('slug', props.slug)
-    .single()
+const { data: product, error: productError } = await useAsyncData(
+  `product-detail-${props.slug}`,
+  async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('slug', props.slug)
+      .eq('display', true)
+      .single()
 
-  if (error) throw error
-  return data
-})
+    if (error) throw error
+    return data
+  },
+  {
+    watch: [() => props.slug],
+    getCachedData: () => undefined
+  }
+)
 
-const image = computed(() => productImage.value?.image_url ?? undefined)
-const imageAlt = computed(() => productImage.value?.alt ?? undefined)
+if (productError.value || !product.value) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Product not found'
+  })
+}
+
+const productData = computed(() => product.value as ProductRow)
+
+const image = computed(() => productData.value.image_url ?? undefined)
+const imageAlt = computed(() => productData.value.alt ?? productData.value.name)
+const tagline = computed(() => getProductTagline(productData.value))
+const formattedPrice = computed(() => formatProductPrice(productData.value.price))
+const categoryLabel = computed(() => productData.value.category || 'Propeller Control System')
+const features = computed(() =>
+  parseProductFeatures(productData.value.features) ?? defaultProductFeatures(productData.value)
+)
+const specs = computed(() => parseProductSpecs(productData.value.specs) ?? [])
+const detailBlocks = computed(() =>
+  parseProductDetails(getProductDetailsText(productData.value))
+)
+
+const metaDescription = computed(() =>
+  productData.value.description || productData.value.summary || `${productData.value.name} — Shaft Lok marine propeller control system.`
+)
 
 const pageUrl = `https://shaftlok.com/products/${props.slug}`
-const ogImage = `https://shaftlok.com${image.value}`
-const ogTitle = props.ogTitle || `Shaft Lok ${props.name} - Marine Propeller Control System`
+const ogImage = computed(() =>
+  productData.value.image_url ? `https://shaftlok.com${productData.value.image_url}` : 'https://shaftlok.com/assets/images/Logo_propeller_only.png'
+)
+const ogTitle = computed(() => `Shaft Lok ${productData.value.name} - Marine Propeller Control System`)
 
 useHead({
-  title: props.name,
+  title: () => productData.value.name,
   meta: [
-    { name: 'description', content: props.description },
+    { name: 'description', content: metaDescription },
     { name: 'robots', content: 'index, follow' },
-    { property: 'og:title', content: ogTitle },
-    { property: 'og:description', content: props.description },
+    { property: 'og:title', content: () => ogTitle.value },
+    { property: 'og:description', content: metaDescription },
     { property: 'og:image', content: ogImage },
     { property: 'og:url', content: pageUrl },
     { property: 'og:type', content: 'website' },
     { property: 'og:site_name', content: 'Shaft Lok Inc.' },
     { property: 'og:locale', content: 'en_US' },
     { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: ogTitle },
-    { name: 'twitter:description', content: props.description },
+    { name: 'twitter:title', content: () => ogTitle.value },
+    { name: 'twitter:description', content: metaDescription },
     { name: 'twitter:image', content: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png' }
   ],
   link: [
@@ -121,7 +152,7 @@ useHead({
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://shaftlok.com/' },
           { '@type': 'ListItem', position: 2, name: 'Products', item: 'https://shaftlok.com/products' },
-          { '@type': 'ListItem', position: 3, name: props.name, item: pageUrl }
+          { '@type': 'ListItem', position: 3, name: productData.value.name, item: pageUrl }
         ]
       })
     },
@@ -130,20 +161,31 @@ useHead({
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'Product',
-        name: props.name,
-        description: props.description,
+        name: productData.value.name,
+        description: metaDescription.value,
         brand: { '@type': 'Brand', name: 'Shaft Lok' },
         manufacturer: {
           '@type': 'Organization',
           name: 'Shaft Lok Inc.',
           url: 'https://shaftlok.com'
         },
-        image: ogImage,
+        image: ogImage.value,
         url: pageUrl,
         category: 'Marine Equipment',
-        ...(props.specs?.length
+        ...(productData.value.price != null
           ? {
-              additionalProperty: props.specs.map((spec) => ({
+              offers: {
+                '@type': 'Offer',
+                price: productData.value.price,
+                priceCurrency: 'USD',
+                availability: 'https://schema.org/InStock',
+                url: pageUrl
+              }
+            }
+          : {}),
+        ...(specs.value.length
+          ? {
+              additionalProperty: specs.value.map((spec) => ({
                 '@type': 'PropertyValue',
                 name: spec.name,
                 value: spec.value
@@ -205,7 +247,23 @@ useHead({
   padding: 1.25rem;
 }
 
-.bore-chip {
+.media-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  aspect-ratio: 1 / 1;
+  color: var(--text-low);
+  font-family: var(--font-display);
+}
+
+.media-placeholder i {
+  font-size: 2rem;
+  color: var(--accent);
+}
+
+.media-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
@@ -219,8 +277,25 @@ useHead({
   padding: 0.6rem 1.3rem;
 }
 
-.bore-chip i { color: var(--accent); }
-.bore-chip strong { color: var(--text-hi); }
+.media-chip i { color: var(--accent); }
+.media-chip strong { color: var(--accent-2); }
+
+.media-chip-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.media-chip-link:hover {
+  color: var(--text-hi);
+}
+
+.media-chip-link:hover i {
+  color: var(--accent-2);
+}
 
 .spec-grid {
   display: grid;
@@ -275,6 +350,21 @@ useHead({
 }
 
 .product-body h2 i { color: var(--accent-2); font-size: 1.05rem; }
+
+.product-body p,
+.product-body ul {
+  color: var(--text-mid);
+  line-height: 1.7;
+}
+
+.product-body ul {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+}
+
+.product-body li {
+  margin-bottom: 0.45rem;
+}
 
 .product-cta {
   display: flex;

@@ -1,19 +1,19 @@
 <template>
   <header :class="{ 'menu-open': menuOpen }">
     <div class="nav-inner">
-      <NuxtLink to="/" class="brand">
+      <NuxtLink to="/products/manage" class="brand">
         <img src="/assets/images/Logo_propeller_only.png" alt="Shaft Lok propeller logo" class="brand-mark">
-        <span class="brand-name"><span class="brand-shaft">Shaft Lok</span><span class="brand-inc">QUOTES</span></span>
+        <span class="brand-name"><span class="brand-shaft">Shaft Lok</span><span class="brand-inc">PRODUCTS</span></span>
       </NuxtLink>
 
-      <div class="qms-nav-section">
+      <div class="products-nav-section">
         <div class="search-input-wrapper">
           <i class="fas fa-magnifying-glass search-glyph"></i>
           <input
             :value="props.searchTerm"
             @input="emit('update:searchTerm', $event.target.value)"
             type="text"
-            :placeholder="`Search ${props.quoteCount || 0} quotes...`"
+            :placeholder="`Search ${props.productCount || 0} products...`"
             class="search-input"
           />
           <button
@@ -35,8 +35,8 @@
           </button>
         </div>
 
-        <div v-if="isAdmin" class="admin-actions">
-          <button @click="emit('add-quote')" class="admin-btn add-btn" title="Add Quote">
+        <div class="admin-actions">
+          <button @click="emit('add-product')" class="admin-btn add-btn" title="Add Product">
             <i class="fas fa-plus"></i>
             <span class="btn-text">Add</span>
           </button>
@@ -56,9 +56,10 @@
     </div>
 
     <Transition name="drop">
-      <nav v-if="menuOpen" class="mobile-menu" aria-label="Site">
+      <nav v-if="menuOpen" class="mobile-menu" aria-label="Admin">
+        <NuxtLink to="/products" class="mobile-link" @click="menuOpen = false"><i class="fas fa-store"></i> Public Catalog</NuxtLink>
+        <NuxtLink to="/qms" class="mobile-link" @click="menuOpen = false"><i class="fas fa-file-invoice-dollar"></i> Quote Management</NuxtLink>
         <NuxtLink to="/yacht-list" class="mobile-link" @click="menuOpen = false"><i class="fas fa-ship"></i> Yacht List</NuxtLink>
-        <NuxtLink to="/products/manage" class="mobile-link" @click="menuOpen = false"><i class="fas fa-cogs"></i> Product Management</NuxtLink>
         <button @click="emit('sign-out')" class="mobile-link mobile-signout">
           <i class="fas fa-sign-out-alt"></i> Sign Out
         </button>
@@ -67,22 +68,21 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 const props = defineProps({
   searchTerm: {
     type: String,
     default: ''
   },
-  quoteCount: {
+  productCount: {
     type: Number,
     default: 0
   }
 })
 
-const emit = defineEmits(['update:searchTerm', 'clear-search', 'refresh-data', 'add-quote', 'sign-out'])
+const emit = defineEmits(['update:searchTerm', 'clear-search', 'refresh-data', 'add-product', 'sign-out'])
 
 const menuOpen = ref(false)
-const { isAdmin } = useIsAdmin()
 </script>
 
 <style scoped>
@@ -149,7 +149,7 @@ header {
   margin-top: 0.18rem;
 }
 
-.qms-nav-section {
+.products-nav-section {
   display: flex;
   align-items: center;
   gap: 0.9rem;
