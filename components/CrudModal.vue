@@ -112,7 +112,7 @@ const handleDelete = () => emit('delete')
   background: var(--abyss-soft);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
-  max-width: 720px;
+  max-width: 840px;
   width: 92%;
   max-height: 82vh;
   overflow-y: auto;

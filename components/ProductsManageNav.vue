@@ -11,7 +11,7 @@
           <i class="fas fa-magnifying-glass search-glyph"></i>
           <input
             :value="props.searchTerm"
-            @input="emit('update:searchTerm', $event.target.value)"
+            @input="onSearchInput"
             type="text"
             :placeholder="`Search ${props.productCount || 0} products...`"
             class="search-input"
@@ -83,6 +83,12 @@ const props = defineProps({
 const emit = defineEmits(['update:searchTerm', 'clear-search', 'refresh-data', 'add-product', 'sign-out'])
 
 const menuOpen = ref(false)
+
+function onSearchInput(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  emit('update:searchTerm', target.value)
+}
 </script>
 
 <style scoped>

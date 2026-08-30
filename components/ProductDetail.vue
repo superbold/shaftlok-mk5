@@ -105,13 +105,9 @@ const imageAlt = computed(() => productData.value.alt ?? productData.value.name)
 const tagline = computed(() => getProductTagline(productData.value))
 const formattedPrice = computed(() => formatProductPrice(productData.value.price))
 const categoryLabel = computed(() => productData.value.category || 'Propeller Control System')
-const features = computed(() =>
-  parseProductFeatures(productData.value.features) ?? defaultProductFeatures(productData.value)
-)
+const features = computed(() => getProductFeaturesForDisplay(productData.value))
 const specs = computed(() => parseProductSpecs(productData.value.specs) ?? [])
-const detailBlocks = computed(() =>
-  parseProductDetails(getProductDetailsText(productData.value))
-)
+const detailBlocks = computed(() => buildProductDetailBlocks(productData.value))
 
 const metaDescription = computed(() =>
   productData.value.description || productData.value.summary || `${productData.value.name} — Shaft Lok marine propeller control system.`

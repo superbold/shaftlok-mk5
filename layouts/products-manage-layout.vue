@@ -57,6 +57,8 @@ const emptyProductForm = () => ({
   summary: '',
   description: '',
   details: '',
+  features: [],
+  specs: [],
   price: '',
   display: true
 })
@@ -78,7 +80,9 @@ const normalizeProductForm = (form) => ({
   tagline: (form.tagline ?? '').trim(),
   summary: (form.summary ?? '').trim(),
   description: form.description ?? '',
-  details: form.details ?? '',
+  details: (form.details ?? '').trim(),
+  features: sanitizeProductFeatures(form.features ?? []),
+  specs: sanitizeProductSpecs(form.specs ?? []),
   price: form.price === '' || form.price == null ? '' : String(Number(form.price)),
   display: form.display !== false
 })
@@ -112,6 +116,7 @@ const openCreateModal = () => {
 const openEditModal = (product) => {
   crudMode.value = 'edit'
   selectedProductForModal.value = product
+  const hydrated = hydrateProductFormContent(product)
   productForm.value = {
     name: product.name,
     slug: product.slug,
@@ -124,7 +129,9 @@ const openEditModal = (product) => {
     tagline: product.tagline ?? '',
     summary: product.summary ?? '',
     description: product.description,
-    details: product.details ?? product.description ?? '',
+    details: hydrated.details,
+    features: hydrated.features,
+    specs: hydrated.specs,
     price: product.price ?? '',
     display: product.display !== false
   }
@@ -144,26 +151,30 @@ const closeCrudModal = () => {
   productFormSnapshot.value = null
 }
 
-const buildPayload = () => ({
-  name: productForm.value.name,
-  slug: productForm.value.slug,
-  category: productForm.value.category,
-  image_url: productForm.value.image_url,
-  alt: productForm.value.alt,
-  max_bore_size_mm: productForm.value.max_bore_size_mm === '' || productForm.value.max_bore_size_mm === null
-    ? null
-    : Number(productForm.value.max_bore_size_mm),
-  max_bore_size_inch: productForm.value.max_bore_size_inch || null,
-  badge: productForm.value.badge || null,
-  tagline: productForm.value.tagline?.trim() || null,
-  summary: productForm.value.summary?.trim() || null,
-  description: productForm.value.description || null,
-  details: productForm.value.details || null,
-  price: productForm.value.price === '' || productForm.value.price === null
-    ? null
-    : Number(productForm.value.price),
-  display: productForm.value.display !== false
-})
+const buildPayload = () => {
+  const normalized = normalizeProductForm(productForm.value)
+
+  return {
+    name: normalized.name,
+    slug: normalized.slug,
+    category: normalized.category,
+    image_url: normalized.image_url,
+    alt: normalized.alt,
+    max_bore_size_mm: normalized.max_bore_size_mm === ''
+      ? null
+      : Number(normalized.max_bore_size_mm),
+    max_bore_size_inch: normalized.max_bore_size_inch || null,
+    badge: normalized.badge || null,
+    tagline: normalized.tagline || null,
+    summary: normalized.summary || null,
+    description: normalized.description || null,
+    details: normalized.details || null,
+    features: normalized.features.length ? normalized.features : null,
+    specs: normalized.specs.length ? normalized.specs : null,
+    price: normalized.price === '' ? null : Number(normalized.price),
+    display: normalized.display !== false
+  }
+}
 
 const saveProduct = async () => {
   try {

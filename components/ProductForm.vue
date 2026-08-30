@@ -236,12 +236,12 @@
     <div class="form-row">
       <div class="form-group">
         <div class="field-label-row" :class="{ 'is-open': openHelpId === 'details' }">
-          <label for="product-details">Product Details</label>
+          <label for="product-details">Details Intro</label>
           <div class="field-info">
             <button
               type="button"
               class="field-info-btn"
-              aria-label="About Product Details and copy formatting"
+              aria-label="About Details intro copy"
               :aria-expanded="openHelpId === 'details'"
               aria-controls="product-details-help"
               @click.stop="toggleHelp('details')"
@@ -250,18 +250,69 @@
             </button>
           </div>
           <div id="product-details-help" class="field-info-tooltip" role="tooltip">
-            <p class="field-info-intro">Main body copy in the Details section on the public product page. List specs and construction as separate lines starting with <strong>-</strong> (Housing, Shaft collar, Rotating disc).</p>
-            <FieldHelpFormattingReminders />
+            <p class="field-info-intro">Opening paragraph in the Details section on the public product page. Use Detail Bullets below for specs and construction lines.</p>
           </div>
         </div>
         <textarea
           id="product-details"
           :value="modelValue.details"
           @input="updateField('details', $event.target.value)"
-          rows="8"
+          rows="4"
           class="form-control"
-          placeholder="Intro paragraph, blank line, then bullet lines for specs and construction"
+          placeholder="Intro paragraph describing the product"
         ></textarea>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <div class="field-label-row" :class="{ 'is-open': openHelpId === 'features' }">
+          <label>Highlight Cards</label>
+          <div class="field-info">
+            <button
+              type="button"
+              class="field-info-btn"
+              aria-label="About highlight cards"
+              :aria-expanded="openHelpId === 'features'"
+              aria-controls="product-features-help"
+              @click.stop="toggleHelp('features')"
+            >
+              <i class="fas fa-circle-info" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div id="product-features-help" class="field-info-tooltip" role="tooltip">
+            <p class="field-info-intro">Icon cards shown above the Details section — use these for quick highlights such as Max Bore Size, Dimensions, or Compatibility.</p>
+          </div>
+        </div>
+        <ProductFeatureEditor
+          :model-value="modelValue.features ?? []"
+          @update:model-value="updateField('features', $event)"
+        />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <div class="field-label-row" :class="{ 'is-open': openHelpId === 'specs' }">
+          <label>Detail Bullets</label>
+          <div class="field-info">
+            <button
+              type="button"
+              class="field-info-btn"
+              aria-label="About detail bullets"
+              :aria-expanded="openHelpId === 'specs'"
+              aria-controls="product-specs-help"
+              @click.stop="toggleHelp('specs')"
+            >
+              <i class="fas fa-circle-info" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div id="product-specs-help" class="field-info-tooltip" role="tooltip">
+            <p class="field-info-intro">Bullet list under the intro paragraph — use Label + Text for lines such as Housing, Shaft collar, Rotating disc, Compatibility, or Ordering.</p>
+          </div>
+        </div>
+        <ProductSpecEditor
+          :model-value="modelValue.specs ?? []"
+          @update:model-value="updateField('specs', $event)"
+        />
       </div>
     </div>
     <div class="form-row">

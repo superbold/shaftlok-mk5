@@ -13,6 +13,20 @@ export interface ProductSpec {
   value: string
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const isProductFeature = (value: unknown): value is ProductFeature =>
+  isRecord(value)
+  && typeof value.icon === 'string'
+  && typeof value.title === 'string'
+  && typeof value.text === 'string'
+
+const isProductSpec = (value: unknown): value is ProductSpec =>
+  isRecord(value)
+  && typeof value.name === 'string'
+  && typeof value.value === 'string'
+
 export const formatProductBore = (product: Pick<ProductRow, 'max_bore_size_mm' | 'max_bore_size_inch'>) => {
   if (product.max_bore_size_inch) {
     return product.max_bore_size_inch
@@ -27,26 +41,15 @@ export const formatProductBore = (product: Pick<ProductRow, 'max_bore_size_mm' |
 
 export const parseProductFeatures = (value: ProductRow['features']): ProductFeature[] | null => {
   if (!Array.isArray(value)) return null
-  return value.filter((item): item is ProductFeature =>
-    !!item
-    && typeof item === 'object'
-    && typeof (item as ProductFeature).icon === 'string'
-    && typeof (item as ProductFeature).title === 'string'
-    && typeof (item as ProductFeature).text === 'string'
-  )
+  return (value as unknown[]).filter(isProductFeature)
 }
 
 export const parseProductSpecs = (value: ProductRow['specs']): ProductSpec[] | null => {
   if (!Array.isArray(value)) return null
-  return value.filter((item): item is ProductSpec =>
-    !!item
-    && typeof item === 'object'
-    && typeof (item as ProductSpec).name === 'string'
-    && typeof (item as ProductSpec).value === 'string'
-  )
+  return (value as unknown[]).filter(isProductSpec)
 }
 
-export const defaultProductFeatures = (product: ProductRow): ProductFeature[] => {
+export const defaultProductFeatures = (product: Pick<ProductRow, 'max_bore_size_mm' | 'max_bore_size_inch' | 'category'>): ProductFeature[] => {
   const features: ProductFeature[] = []
   const bore = formatProductBore(product)
 
@@ -127,3 +130,115 @@ export const parseProductDetails = (details: string | null | undefined): Product
       }]
     })
 }
+
+export const formatSpecBullet = (spec: ProductSpec) =>
+  spec.name.trim() ? `${spec.name.trim()}: ${spec.value.trim()}` : spec.value.trim()
+
+export const splitLegacyDetails = (details: string | null | undefined) => {
+  const introParts: string[] = []
+  const specs: ProductSpec[] = []
+
+  for (const block of parseProductDetails(details)) {
+    if (block.type === 'paragraph') {
+      introParts.push(block.text)
+      continue
+    }
+
+    for (const item of block.items) {
+      const colonIndex = item.indexOf(':')
+      if (colonIndex > 0) {
+        specs.push({
+          name: item.slice(0, colonIndex).trim(),
+          value: item.slice(colonIndex + 1).trim()
+        })
+      } else {
+        specs.push({ name: '', value: item })
+      }
+    }
+  }
+
+  return {
+    intro: introParts.join('\n\n'),
+    specs
+  }
+}
+
+export const sanitizeProductFeatures = (features: ProductFeature[]) =>
+  features
+    .map(feature => ({
+      icon: feature.icon.trim() || 'fas fa-circle-info',
+      title: feature.title.trim(),
+      text: feature.text.trim()
+    }))
+    .filter(feature => feature.title || feature.text)
+
+export const sanitizeProductSpecs = (specs: ProductSpec[]) =>
+  specs
+    .map(spec => ({
+      name: spec.name.trim(),
+      value: spec.value.trim()
+    }))
+    .filter(spec => spec.name || spec.value)
+
+export const getProductFeaturesForDisplay = (
+  product: Pick<ProductRow, 'features' | 'max_bore_size_mm' | 'max_bore_size_inch' | 'category'>
+): ProductFeature[] => {
+  const parsed = parseProductFeatures(product.features)
+  if (parsed?.length) return parsed
+  return defaultProductFeatures(product)
+}
+
+export const buildProductDetailBlocks = (
+  product: Pick<ProductRow, 'details' | 'description' | 'specs'>
+): ProductDetailBlock[] => {
+  const parsedSpecs = parseProductSpecs(product.specs)
+  const intro = product.details?.trim() || ''
+
+  if (parsedSpecs?.length) {
+    const blocks: ProductDetailBlock[] = []
+    if (intro) {
+      blocks.push({ type: 'paragraph', text: intro })
+    }
+    blocks.push({
+      type: 'list',
+      items: parsedSpecs.map(formatSpecBullet)
+    })
+    return blocks
+  }
+
+  return parseProductDetails(getProductDetailsText(product))
+}
+
+export const hydrateProductFormContent = (
+  product: Pick<ProductRow, 'details' | 'description' | 'features' | 'specs' | 'max_bore_size_mm' | 'max_bore_size_inch' | 'category'>
+) => {
+  const storedFeatures = parseProductFeatures(product.features) ?? []
+  const storedSpecs = parseProductSpecs(product.specs) ?? []
+  const rawDetails = product.details ?? product.description ?? ''
+
+  if (storedSpecs.length) {
+    return {
+      details: product.details?.trim() || '',
+      features: storedFeatures.length ? storedFeatures : defaultProductFeatures(product),
+      specs: storedSpecs
+    }
+  }
+
+  const legacy = splitLegacyDetails(rawDetails)
+  return {
+    details: legacy.intro,
+    features: storedFeatures.length ? storedFeatures : defaultProductFeatures(product),
+    specs: legacy.specs
+  }
+}
+
+export const PRODUCT_FEATURE_ICONS = [
+  { value: 'fas fa-ruler', label: 'Size / bore' },
+  { value: 'fas fa-arrows-left-right', label: 'Dimensions' },
+  { value: 'fas fa-shield-halved', label: 'Construction' },
+  { value: 'fas fa-link', label: 'Compatibility' },
+  { value: 'fas fa-gears', label: 'Engineering' },
+  { value: 'fas fa-clipboard-list', label: 'Ordering' },
+  { value: 'fas fa-fan', label: 'Category' },
+  { value: 'fas fa-circle-info', label: 'General info' }
+] as const
