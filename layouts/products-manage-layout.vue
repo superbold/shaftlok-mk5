@@ -60,6 +60,7 @@ const emptyProductForm = () => ({
   features: [],
   specs: [],
   price: '',
+  price_tiers: [],
   display: true
 })
 
@@ -84,6 +85,7 @@ const normalizeProductForm = (form) => ({
   features: sanitizeProductFeatures(form.features ?? []),
   specs: sanitizeProductSpecs(form.specs ?? []),
   price: form.price === '' || form.price == null ? '' : String(Number(form.price)),
+  price_tiers: sanitizeProductPriceTiers(form.price_tiers ?? []),
   display: form.display !== false
 })
 
@@ -133,6 +135,8 @@ const openEditModal = (product) => {
     features: hydrated.features,
     specs: hydrated.specs,
     price: product.price ?? '',
+    price_tiers: parseProductPriceTiers(product.price_tiers)
+      ?? (product.slug === MARINE_CONTROL_CABLE_SLUG ? [...DEFAULT_MARINE_CONTROL_CABLE_TIERS] : []),
     display: product.display !== false
   }
   captureProductFormSnapshot()
@@ -172,6 +176,7 @@ const buildPayload = () => {
     features: normalized.features.length ? normalized.features : null,
     specs: normalized.specs.length ? normalized.specs : null,
     price: normalized.price === '' ? null : Number(normalized.price),
+    price_tiers: normalized.price_tiers.length ? normalized.price_tiers : null,
     display: normalized.display !== false
   }
 }

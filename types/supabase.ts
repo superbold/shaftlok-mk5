@@ -30,6 +30,7 @@ export type Database = {
           max_bore_size_mm: number | null
           name: string
           price: number | null
+          price_tiers: Json | null
           slug: string | null
           specs: Json | null
           summary: string | null
@@ -51,6 +52,7 @@ export type Database = {
           max_bore_size_mm?: number | null
           name?: string
           price?: number | null
+          price_tiers?: Json | null
           slug?: string | null
           specs?: Json | null
           summary?: string | null
@@ -72,6 +74,7 @@ export type Database = {
           max_bore_size_mm?: number | null
           name?: string
           price?: number | null
+          price_tiers?: Json | null
           slug?: string | null
           specs?: Json | null
           summary?: string | null

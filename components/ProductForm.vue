@@ -131,7 +131,39 @@
           step="0.01"
           min="0"
           class="form-control"
+          :disabled="usesLengthPricing"
         >
+        <p v-if="usesLengthPricing" class="field-note">Single price is ignored while length tiers are set below.</p>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full-width">
+        <div class="field-label-row" :class="{ 'is-open': openHelpId === 'price-tiers' }">
+          <label>Length-based price tiers</label>
+          <div class="field-info">
+            <button
+              type="button"
+              class="field-info-btn"
+              aria-label="About length-based pricing"
+              :aria-expanded="openHelpId === 'price-tiers'"
+              aria-controls="product-price-tiers-help"
+              @click.stop="toggleHelp('price-tiers')"
+            >
+              <i class="fas fa-circle-info" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div
+            id="product-price-tiers-help"
+            class="field-info-tooltip"
+            role="tooltip"
+          >
+            Optional. Use for products priced by run length — e.g. Marine Control Cable (1–30′ tiers). When tiers are set, the public product page and Quote Management use them instead of the single Price field above. QMS line-item detail should include the length in feet (e.g. 15 ft).
+          </div>
+        </div>
+        <ProductPriceTierEditor
+          :model-value="modelValue.price_tiers ?? []"
+          @update:model-value="updateField('price_tiers', $event)"
+        />
       </div>
     </div>
     <div class="form-row">
@@ -349,6 +381,10 @@ const emit = defineEmits(['update:modelValue'])
 
 const openHelpId = ref(null)
 
+const usesLengthPricing = computed(() =>
+  Boolean(parseProductPriceTiers(props.modelValue.price_tiers)?.length)
+)
+
 const toggleHelp = (id) => {
   openHelpId.value = openHelpId.value === id ? null : id
 }
@@ -374,6 +410,17 @@ const updateField = (field, value) => {
 
 .form-group {
   flex: 1;
+}
+
+.form-group.full-width {
+  flex: 1 1 100%;
+}
+
+.field-note {
+  margin: 0.45rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-low);
+  line-height: 1.4;
 }
 
 .form-group > label:not(.toggle-label) {

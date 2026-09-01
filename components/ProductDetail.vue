@@ -20,12 +20,21 @@
         <div class="media-chip">
           <template v-if="formattedPrice">
             <i class="fas fa-tag"></i>
-            <span>Price <strong>{{ formattedPrice }}</strong></span>
+            <span v-if="priceTiers.length">Price by length <strong>{{ formattedPrice }}</strong></span>
+            <span v-else>Price <strong>{{ formattedPrice }}</strong></span>
           </template>
           <NuxtLink v-else to="/quote" class="media-chip-link">
             <i class="fas fa-envelope"></i>
             <span>Request Price &amp; Delivery</span>
           </NuxtLink>
+        </div>
+        <div v-if="priceTiers.length" class="price-tiers glass-card">
+          <h3><i class="fas fa-ruler"></i> Pricing by length</h3>
+          <ul>
+            <li v-for="(tier, i) in priceTiers" :key="i">
+              {{ formatPriceTierRange(tier) }} — <strong>{{ formatProductPrice(tier.price) }}</strong>
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -103,7 +112,13 @@ const productData = computed(() => product.value as ProductRow)
 const image = computed(() => productData.value.image_url ?? undefined)
 const imageAlt = computed(() => productData.value.alt ?? productData.value.name)
 const tagline = computed(() => getProductTagline(productData.value))
-const formattedPrice = computed(() => formatProductPrice(productData.value.price))
+const priceTiers = computed(() => getResolvedProductPriceTiers(productData.value) ?? [])
+const formattedPrice = computed(() => {
+  if (priceTiers.value.length) {
+    return getProductPriceRangeLabel(priceTiers.value)
+  }
+  return formatProductPrice(productData.value.price)
+})
 const categoryLabel = computed(() => productData.value.category || 'Propeller Control System')
 const features = computed(() => getProductFeaturesForDisplay(productData.value))
 const specs = computed(() => parseProductSpecs(productData.value.specs) ?? [])
@@ -291,6 +306,36 @@ useHead({
 
 .media-chip-link:hover i {
   color: var(--accent-2);
+}
+
+.price-tiers {
+  margin-top: 1rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius-md);
+}
+
+.price-tiers h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text-hi);
+}
+
+.price-tiers h3 i {
+  color: var(--accent);
+}
+
+.price-tiers ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--text-mid);
+  line-height: 1.65;
+}
+
+.price-tiers strong {
+  color: var(--text-hi);
 }
 
 .spec-grid {

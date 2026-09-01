@@ -42,6 +42,12 @@ In `pages/qms/[id].vue`, the Send button is disabled unless *all three* are true
 
 Whichever of the three are still missing is spelled out for the admin, not just a disabled button with no explanation. `missingSendRequirements` (computed) lists which of the three are unmet; `sendRequirementsHint` turns that into one sentence — e.g. "Before sending, you still need a price and a message to the sailor." — shown both as a `<p class="send-hint">` under the buttons and as the button's `title` tooltip. It's a single combined sentence listing everything missing, not one message per missing field.
 
+**Proactive field guidance** (`pages/qms/[id].vue`): Price and Message fields show a gold highlight and inline "Required before Quote Finished or send" hint while empty. The **Quote Finished** status option is disabled until both are filled (label suffix: `(needs price & message)`). A helper line under the status dropdown explains what's still needed, or "Ready to send" when status is Finished and fields are complete.
+
+**First-send confirmation**: Before the first email ever goes out (`sent_html` empty), clicking Send opens a confirm modal ("Send this quote to …?") — separate from the Already Sent re-send modal.
+
+**Catalog prices on quotes**: The Items Quoted picker loads `products.price` and `products.price_tiers`. When the admin selects products, **Price ($)** auto-sums list prices from Product Management (dropdown shows each product's price when set). Products with **length tiers** (Marine Control Cable) use the tier matching the line-item detail (e.g. `15 ft`) or the sailor's `cable_length` from the inquiry. The admin can still edit the total for shipping or custom adjustments; **Recalculate from items** resets to the catalog sum. Products without a list price (e.g. Mod VI) are skipped in the sum — hint shown on that row.
+
 ## Product Management
 
 Admin-facing product catalog editing at `/products/manage`, linked from `/adminaccess`. Public sailors see `/products` (catalog) and `/products/[slug]` (detail pages). All copy and specs live in the Supabase `products` table — there are no static per-product Vue pages anymore.
@@ -62,6 +68,7 @@ Admin-facing product catalog editing at `/products/manage`, linked from `/admina
 | Detail Bullets | `specs` (JSON) | Bullet list under the intro (`name`, `value` per row → rendered as `Label: Text`) |
 | Max Bore Size (mm / display) | `max_bore_size_mm`, `max_bore_size_inch` | Used for default highlight cards when `features` is empty; also JSON-LD |
 | Price (USD) | `price` | Chip under the product image; blank = "Request Price & Delivery" |
+| Length-based price tiers | `price_tiers` (JSON) | Optional foot-range tiers (`minFeet`, `maxFeet`, `price`). When set, overrides single Price on the public page and in QMS — e.g. Marine Control Cable 1–30′. Editable in Product Management under **Length-based price tiers**. |
 | Visibility toggle | `display` | `false` hides the product from the public catalog and detail routes |
 
 Locking-unit construction lines (Housing, Shaft collar, Rotating disc) belong in **Detail Bullets**, not Highlight Cards. Controls & Accessories (SSLS, Marine Control Cable) typically skip bore fields and use compatibility-style bullets instead.
@@ -90,6 +97,7 @@ Run in Supabase if not already applied:
 
 - `supabase/migrations/20260829_add_product_page_fields.sql` — `tagline`, `details`, `features`, `specs`
 - `supabase/migrations/20260829_add_product_price.sql` — `price`
+- `supabase/migrations/20260831_add_product_price_tiers.sql` — `price_tiers` JSON + Marine Control Cable seed tiers
 - `supabase/migrations/20260829_products_admin_write_policies.sql` — admin INSERT/UPDATE/DELETE
 
 Regenerate `types/supabase.ts` after schema changes (see `docs/supabase_types.md`).
