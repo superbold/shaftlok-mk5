@@ -35,6 +35,13 @@
 </template>
 
 <script setup>
+import {
+  DEFAULT_MARINE_CONTROL_CABLE_TIERS,
+  MARINE_CONTROL_CABLE_SLUG,
+  parseProductPriceTiers,
+  sanitizeProductPriceTiers
+} from '~~/utils/productPricing'
+
 const supabase = useSupabaseClient()
 const searchTerm = ref('')
 const productCount = ref(0)

@@ -244,6 +244,15 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import {
+  getProductLineItemPrice,
+  getProductPriceRangeFromProduct,
+  getResolvedProductPriceTiers,
+  getTierLengthBounds,
+  MARINE_CONTROL_CABLE_SLUG,
+  parseCableLengthFeet,
+  productUsesLengthPricing
+} from '~~/utils/productPricing'
 
 definePageMeta({
   layout: 'qms-layout',

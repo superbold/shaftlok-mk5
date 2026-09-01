@@ -370,6 +370,8 @@
 </template>
 
 <script setup>
+import { parseProductPriceTiers } from '~~/utils/productPricing'
+
 const props = defineProps({
   modelValue: {
     type: Object,

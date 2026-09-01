@@ -72,6 +72,11 @@
 
 <script setup lang="ts">
 import type { Database } from '~~/types/supabase'
+import {
+  formatPriceTierRange,
+  getProductPriceRangeLabel,
+  getResolvedProductPriceTiers
+} from '~~/utils/productPricing'
 
 type ProductRow = Database['public']['Tables']['products']['Row']
 
