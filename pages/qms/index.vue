@@ -15,6 +15,22 @@
       </div>
 
       <template v-else>
+        <div class="pipeline-strip" role="group" aria-label="Quote dollars by status">
+          <button
+            v-for="stage in statusPipeline"
+            :key="stage.value"
+            type="button"
+            class="pipeline-card glass-card"
+            :class="{ 'is-active': statusFilter === stage.value }"
+            :title="`Filter by ${stage.label}`"
+            @click="toggleStatusFilter(stage.value)"
+          >
+            <span class="status-badge" :class="`status-${stage.value}`">{{ stage.label }}</span>
+            <span class="pipeline-count">{{ stage.count }} {{ stage.count === 1 ? 'quote' : 'quotes' }}</span>
+            <span class="pipeline-total">{{ formatPipelinePrice(stage.total) }}</span>
+          </button>
+        </div>
+
         <div class="qms-toolbar">
           <div class="status-filter">
             <label for="status-filter">Status</label>
@@ -111,6 +127,29 @@ const statusLabel = quoteStatusLabel
 
 const formatDate = (value) => value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
 const formatPrice = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
+const formatPipelinePrice = (value) => new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0
+}).format(value || 0)
+
+const statusPipeline = computed(() =>
+  QUOTE_STATUSES.map((s) => {
+    const inStage = quotes.value.filter((q) => q.status === s.value)
+    const total = inStage.reduce((sum, q) => sum + (Number(q.quoted_price) || 0), 0)
+    return {
+      value: s.value,
+      label: s.label,
+      count: inStage.length,
+      total
+    }
+  })
+)
+
+const toggleStatusFilter = (value) => {
+  statusFilter.value = statusFilter.value === value ? 'all' : value
+}
 
 const filteredQuotes = computed(() => {
   let filtered = quotes.value
@@ -191,6 +230,53 @@ useHead({
 </script>
 
 <style scoped>
+.pipeline-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.pipeline-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 0.95rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--glass);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.pipeline-card:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+}
+
+.pipeline-card.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35), var(--shadow-card);
+}
+
+.pipeline-count {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-mid);
+  letter-spacing: 0.02em;
+}
+
+.pipeline-total {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-hi);
+  letter-spacing: -0.02em;
+}
+
 .qms-toolbar {
   display: flex;
   justify-content: flex-end;
@@ -261,4 +347,16 @@ useHead({
 }
 
 .delete-icon-btn:hover { background: rgba(248, 113, 113, 0.22); }
+
+@media (max-width: 960px) {
+  .pipeline-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .pipeline-strip {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
