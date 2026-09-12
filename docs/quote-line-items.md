@@ -12,7 +12,9 @@ Let the admin pick the actual product(s) being quoted from a dropdown on `/qms/:
 1. List those items.
 2. Show only the warning/info block relevant to items actually selected.
 
-**Pricing stays exactly as it was** — one admin-typed lump `quoted_price`. Line items are purely descriptive, not itemized pricing. This was a deliberate scope decision to avoid building a full per-item invoice system when a simple items-list solves the actual problem (confusing/irrelevant warning text).
+**Pricing (updated):** each line stores an editable `price` seeded from Product Management. `quoted_price` on the quote is the sum of those line prices (products only; shipping is separate). The sailor email itemizes each line's dollar amount.
+
+Originally, pricing was a single admin-typed lump `quoted_price` and line items were purely descriptive. That was later superseded so the customer quote can show per-item prices while still allowing overrides on the quote.
 
 Three admin-UI options were considered: free-text items, checkboxes reusing the existing `locking_system` intake field, or a structured product picker sourced from the real product catalog. The structured picker was chosen — checkboxes only covered the cable/SSLS case, not other products, and free text couldn't reliably drive which warning block(s) to include.
 
@@ -26,11 +28,12 @@ ALTER TABLE public.quotes ADD COLUMN line_items jsonb NOT NULL DEFAULT '[]'::jso
 
 Array of objects:
 ```json
-[{ "product_slug": "marine-control-cable", "product_name": "Marine Control Cable", "detail": "15 ft" }]
+[{ "product_slug": "marine-control-cable", "product_name": "Marine Control Cable", "detail": "15 ft", "price": 221 }]
 ```
 
 - `product_slug` + `product_name` are a **snapshot** taken when the admin picks the product on `/qms/:id` — not a live join against the `products` table. If a product is later renamed or archived, an already-sent quote still reads correctly. No foreign key to `products.slug`.
-- `detail` is one generic optional free-text field on every row (not split into typed quantity/length fields) — covers "15 ft" for a cable today, "x2" for a twin-screw boat quoting two units, or nothing at all, without needing conditional per-product fields in the row UI.
+- `detail` is one generic optional free-text field on every row (not split into typed quantity/length fields) — covers "15 ft" for a cable today, "x2" for a twin-screw boat quoting two units, or nothing at all, without needing conditional per-product fields in the row UI. For "x2", the admin edits the line `price` to the desired line total (no auto-multiply).
+- `price` is the dollar amount for that row. Seeded from `products.price` / length tiers when the product (or cable length detail) changes; editable afterward on the quote.
 - `product_slug` is the key used to decide which warning block(s), if any, the email includes.
 - Existing rows (and any quote that never gets items added) default to `[]` — this is not a regression, see "Backward Compatibility" below.
 
@@ -51,17 +54,20 @@ Nuxt auto-imports everything in `utils/`, so this needs no import statement anyw
 
 The two entries above are the original combined cable/SSLS block, split by product with every sentence preserved and reattributed to whichever product it actually describes.
 
-**3. Admin UI** (`pages/qms/[id].vue`) — a new "Items Quoted" field group between the Price and Message fields. Each row: a product `<select>` + a free-text `detail` `<input>` + a remove button; an "Add Item" button appends a blank row. This is the first repeatable add/remove-row UI pattern in the codebase.
+**3. Admin UI** (`pages/qms/[id].vue`) — "Items Quoted" rows: product `<select>` + free-text `detail` + editable `price` + remove. Catalog price seeds the price field; **Reset from catalog** when overridden. Products subtotal is read-only (sum of line prices).
 
-**4. Email restructure** (`server/api/qms/send-quote.post.ts`) — builds two derived HTML strings after fetching the quote:
-- `itemsHtml` — an "Items Quoted" card listing each item's name + detail, or `''` if there are none.
-- `warningsHtml` — deduplicates items by `product_slug`, looks each up in `QUOTE_ITEM_WARNINGS`, and renders a card per match. An item with no registry entry (e.g. a Mod unit on its own) contributes nothing.
+**4. Email** (`server/api/qms/send-quote.post.ts`) — builds derived HTML after fetching the quote:
+- Quote Total card — Products (sum of line prices) / Shipping / Total
+- `itemsHtml` — each item's name + detail + line price
+- `warningsHtml` — deduplicates items by `product_slug`, looks each up in `QUOTE_ITEM_WARNINGS`, and renders a card per match
 
-Email order: Quoted Price → Items Quoted → Message → per-item warnings → Payment (unconditional, untouched by this feature) → closing line.
+Email order: Quote Total → Items Quoted → Message → per-item warnings → Payment → closing line.
 
 ## Backward Compatibility
 
-For any quote with `line_items = []` — every existing quote as of the migration, and any new quote before an admin adds items — `itemsHtml` and `warningsHtml` both evaluate to empty strings. The email degrades to Price → Message → Payment, with no cable/SSLS text at all. This was an explicit decision: the old always-on cable+SSLS text was already replaced earlier in the same effort, so there's no old behavior to preserve — an admin working an existing quote just adds items via the new UI before sending, the same way they already fill in price and notes.
+For any quote with `line_items = []` — send is blocked until the admin adds priced items (and shipping + message). Legacy lines missing `price` are seeded from the catalog on load when a list/tier price exists; otherwise the price field stays empty for manual entry.
+
+Already-sent HTML is not rewritten — a re-send picks up the current itemized layout.
 
 ## Files Touched
 

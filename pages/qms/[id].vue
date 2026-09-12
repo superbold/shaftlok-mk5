@@ -68,10 +68,10 @@
                 </option>
               </select>
               <p v-if="needsPrice || needsShippingPrice || needsShippingNotes || needsMessage" class="field-hint">
-                Set products price, shipping, and message below before sending.
+                Set item prices, shipping, and message below before sending.
               </p>
               <p v-else-if="editForm.status === 'new'" class="field-hint field-hint-ready">
-                Ready to send — products, shipping, and message are filled in.
+                Ready to send — items, shipping, and message are filled in.
               </p>
             </div>
 
@@ -89,17 +89,38 @@
                       {{ productOptionLabel(p) }}
                     </option>
                   </select>
-                  <p v-if="lineItemPriceHint(item)" class="line-item-hint" :class="{ 'line-item-hint-ready': getLineItemPrice(item) != null }">
+                  <p v-if="lineItemPriceHint(item)" class="line-item-hint" :class="{ 'line-item-hint-ready': getCatalogLinePrice(item) != null && !item.price_manual }">
                     {{ lineItemPriceHint(item) }}
                   </p>
+                  <button
+                    v-if="item.price_manual && getCatalogLinePrice(item) != null"
+                    type="button"
+                    class="btn-link-recalc"
+                    @click="resetLineItemPrice(i)"
+                  >
+                    Reset from catalog
+                  </button>
                 </div>
                 <input
                   v-model="item.detail"
                   type="text"
-                  class="form-control"
+                  class="form-control line-item-detail"
                   :placeholder="detailPlaceholder(item.product_slug)"
-                  @input="onLineItemDetailInput"
+                  @input="onLineItemDetailInput(i)"
                 />
+                <div class="line-item-price">
+                  <input
+                    v-model="item.price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    class="form-control"
+                    :class="{ 'form-control-attention': item.product_slug && parseMoneyField(item.price) == null }"
+                    placeholder="Price"
+                    aria-label="Item price"
+                    @input="onLineItemPriceInput(i)"
+                  />
+                </div>
                 <button type="button" class="btn btn-secondary btn-icon" @click="removeLineItem(i)" aria-label="Remove item">
                   <i class="fas fa-times"></i>
                 </button>
@@ -107,36 +128,17 @@
               <button type="button" class="btn btn-secondary" @click="addLineItem">
                 <i class="fas fa-plus"></i> Add Item
               </button>
+              <p v-if="needsPrice" class="field-hint">Each item needs a price before send.</p>
             </div>
 
             <div class="form-group">
-              <label for="quoted-price">Products ($)</label>
-              <input
-                id="quoted-price"
-                v-model="editForm.quoted_price"
-                type="number"
-                step="0.01"
-                min="0"
-                class="form-control"
-                :class="{ 'form-control-attention': needsPrice }"
-                placeholder="e.g. 850.00"
-                @input="onQuotedPriceInput"
-              />
-              <p v-if="needsPrice" class="field-hint">Required before send.</p>
-              <p v-else-if="catalogPriceTotal != null && !quotedPriceManual" class="field-hint field-hint-ready">
-                Summed from catalog prices{{ hasLengthPricedLineItem ? ' (length tiers apply)' : '' }}.
+              <div class="quote-subtotal-row" :class="{ 'is-incomplete': needsPrice }">
+                <span>Products</span>
+                <strong>{{ needsPrice ? '—' : formatMoney(editForm.quoted_price) }}</strong>
+              </div>
+              <p v-if="!needsPrice" class="field-hint field-hint-ready">
+                Sum of item prices{{ hasLengthPricedLineItem ? ' (length tiers apply when seeded)' : '' }}.
               </p>
-              <p v-else-if="unpricedLineItemNames.length" class="field-hint">
-                No list price yet for: {{ unpricedLineItemNames.join(', ') }}.
-              </p>
-              <button
-                v-if="quotedPriceManual && catalogPriceTotal != null"
-                type="button"
-                class="btn-link-recalc"
-                @click="recalculateQuotedPrice"
-              >
-                Recalculate from items
-              </button>
             </div>
 
             <div class="form-group shipping-section">
@@ -323,7 +325,6 @@ const editForm = ref({
   line_items: []
 })
 const pickableProducts = ref([])
-const quotedPriceManual = ref(false)
 
 const statusLabel = quoteStatusLabel
 const formatDate = (value) => value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
@@ -338,7 +339,8 @@ const parseMoneyField = (value) => {
 const getProductBySlug = (slug) =>
   pickableProducts.value.find((p) => p.slug === slug)
 
-const getLineItemPrice = (item) => {
+/** Catalog list/tier price for a line (not the editable stored price). */
+const getCatalogLinePrice = (item) => {
   if (!item?.product_slug) return null
   return getProductLineItemPrice(
     getProductBySlug(item.product_slug),
@@ -356,102 +358,146 @@ const productOptionLabel = (product) => {
   return formatted ? `${product.name} — ${formatted}` : product.name
 }
 
-const sumCatalogPrices = () => {
-  let sum = 0
-  let hasPricedItem = false
+const selectedLineItems = () =>
+  editForm.value.line_items.filter((item) => item.product_slug)
 
-  for (const item of editForm.value.line_items) {
-    const price = getLineItemPrice(item)
-    if (price == null) continue
-    sum += price
-    hasPricedItem = true
+const syncQuotedPriceFromLineItems = () => {
+  const selected = selectedLineItems()
+  if (!selected.length || selected.some((item) => parseMoneyField(item.price) == null)) {
+    editForm.value.quoted_price = ''
+    return
   }
-
-  return hasPricedItem ? sum : null
+  const total = selected.reduce((sum, item) => sum + parseMoneyField(item.price), 0)
+  editForm.value.quoted_price = Number(total.toFixed(2))
 }
 
-const catalogPriceTotal = computed(() => sumCatalogPrices())
+const seedLineItemPrice = (i, { force = false } = {}) => {
+  const item = editForm.value.line_items[i]
+  if (!item?.product_slug) return
+  if (item.price_manual && !force) return
+  const catalog = getCatalogLinePrice(item)
+  if (catalog != null) {
+    item.price = Number(catalog.toFixed(2))
+    item.price_manual = false
+  } else if (force || parseMoneyField(item.price) == null) {
+    item.price = ''
+    item.price_manual = false
+  }
+  syncQuotedPriceFromLineItems()
+}
+
+const hydrateLineItemPrices = (items) => {
+  for (const item of items) {
+    if (!item.product_slug) {
+      item.price = item.price ?? ''
+      item.price_manual = false
+      continue
+    }
+    const stored = parseMoneyField(item.price)
+    const catalog = getCatalogLinePrice(item)
+    if (stored == null && catalog != null) {
+      item.price = Number(catalog.toFixed(2))
+      item.price_manual = false
+    } else if (stored != null) {
+      item.price = Number(stored.toFixed(2))
+      item.price_manual = catalog == null || stored !== Number(catalog.toFixed(2))
+    } else {
+      item.price = ''
+      item.price_manual = false
+    }
+  }
+}
 
 const hasLengthPricedLineItem = computed(() =>
   editForm.value.line_items.some((item) => productUsesLengthPricing(getProductBySlug(item.product_slug)))
 )
 
-const unpricedLineItemNames = computed(() =>
-  editForm.value.line_items
-    .filter((item) => item.product_slug && getLineItemPrice(item) == null)
-    .map((item) => item.product_name || item.product_slug)
-)
-
 const lineItemPriceHint = (item) => {
   if (!item.product_slug) return ''
   const product = getProductBySlug(item.product_slug)
-  const price = getLineItemPrice(item)
-  if (price != null) {
+  const catalog = getCatalogLinePrice(item)
+  if (item.price_manual && catalog != null) {
+    return `Edited — catalog is ${formatProductPrice(catalog)}.`
+  }
+  if (catalog != null && !item.price_manual) {
     const feet = parseCableLengthFeet(item.detail) ?? parseCableLengthFeet(quote.value?.cable_length)
     return feet && productUsesLengthPricing(product)
-      ? `Catalog price: ${formatProductPrice(price)} (${feet}′ tier)`
-      : `Catalog price: ${formatProductPrice(price)}`
+      ? `From catalog: ${formatProductPrice(catalog)} (${feet}′ tier)`
+      : `From catalog: ${formatProductPrice(catalog)}`
   }
   if (productUsesLengthPricing(product)) {
     const tiers = getResolvedProductPriceTiers(product)
     const bounds = tiers ? getTierLengthBounds(tiers) : { minFeet: 1, maxFeet: 30 }
     const feet = parseCableLengthFeet(item.detail) ?? parseCableLengthFeet(quote.value?.cable_length)
     if (feet != null) {
-      return `Length ${feet}′ is outside the ${bounds.minFeet}–${bounds.maxFeet}′ catalog range — include in total manually.`
+      return `Length ${feet}′ is outside the ${bounds.minFeet}–${bounds.maxFeet}′ catalog range — enter price manually.`
     }
-    return `Enter length in feet (${bounds.minFeet}–${bounds.maxFeet}′) for tier pricing.`
+    return `Enter length in feet (${bounds.minFeet}–${bounds.maxFeet}′) for tier pricing, or enter price manually.`
   }
   if (product?.price == null || product?.price === '') {
-    return 'No list price — add one in Product Management or include in total below.'
+    return 'No list price in Product Management — enter price manually.'
   }
   return ''
 }
 
-const syncQuotedPriceFromItems = () => {
-  if (quotedPriceManual.value) return
-  const total = sumCatalogPrices()
-  if (total != null) {
-    editForm.value.quoted_price = Number(total.toFixed(2))
-  } else {
-    editForm.value.quoted_price = ''
-  }
-}
-
-const onQuotedPriceInput = () => {
-  quotedPriceManual.value = true
-}
-
-const recalculateQuotedPrice = () => {
-  quotedPriceManual.value = false
-  syncQuotedPriceFromItems()
-}
-
 const addLineItem = () => {
-  editForm.value.line_items.push({ product_slug: '', product_name: '', detail: '' })
+  editForm.value.line_items.push({
+    product_slug: '',
+    product_name: '',
+    detail: '',
+    price: '',
+    price_manual: false
+  })
 }
 const removeLineItem = (i) => {
   editForm.value.line_items.splice(i, 1)
-  syncQuotedPriceFromItems()
+  syncQuotedPriceFromLineItems()
 }
 const onLineItemProductChange = (i, slug) => {
   const product = pickableProducts.value.find((p) => p.slug === slug)
-  editForm.value.line_items[i].product_slug = slug
-  editForm.value.line_items[i].product_name = product?.name ?? ''
-  if (slug === MARINE_CONTROL_CABLE_SLUG && quote.value?.cable_length && !editForm.value.line_items[i].detail?.trim()) {
-    editForm.value.line_items[i].detail = `${quote.value.cable_length} ft`
+  const item = editForm.value.line_items[i]
+  item.product_slug = slug
+  item.product_name = product?.name ?? ''
+  item.price_manual = false
+  if (slug === MARINE_CONTROL_CABLE_SLUG && quote.value?.cable_length && !item.detail?.trim()) {
+    item.detail = `${quote.value.cable_length} ft`
   }
-  syncQuotedPriceFromItems()
+  seedLineItemPrice(i, { force: true })
 }
 
-const onLineItemDetailInput = () => {
-  syncQuotedPriceFromItems()
+const onLineItemDetailInput = (i) => {
+  seedLineItemPrice(i)
 }
+
+const onLineItemPriceInput = (i) => {
+  editForm.value.line_items[i].price_manual = true
+  syncQuotedPriceFromLineItems()
+}
+
+const resetLineItemPrice = (i) => {
+  editForm.value.line_items[i].price_manual = false
+  seedLineItemPrice(i, { force: true })
+}
+
+const serializeLineItems = (items) => (Array.isArray(items) ? items : [])
+  .filter((li) => li?.product_slug)
+  .map((li) => ({
+    product_slug: li.product_slug,
+    product_name: li.product_name ?? '',
+    detail: li.detail?.trim() ? li.detail.trim() : null,
+    price: parseMoneyField(li.price)
+  }))
+
 const detailPlaceholder = (slug) =>
   slug === 'marine-control-cable' ? 'e.g. 15 ft' : 'e.g. x2 (optional)'
 
 const applicableWarnings = computed(() => getApplicableWarnings(editForm.value.line_items))
 
-const needsPrice = computed(() => editForm.value.quoted_price === '' || editForm.value.quoted_price == null)
+const needsPrice = computed(() => {
+  const selected = selectedLineItems()
+  if (!selected.length) return true
+  return selected.some((item) => parseMoneyField(item.price) == null)
+})
 const needsShippingPrice = computed(() => editForm.value.shipping_price === '' || editForm.value.shipping_price == null)
 const needsShippingNotes = computed(() => !editForm.value.shipping_notes?.trim())
 const needsMessage = computed(() => !editForm.value.quote_notes?.trim())
@@ -472,7 +518,9 @@ const onStatusChange = (event) => {
 
 const missingSendRequirements = computed(() => {
   const missing = []
-  if (needsPrice.value) missing.push('a products price')
+  if (needsPrice.value) {
+    missing.push(selectedLineItems().length ? 'a price on each quoted item' : 'at least one quoted item with a price')
+  }
   if (needsShippingNotes.value) missing.push('shipping details')
   if (needsShippingPrice.value) missing.push('a shipping price')
   if (needsMessage.value) missing.push('a message to the sailor')
@@ -488,9 +536,7 @@ const sendRequirementsHint = computed(() => {
   return `Before sending, you still need ${rest.join(', ')} and ${last}.`
 })
 
-const normalizeLineItems = (items) => (Array.isArray(items) ? items : [])
-  .filter((li) => li?.product_slug)
-  .map((li) => ({ product_slug: li.product_slug, product_name: li.product_name ?? '', detail: li.detail || null }))
+const normalizeLineItems = (items) => serializeLineItems(items)
 
 // Legacy quotes sent before the sent_* snapshot columns existed have
 // sent_quoted_price === null even though sent_html is set — treat those as
@@ -595,8 +641,15 @@ const loadQuote = async () => {
     if (fetchError) throw fetchError
 
     quote.value = data
-    quotedPriceManual.value = data.quoted_price != null && data.quoted_price !== ''
-    const lineItems = Array.isArray(data.line_items) ? data.line_items.map((item) => ({ ...item })) : []
+    const lineItems = Array.isArray(data.line_items)
+      ? data.line_items.map((item) => ({
+          product_slug: item.product_slug ?? '',
+          product_name: item.product_name ?? '',
+          detail: item.detail ?? '',
+          price: item.price ?? '',
+          price_manual: false
+        }))
+      : []
     if (data.locking_system === 'cable' && data.cable_length) {
       for (const item of lineItems) {
         if (item.product_slug === MARINE_CONTROL_CABLE_SLUG && !item.detail?.trim()) {
@@ -604,6 +657,7 @@ const loadQuote = async () => {
         }
       }
     }
+    hydrateLineItemPrices(lineItems)
     editForm.value = {
       status: data.status,
       quoted_price: data.quoted_price ?? '',
@@ -612,7 +666,7 @@ const loadQuote = async () => {
       quote_notes: data.quote_notes ?? '',
       line_items: lineItems
     }
-    syncQuotedPriceFromItems()
+    syncQuotedPriceFromLineItems()
   } catch (err) {
     console.error('Error loading quote:', err)
     error.value = `Failed to load quote: ${err.message}`
@@ -627,6 +681,8 @@ const saveQuote = async () => {
     saveMessage.value = ''
     saveError.value = false
 
+    syncQuotedPriceFromLineItems()
+
     const { error: updateError } = await supabase
       .from('quotes')
       .update({
@@ -635,7 +691,7 @@ const saveQuote = async () => {
         shipping_price: editForm.value.shipping_price === '' ? null : editForm.value.shipping_price,
         shipping_notes: editForm.value.shipping_notes?.trim() || null,
         quote_notes: editForm.value.quote_notes || null,
-        line_items: editForm.value.line_items.filter((li) => li.product_slug),
+        line_items: serializeLineItems(editForm.value.line_items),
         updated_at: new Date().toISOString()
       })
       .eq('id', quote.value.id)
@@ -659,6 +715,8 @@ const sendQuote = async () => {
     saveMessage.value = ''
     saveError.value = false
 
+    syncQuotedPriceFromLineItems()
+
     // Persist any pending edits before sending
     const { error: updateError } = await supabase
       .from('quotes')
@@ -668,7 +726,7 @@ const sendQuote = async () => {
         shipping_price: editForm.value.shipping_price === '' ? null : editForm.value.shipping_price,
         shipping_notes: editForm.value.shipping_notes?.trim() || null,
         quote_notes: editForm.value.quote_notes || null,
-        line_items: editForm.value.line_items.filter((li) => li.product_slug),
+        line_items: serializeLineItems(editForm.value.line_items),
         updated_at: new Date().toISOString()
       })
       .eq('id', quote.value.id)
@@ -732,12 +790,11 @@ const loadPickableProducts = async () => {
     .order('id', { ascending: true })
 
   pickableProducts.value = data || []
-  syncQuotedPriceFromItems()
 }
 
-onMounted(() => {
-  loadQuote()
-  loadPickableProducts()
+onMounted(async () => {
+  await loadPickableProducts()
+  await loadQuote()
 })
 
 useHead({
@@ -912,13 +969,22 @@ textarea.form-control { resize: vertical; }
 .line-item-row {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.75rem;
   align-items: flex-start;
 }
 
 .line-item-product {
-  flex: 2;
+  flex: 2.2;
   min-width: 0;
+}
+
+.line-item-detail {
+  flex: 1;
+  min-width: 5rem;
+}
+
+.line-item-price {
+  flex: 0 0 6.5rem;
 }
 
 .line-item-hint {
@@ -928,17 +994,43 @@ textarea.form-control { resize: vertical; }
   line-height: 1.35;
 }
 
+.line-item-hint-ready {
+  color: #5EEAD4;
+}
+
 .line-item-row select.form-control { width: 100%; }
-.line-item-row > .form-control:not(select) { flex: 1; }
+
+.quote-subtotal-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(13, 27, 54, 0.45);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-hi);
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+}
+
+.quote-subtotal-row.is-incomplete {
+  border-color: rgba(245, 198, 107, 0.45);
+}
+
+.quote-subtotal-row strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
 
 .btn-link-recalc {
-  margin-top: 0.45rem;
+  margin-top: 0.35rem;
   padding: 0;
   border: none;
   background: none;
   color: var(--accent);
   font-family: var(--font-display);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
@@ -995,6 +1087,22 @@ textarea.form-control { resize: vertical; }
 }
 
 @media (max-width: 640px) {
+  .line-item-row {
+    flex-wrap: wrap;
+  }
+
+  .line-item-product {
+    flex: 1 1 100%;
+  }
+
+  .line-item-detail {
+    flex: 1 1 calc(100% - 8rem);
+  }
+
+  .line-item-price {
+    flex: 0 0 6.5rem;
+  }
+
   .shipping-fields {
     grid-template-columns: 1fr;
   }

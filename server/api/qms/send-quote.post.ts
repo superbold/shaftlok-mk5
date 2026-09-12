@@ -36,17 +36,33 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Quote not found.' })
   }
 
+  const lineItems = Array.isArray(quote.line_items)
+    ? (quote.line_items as { product_slug: string; product_name: string; detail: string | null; price?: number | null }[])
+        .filter((item) => item?.product_slug)
+    : []
+
+  const linePrices = lineItems.map((item) => {
+    if (item.price === null || item.price === undefined || item.price === '') return null
+    const n = Number(item.price)
+    return Number.isFinite(n) ? n : null
+  })
+
   if (
-    quote.quoted_price == null ||
-    quote.shipping_price == null ||
-    !String(quote.shipping_notes || '').trim() ||
-    !quote.quote_notes
+    !lineItems.length
+    || linePrices.some((price) => price == null)
+    || quote.shipping_price == null
+    || !String(quote.shipping_notes || '').trim()
+    || !quote.quote_notes
   ) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Set products price, shipping (details and price), and quote message before sending.'
+      statusMessage: 'Set a price on each quoted item, shipping (details and price), and quote message before sending.'
     })
   }
+
+  const productsPrice = Number(
+    linePrices.reduce((sum, price) => sum + (price as number), 0).toFixed(2)
+  )
 
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
@@ -63,7 +79,6 @@ export default defineEventHandler(async (event) => {
 
   const money = (value: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-  const productsPrice = Number(quote.quoted_price)
   const shippingPrice = Number(quote.shipping_price)
   const grandTotal = productsPrice + shippingPrice
   const formattedProducts = money(productsPrice)
@@ -74,19 +89,26 @@ export default defineEventHandler(async (event) => {
   const safeQuoteNotes = escapeHtml(quote.quote_notes)
   const safeShippingNotes = escapeHtml(String(quote.shipping_notes).trim())
 
-  const lineItems = Array.isArray(quote.line_items)
-    ? (quote.line_items as { product_slug: string; product_name: string; detail: string | null }[])
-    : []
+  const normalizedLineItems = lineItems.map((item, index) => ({
+    product_slug: item.product_slug,
+    product_name: item.product_name ?? '',
+    detail: item.detail || null,
+    price: linePrices[index] as number
+  }))
 
-  const itemsHtml = lineItems.length
-    ? `
+  const itemsHtml = `
       <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
-        <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Items Quoted</p>
-        ${lineItems.map((item) => `<p style="margin:0 0 6px;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6">${escapeHtml(item.product_name)}${item.detail ? ` — ${escapeHtml(item.detail)}` : ''}</p>`).join('')}
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Items Quoted</p>
+        <table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;color:#EFF6FF">
+          ${normalizedLineItems.map((item) => `
+          <tr>
+            <td style="padding:0 12px 10px 0;vertical-align:top;color:#EFF6FF">${escapeHtml(item.product_name)}${item.detail ? ` — ${escapeHtml(item.detail)}` : ''}</td>
+            <td style="padding:0 0 10px;text-align:right;white-space:nowrap;vertical-align:top">${money(item.price)}</td>
+          </tr>`).join('')}
+        </table>
       </div>`
-    : ''
 
-  const warningsHtml = getApplicableWarnings(lineItems)
+  const warningsHtml = getApplicableWarnings(normalizedLineItems)
     .map((warning) => `
       <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
         <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">${escapeHtml(warning.title)}</p>
@@ -173,11 +195,13 @@ export default defineEventHandler(async (event) => {
     .from('quotes')
     .update({
       status: 'sent',
+      quoted_price: productsPrice,
+      line_items: normalizedLineItems,
       sent_at: sentAt,
       sent_html: html,
-      sent_quoted_price: quote.quoted_price,
+      sent_quoted_price: productsPrice,
       sent_quote_notes: quote.quote_notes,
-      sent_line_items: quote.line_items,
+      sent_line_items: normalizedLineItems,
       sent_shipping_price: quote.shipping_price,
       sent_shipping_notes: quote.shipping_notes,
       updated_at: sentAt

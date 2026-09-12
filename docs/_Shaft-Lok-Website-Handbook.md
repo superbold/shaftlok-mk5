@@ -10,7 +10,9 @@ Admin-facing quote workflow at `/qms` (list) and `/qms/:id` (detail/edit/send), 
 
 A `quotes` row is created once, when a sailor submits the public quote form (`server/api/quote.post.ts`). Every admin action after that — Save, Send, Mark Won/Dead — is an `update` on that same row, never a new insert. There's no versioning: the row only ever holds the *latest* draft (`quoted_price`, `shipping_price`, `shipping_notes`, `quote_notes`, `line_items`) plus a snapshot of the *last sent* version (`sent_html`, `sent_at`, `sent_quoted_price`, `sent_shipping_price`, `sent_shipping_notes`, `sent_quote_notes`, `sent_line_items`). A re-send overwrites the previous snapshot — "most recent send wins" (see `docs/QMS_Store-and-View_plan.md`).
 
-`quoted_price` is **products only**. Grand total is always `quoted_price + shipping_price`. Pipeline dollars on `/qms` and the list Total column use that grand total.
+`quoted_price` is **products only** — always the sum of `line_items[].price`. Grand total is always `quoted_price + shipping_price`. Pipeline dollars on `/qms` and the list Total column use that grand total.
+
+Each `line_items` entry is `{ product_slug, product_name, detail, price }`. Price is seeded from Product Management (`products.price` / length tiers) when the admin picks a product, then editable on the quote. `price_manual` is UI-only and not persisted.
 
 ### Per-item warnings
 
@@ -48,17 +50,17 @@ Legacy statuses (`quoted`, `in_review`, `finished`, `lost`) were remapped by `su
 
 ### "Send Quote to Sailor" button gating
 
-In `pages/qms/[id].vue`, the Send button is disabled unless **products price**, **shipping** (details + price), and **message** are set. Shipping price may be `0` when shipping is included — details still required. Status no longer gates send — drafting stays on **New** until send succeeds (server sets status to `sent`). The server endpoint (`server/api/qms/send-quote.post.ts`) re-checks the same fields and returns `400` if any are missing.
+In `pages/qms/[id].vue`, the Send button is disabled unless **every quoted item has a price**, **shipping** (details + price), and **message** are set. Shipping price may be `0` when shipping is included — details still required. Status no longer gates send — drafting stays on **New** until send succeeds (server sets status to `sent`). The server endpoint (`server/api/qms/send-quote.post.ts`) re-checks the same fields, recomputes `quoted_price` from line prices, and returns `400` if any are missing.
 
-`missingSendRequirements` lists unmet requirements; `sendRequirementsHint` turns that into one sentence — e.g. "Before sending, you still need a products price, shipping details, a shipping price, and a message to the sailor." — shown under the buttons and as the button's `title` tooltip.
+`missingSendRequirements` lists unmet requirements; `sendRequirementsHint` turns that into one sentence — e.g. "Before sending, you still need a price on each quoted item, shipping details, a shipping price, and a message to the sailor." — shown under the buttons and as the button's `title` tooltip.
 
-**Proactive field guidance** (`pages/qms/[id].vue`): Products, Shipping, and Message fields show a gold highlight and inline "Required before send" hint while empty. A helper under the status dropdown says "Ready to send" when status is New and all required fields are complete. **Followed up** is disabled with suffix `(send quote first)` until the quote has been emailed.
+**Proactive field guidance** (`pages/qms/[id].vue`): Missing item prices, Shipping, and Message fields show a gold highlight and inline hint while empty. A helper under the status dropdown says "Ready to send" when status is New and all required fields are complete. **Followed up** is disabled with suffix `(send quote first)` until the quote has been emailed.
 
 **First-send confirmation**: Before the first email ever goes out (`sent_html` empty), clicking Send opens a confirm modal ("Send this quote to …?") — separate from the Already Sent re-send modal.
 
-**Catalog prices on quotes**: The Items Quoted picker loads `products.price` and `products.price_tiers`. When the admin selects products, **Products ($)** auto-sums list prices from Product Management (dropdown shows each product's price when set). Products with **length tiers** (Marine Control Cable) use the tier matching the line-item detail (e.g. `15 ft`) or the sailor's `cable_length` from the inquiry. The admin can still edit the products total; **Recalculate from items** resets to the catalog sum. Shipping is a separate required line (details + price); Total is read-only products + shipping. Products without a list price (e.g. Mod VI) are skipped in the sum — hint shown on that row.
+**Catalog prices on quotes**: The Items Quoted picker loads `products.price` and `products.price_tiers`. Selecting a product seeds that row's **Price ($)** from the catalog (length tiers use line detail or the sailor's `cable_length`). The admin can edit the line price afterward; **Reset from catalog** appears when overridden. **Products** is a read-only sum of line prices. Shipping is a separate required line (details + price); Total is products + shipping. Products without a list price (e.g. Mod VI) leave the price blank for manual entry.
 
-**Quote email**: Shows Products / Shipping (with details) / Total, then items, message, warnings, and payment.
+**Quote email**: Quote Total (Products / Shipping / Total), then Items Quoted with each line's name, detail, and price, then message, warnings, and payment.
 
 ## Product Management
 

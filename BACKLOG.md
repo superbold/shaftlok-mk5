@@ -69,6 +69,10 @@ PWA features and further image optimization.
 
 ## Done
 
+### Itemized line prices on quotes ✓
+
+Each `line_items` entry stores editable `price` (seeded from Product Management). Products subtotal = sum of lines; sailor email itemizes name + price. Shipping unchanged.
+
 ### Shipping on quotes ✓
 
 `quoted_price` = products only; `shipping_price` + `shipping_notes` required before send (price may be `$0` if included). Total = products + shipping on QMS form, list/pipeline, and sailor email. Migration: `20260912_add_quote_shipping.sql`.
@@ -95,7 +99,7 @@ Dynamic `/products/[slug]` from the `products` table; admin CRUD at `/products/m
 
 ### QMS proactive send validation ✓
 
-Products, Shipping (details + price), and Message fields highlight with inline hints while empty. Send requires those fields (status stays New until send). Handbook: "Send Quote to Sailor" button gating.
+Item prices, Shipping (details + price), and Message fields highlight with inline hints while empty. Send requires priced line items plus shipping and message (status stays New until send). Handbook: "Send Quote to Sailor" button gating.
 
 ### Simplified quote statuses ✓
 
