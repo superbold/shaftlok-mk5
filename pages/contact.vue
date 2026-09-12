@@ -19,7 +19,7 @@
         <div class="contact-card glass-card hoverable" v-reveal="80">
           <i class="fas fa-phone contact-icon"></i>
           <h3>Phone</h3>
-          <p><a href="tel:+12627866800">1-262-786-6800</a></p>
+          <p><a href="tel:+14146304548">1-414-630-4548</a></p>
         </div>
         <div class="contact-card glass-card hoverable" v-reveal="160">
           <i class="fas fa-map-marker-alt contact-icon"></i>
@@ -115,7 +115,7 @@ useHead({
         url: 'https://shaftlok.com',
         logo: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png',
         image: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png',
-        telephone: '+1-262-786-6800',
+        telephone: '+1-414-630-4548',
         email: 'sean.nigel@shaftlok.com',
         foundingDate: '1979',
         address: {
@@ -144,7 +144,7 @@ useHead({
         contactPoint: [
           {
             '@type': 'ContactPoint',
-            telephone: '+1-262-786-6800',
+            telephone: '+1-414-630-4548',
             contactType: 'Customer Service',
             availableLanguage: 'English',
             areaServed: 'US',

@@ -32,7 +32,7 @@
     <div class="faq-cta glass-card" v-reveal>
       <div>
         <h2>Still have a question?</h2>
-        <p>Call 1-262-786-6800 or send us your vessel details — we answer every inquiry.</p>
+        <p>Call 1-414-630-4548 or send us your vessel details — we answer every inquiry.</p>
       </div>
       <NuxtLink to="/contact" class="btn btn-primary">Contact Us</NuxtLink>
     </div>
