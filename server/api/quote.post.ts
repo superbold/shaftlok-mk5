@@ -29,7 +29,8 @@ export default defineEventHandler(async (event) => {
     company, // honeypot — real visitors never fill this in
     name, email, phone, phoneRegion, address,
     yachtType, yachtName, displacement, maxHullSpeed,
-    shaftDiameter, propDiameter, propPitch, numBlades, numPropellers, propType,
+    shaftDiameter, propDiameter, propPitch, customBoreRequested,
+    numBlades, numPropellers, propType,
     engine, transmission, lockingSystem, cableLength, notes
   } = body
 
@@ -43,6 +44,7 @@ export default defineEventHandler(async (event) => {
     return { ok: true }
   }
 
+  const wantsCustomBore = Boolean(customBoreRequested)
   const lockingSystemLabel = lockingSystem === 'cable'
     ? `Marine Control Cable${cableLength ? ` — ${escapeHtml(cableLength)} ft` : ''}`
     : lockingSystem === 'spring'
@@ -50,6 +52,15 @@ export default defineEventHandler(async (event) => {
       : lockingSystem === 'unsure'
         ? 'Not sure — needs guidance'
         : ''
+
+  const lineItems = wantsCustomBore
+    ? [{
+        product_slug: 'custom-bore',
+        product_name: 'Custom Bore',
+        detail: typeof shaftDiameter === 'string' && shaftDiameter.trim() ? shaftDiameter.trim() : null,
+        price: null
+      }]
+    : []
 
   const supabase = serverSupabaseServiceRole(event)
   const { error: insertError } = await supabase.from('quotes').insert({
@@ -70,6 +81,8 @@ export default defineEventHandler(async (event) => {
     engine, transmission,
     locking_system: lockingSystem,
     cable_length: cableLength,
+    custom_bore_requested: wantsCustomBore,
+    line_items: lineItems,
     notes
   })
 
@@ -125,6 +138,7 @@ export default defineEventHandler(async (event) => {
         ${row('Shaft Diameter', escapeHtml(shaftDiameter))}
         ${row('Propeller Diameter', escapeHtml(propDiameter))}
         ${row('Propeller Pitch', escapeHtml(propPitch))}
+        ${row('Custom Bore Interest', wantsCustomBore ? 'Yes — sailor may need a custom bore' : 'No')}
         ${row('Number of Blades', escapeHtml(numBlades))}
         ${row('Number of Propellers / Shafts', escapeHtml(numPropellers))}
         ${row('Fixed / Folding / Feathering', escapeHtml(propType))}

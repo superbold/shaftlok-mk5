@@ -69,6 +69,10 @@ PWA features and further image optimization.
 
 ## Done
 
+### Custom Bore product + quote upsell ✓
+
+Catalog/QMS product `custom-bore`. Quote form optional “I may need a custom bore” checkbox (always shown); stores `custom_bore_requested` and pre-seeds the line item. Migration: `20260912_add_custom_bore.sql`.
+
 ### Quote validity window ✓
 
 Sailor email (and QMS Sent section) show valid-until = `sent_at` + 1 calendar month. Display-only; no auto status changes. `utils/quoteValidity.ts`.

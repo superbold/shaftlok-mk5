@@ -101,6 +101,17 @@
               <input id="propPitch" v-model="form.propPitch" type="text" class="form-control" placeholder="e.g. 18 inches" />
             </div>
           </div>
+          <div class="custom-bore-suggest">
+            <label class="checkbox-option">
+              <input v-model="form.customBoreRequested" type="checkbox" />
+              <span>I may need a custom bore</span>
+            </label>
+            <p class="hint-note">
+              If your shaft isn’t a stock size, we can machine a custom bore — extra cost may apply, especially on larger Mods.
+              Don’t worry: we can remove this later if it isn’t the right fit for your vessel.
+              <NuxtLink to="/products/custom-bore" class="inline-link">Learn more about Custom Bore</NuxtLink>
+            </p>
+          </div>
           <div class="form-row three-col">
             <div class="form-group">
               <label for="numBlades">Number of Blades</label>
@@ -215,6 +226,7 @@ const form = reactive({
   shaftDiameter: '',
   propDiameter: '',
   propPitch: '',
+  customBoreRequested: false,
   numBlades: '',
   numPropellers: '',
   propType: '',
@@ -406,6 +418,46 @@ textarea.form-control { resize: vertical; min-height: 100px; }
   width: 1rem;
   height: 1rem;
   cursor: pointer;
+}
+
+.custom-bore-suggest {
+  margin-top: 0.85rem;
+  padding: 0.9rem 1rem;
+  background: rgba(56, 189, 248, 0.06);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: var(--radius-sm);
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-hi);
+  cursor: pointer;
+}
+
+.checkbox-option input[type='checkbox'] {
+  accent-color: var(--accent);
+  width: 1.05rem;
+  height: 1.05rem;
+  cursor: pointer;
+}
+
+.custom-bore-suggest .hint-note {
+  margin-top: 0.55rem;
+}
+
+.inline-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.inline-link:hover {
+  color: var(--text-hi);
 }
 
 .hint-note {

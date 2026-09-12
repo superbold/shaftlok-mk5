@@ -145,6 +145,7 @@ export type Database = {
           address: string | null
           cable_length: string | null
           created_at: string
+          custom_bore_requested: boolean
           decided_at: string | null
           displacement: string | null
           email: string
@@ -185,6 +186,7 @@ export type Database = {
           address?: string | null
           cable_length?: string | null
           created_at?: string
+          custom_bore_requested?: boolean
           decided_at?: string | null
           displacement?: string | null
           email: string
@@ -225,6 +227,7 @@ export type Database = {
           address?: string | null
           cable_length?: string | null
           created_at?: string
+          custom_bore_requested?: boolean
           decided_at?: string | null
           displacement?: string | null
           email?: string

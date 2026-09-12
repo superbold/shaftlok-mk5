@@ -62,6 +62,12 @@ In `pages/qms/[id].vue`, the Send button is disabled unless **every quoted item 
 
 **Quote email**: Quote Total (Products / Shipping / Total), a **Valid until** line (exactly one calendar month from send), then Items Quoted with each line's name, detail, and price, then message, warnings, and payment. Validity is display-only — status stays manual (Followed up / Dead). Re-send refreshes `sent_at` and the validity window. QMS “Sent to Sailor” shows the same valid-until date.
 
+### Custom Bore
+
+`Custom Bore` is a displayed **Controls & Accessories** product (`slug: custom-bore`) for the catalog card, detail page, and QMS Items Quoted picker. Price is blank (quoted per job).
+
+On `/quote`, an always-on optional checkbox **“I may need a custom bore”** sits under Shaft Diameter with reassuring copy (can remove later if not a fit). Checking it sets `quotes.custom_bore_requested` and pre-seeds a Custom Bore line item (detail = shaft diameter when provided). Sean confirms or removes it on QMS after the call. Migration: `20260912_add_custom_bore.sql`.
+
 ## Product Management
 
 Admin-facing product catalog editing at `/products/manage`, linked from `/adminaccess`. Public sailors see `/products` (catalog) and `/products/[slug]` (detail pages). All copy and specs live in the Supabase `products` table — there are no static per-product Vue pages anymore.

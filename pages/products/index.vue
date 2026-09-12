@@ -5,7 +5,7 @@
     <div class="section-head" v-reveal>
       <span class="eyebrow"><i class="fas fa-fan"></i> Product catalog</span>
       <h1><span class="shaftlok-font grad-text">Shaft Lok</span> Products</h1>
-      <p>Eight locking systems and two control accessories — covering every shaft from 45&nbsp;mm sailboats to 200&nbsp;mm mega-yachts.</p>
+      <p>Eight locking systems and control accessories — covering every shaft from 45&nbsp;mm sailboats to 200&nbsp;mm mega-yachts, plus custom bore machining when you need a non-stock fit.</p>
     </div>
 
     <div v-if="productsError" class="fetch-error">
