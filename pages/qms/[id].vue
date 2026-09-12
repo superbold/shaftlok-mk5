@@ -62,16 +62,16 @@
                   v-for="s in QUOTE_STATUSES"
                   :key="s.value"
                   :value="s.value"
-                  :disabled="s.value === 'finished' && !canMarkFinished"
+                  :disabled="s.value === 'followed_up' && !canMarkFollowedUp"
                 >
-                  {{ s.label }}{{ s.value === 'finished' && !canMarkFinished ? ' (needs price & message)' : '' }}
+                  {{ s.label }}{{ s.value === 'followed_up' && !canMarkFollowedUp ? ' (send quote first)' : '' }}
                 </option>
               </select>
-              <p v-if="!canMarkFinished" class="field-hint">
-                Set a price and message below before marking Quote Finished or sending.
+              <p v-if="needsPrice || needsMessage" class="field-hint">
+                Set a price and message below before sending.
               </p>
-              <p v-else-if="editForm.status === 'finished'" class="field-hint field-hint-ready">
-                Ready to send — all required quote fields are filled in.
+              <p v-else-if="editForm.status === 'new'" class="field-hint field-hint-ready">
+                Ready to send — price and message are filled in.
               </p>
             </div>
 
@@ -122,7 +122,7 @@
                 placeholder="e.g. 850.00"
                 @input="onQuotedPriceInput"
               />
-              <p v-if="needsPrice" class="field-hint">Required before Quote Finished or send.</p>
+              <p v-if="needsPrice" class="field-hint">Required before send.</p>
               <p v-else-if="catalogPriceTotal != null && !quotedPriceManual" class="field-hint field-hint-ready">
                 Summed from catalog prices{{ hasLengthPricedLineItem ? ' (length tiers apply)' : '' }}. Edit to add shipping or other adjustments.
               </p>
@@ -149,7 +149,7 @@
                 :class="{ 'form-control-attention': needsMessage }"
                 placeholder="What's included, lead time, anything else the sailor should know..."
               ></textarea>
-              <p v-if="needsMessage" class="field-hint">Required before Quote Finished or send.</p>
+              <p v-if="needsMessage" class="field-hint">Required before send.</p>
             </div>
 
             <div class="form-group">
@@ -194,9 +194,9 @@
             </div>
             <p v-if="missingSendRequirements.length" class="send-hint">{{ sendRequirementsHint }}</p>
 
-            <div v-if="['sent', 'won', 'lost'].includes(quote.status)" class="decision-buttons">
+            <div v-if="postSendStatuses.includes(quote.status)" class="decision-buttons">
               <button @click="markDecision('won')" class="btn btn-won" :disabled="deciding">Mark Won</button>
-              <button @click="markDecision('lost')" class="btn btn-lost" :disabled="deciding">Mark Lost</button>
+              <button @click="markDecision('dead')" class="btn btn-lost" :disabled="deciding">Mark Dead</button>
             </div>
           </div>
         </section>
@@ -398,17 +398,20 @@ const applicableWarnings = computed(() => getApplicableWarnings(editForm.value.l
 
 const needsPrice = computed(() => editForm.value.quoted_price === '' || editForm.value.quoted_price == null)
 const needsMessage = computed(() => !editForm.value.quote_notes?.trim())
-const canMarkFinished = computed(() => !needsPrice.value && !needsMessage.value)
+/** Exposed for template — Followed up / Won / Dead decision buttons. */
+const postSendStatuses = POST_SEND_STATUSES
+const canMarkFollowedUp = computed(() =>
+  Boolean(quote.value?.sent_html) || postSendStatuses.includes(editForm.value.status)
+)
 
 const onStatusChange = (event) => {
   const next = event.target.value
-  if (next === 'finished' && !canMarkFinished.value) return
+  if (next === 'followed_up' && !canMarkFollowedUp.value) return
   editForm.value.status = next
 }
 
 const missingSendRequirements = computed(() => {
   const missing = []
-  if (editForm.value.status !== 'finished') missing.push('the status set to "Quote Finished"')
   if (!editForm.value.quoted_price) missing.push('a price')
   if (!editForm.value.quote_notes) missing.push('a message to the sailor')
   return missing
@@ -1051,11 +1054,9 @@ textarea.form-control { resize: vertical; }
 }
 
 .status-new { background: var(--status-new-bg); color: var(--status-new-fg); }
-.status-in_review { background: var(--status-in_review-bg); color: var(--status-in_review-fg); }
-.status-quoted { background: var(--status-quoted-bg); color: var(--status-quoted-fg); }
-.status-finished { background: var(--status-finished-bg); color: var(--status-finished-fg); }
 .status-sent { background: var(--status-sent-bg); color: var(--status-sent-fg); }
+.status-followed_up { background: var(--status-followed_up-bg); color: var(--status-followed_up-fg); }
 .status-won { background: var(--status-won-bg); color: var(--status-won-fg); }
-.status-lost { background: var(--status-lost-bg); color: var(--status-lost-fg); }
+.status-dead { background: var(--status-dead-bg); color: var(--status-dead-fg); }
 
 </style>

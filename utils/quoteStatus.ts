@@ -5,14 +5,15 @@ export interface QuoteStatusInfo {
 }
 
 export const QUOTE_STATUSES: QuoteStatusInfo[] = [
-  { value: 'new', label: 'New', description: 'Just submitted by the sailor, not yet reviewed.' },
-  { value: 'quoted', label: 'Drafting Quote', description: "Pricing is being worked out, hasn't been sent yet." },
-  { value: 'in_review', label: 'In Review', description: 'Double-checking details before finalizing the price.' },
-  { value: 'finished', label: 'Quote Finished', description: 'Reviewed and ready to send — sending unlocks once a quote reaches this status.' },
+  { value: 'new', label: 'New', description: 'Just submitted or still being drafted — not emailed yet.' },
   { value: 'sent', label: 'Quote Sent', description: 'The priced quote has been emailed to the sailor.' },
+  { value: 'followed_up', label: 'Followed up', description: 'You checked in after sending — waiting on the sailor.' },
   { value: 'won', label: 'Won', description: 'The sailor accepted the quote.' },
-  { value: 'lost', label: 'Lost', description: 'The sailor declined or went elsewhere.' }
+  { value: 'dead', label: 'Dead', description: 'The sailor declined, went elsewhere, or the lead went cold.' }
 ]
+
+/** Statuses that mean the quote has already gone out (or is past that). */
+export const POST_SEND_STATUSES = ['sent', 'followed_up', 'won', 'dead'] as const
 
 const QUOTE_STATUS_LABELS: Record<string, string> = Object.fromEntries(
   QUOTE_STATUSES.map((s) => [s.value, s.label])

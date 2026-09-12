@@ -79,7 +79,7 @@ PWA features and further image optimization.
 
 ### Send button missing-requirements hint ✓
 
-Send button spells out which of the three requirements are still missing (status "Quote Finished", price, message) via `missingSendRequirements` / `sendRequirementsHint` — inline text and tooltip.
+Send button spells out which requirements are still missing (price, message) via `missingSendRequirements` / `sendRequirementsHint` — inline text and tooltip.
 
 ### GA4 quote submission event ✓
 
@@ -95,7 +95,11 @@ Dynamic `/products/[slug]` from the `products` table; admin CRUD at `/products/m
 
 ### QMS proactive send validation ✓
 
-Price and Message fields highlight with inline hints while empty; **Quote Finished** status disabled until both are filled. Handbook: "Send Quote to Sailor" button gating.
+Price and Message fields highlight with inline hints while empty. Send requires those two fields (status stays New until send). Handbook: "Send Quote to Sailor" button gating.
+
+### Simplified quote statuses ✓
+
+Statuses are `new` / `sent` / `followed_up` / `won` / `dead`. Followed up disabled until quote has been sent. Migration: `20260912_simplify_quote_statuses.sql`.
 
 ### QMS first-send confirmation ✓
 

@@ -40,10 +40,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Set a price and quote message before sending.' })
   }
 
-  if (quote.status !== 'finished') {
-    throw createError({ statusCode: 400, statusMessage: 'Mark the quote as Quote Finished before sending.' })
-  }
-
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
     throw createError({ statusCode: 500, statusMessage: 'Email service is not configured.' })

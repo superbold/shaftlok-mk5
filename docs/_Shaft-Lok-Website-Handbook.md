@@ -8,7 +8,7 @@ Admin-facing quote workflow at `/qms` (list) and `/qms/:id` (detail/edit/send), 
 
 ### One row per quote, always overwritten
 
-A `quotes` row is created once, when a sailor submits the public quote form (`server/api/quote.post.ts`). Every admin action after that — Save, Send, Mark Won/Lost — is an `update` on that same row, never a new insert. There's no versioning: the row only ever holds the *latest* draft (`quoted_price`, `quote_notes`, `line_items`) plus a snapshot of the *last sent* version (`sent_html`, `sent_at`, `sent_quoted_price`, `sent_quote_notes`, `sent_line_items`). A re-send overwrites the previous snapshot — "most recent send wins" (see `docs/QMS_Store-and-View_plan.md`).
+A `quotes` row is created once, when a sailor submits the public quote form (`server/api/quote.post.ts`). Every admin action after that — Save, Send, Mark Won/Dead — is an `update` on that same row, never a new insert. There's no versioning: the row only ever holds the *latest* draft (`quoted_price`, `quote_notes`, `line_items`) plus a snapshot of the *last sent* version (`sent_html`, `sent_at`, `sent_quoted_price`, `sent_quote_notes`, `sent_line_items`). A re-send overwrites the previous snapshot — "most recent send wins" (see `docs/QMS_Store-and-View_plan.md`).
 
 ### Per-item warnings
 
@@ -30,19 +30,27 @@ Legacy quotes sent before the snapshot columns existed (`sent_quoted_price` null
 
 ### Status list: app vs. database
 
-`utils/quoteStatus.ts` (`QUOTE_STATUSES`) is the source of truth for valid quote statuses in the UI: `new`, `quoted`, `in_review`, `finished`, `sent`, `won`, `lost`. The `quotes` table has its own `quotes_status_check` CHECK constraint that must independently allow the same set — the two aren't kept in sync automatically.
+`utils/quoteStatus.ts` (`QUOTE_STATUSES`) is the source of truth for valid quote statuses: `new`, `sent`, `followed_up`, `won`, `dead`. The `quotes` table has a matching `quotes_status_check` CHECK constraint — the two aren't kept in sync automatically.
 
-They drifted once already: `finished` was added to `QUOTE_STATUSES` (it gates sending — see below) without a matching migration, so saving a quote as "Quote Finished" threw `new row for relation "quotes" violates check constraint "quotes_status_check"`. Fixed 2026-08-11 via `supabase/migrations/20260811_add_finished_to_quote_status_check.sql`, which drops and recreates the constraint with `finished` included (Postgres has no `ALTER CONSTRAINT ADD VALUE` for `CHECK` constraints — drop-and-recreate in one statement is the normal way to widen one, and it only affects future writes, not existing rows).
+| Value | Label | When |
+|---|---|---|
+| `new` | New | Intake / drafting (pre-send) |
+| `sent` | Quote Sent | Set automatically when "Send Quote to Sailor" succeeds; may also be set manually |
+| `followed_up` | Followed up | After a chase call/email — **disabled in the UI until the quote has been sent** (`sent_html` or a post-send status) |
+| `won` | Won | Sailor accepted |
+| `dead` | Dead | Declined, went elsewhere, or went cold |
 
-**If `QUOTE_STATUSES` ever gains another value, add a migration to widen `quotes_status_check` to match in the same change** — otherwise saving that status will fail with the same constraint violation.
+Legacy statuses (`quoted`, `in_review`, `finished`, `lost`) were remapped by `supabase/migrations/20260912_simplify_quote_statuses.sql` (`quoted`/`in_review`/`finished` → `new`, `lost` → `dead`).
+
+**If `QUOTE_STATUSES` ever gains another value, add a migration to widen `quotes_status_check` in the same change.**
 
 ### "Send Quote to Sailor" button gating
 
-In `pages/qms/[id].vue`, the Send button is disabled unless *all three* are true: `editForm.status === 'finished'`, `editForm.quoted_price` is set, and `editForm.quote_notes` is set. It reads from local `editForm` state, so a status change (or price/notes edit) must be saved before the button's disabled state reflects it. The server endpoint (`server/api/qms/send-quote.post.ts:38-42`) independently re-checks price/notes and `status === 'finished'`, returning `400` if either is missing — the client-side gating is a UX convenience, not the actual enforcement.
+In `pages/qms/[id].vue`, the Send button is disabled unless **price** and **message** are set. Status no longer gates send — drafting stays on **New** until send succeeds (server sets status to `sent`). The server endpoint (`server/api/qms/send-quote.post.ts`) re-checks price/notes and returns `400` if either is missing.
 
-Whichever of the three are still missing is spelled out for the admin, not just a disabled button with no explanation. `missingSendRequirements` (computed) lists which of the three are unmet; `sendRequirementsHint` turns that into one sentence — e.g. "Before sending, you still need a price and a message to the sailor." — shown both as a `<p class="send-hint">` under the buttons and as the button's `title` tooltip. It's a single combined sentence listing everything missing, not one message per missing field.
+`missingSendRequirements` lists unmet requirements; `sendRequirementsHint` turns that into one sentence — e.g. "Before sending, you still need a price and a message to the sailor." — shown under the buttons and as the button's `title` tooltip.
 
-**Proactive field guidance** (`pages/qms/[id].vue`): Price and Message fields show a gold highlight and inline "Required before Quote Finished or send" hint while empty. The **Quote Finished** status option is disabled until both are filled (label suffix: `(needs price & message)`). A helper line under the status dropdown explains what's still needed, or "Ready to send" when status is Finished and fields are complete.
+**Proactive field guidance** (`pages/qms/[id].vue`): Price and Message fields show a gold highlight and inline "Required before send" hint while empty. A helper under the status dropdown says "Ready to send" when status is New and both fields are complete. **Followed up** is disabled with suffix `(send quote first)` until the quote has been emailed.
 
 **First-send confirmation**: Before the first email ever goes out (`sent_html` empty), clicking Send opens a confirm modal ("Send this quote to …?") — separate from the Already Sent re-send modal.
 

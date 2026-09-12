@@ -57,7 +57,7 @@
                 :key="quote.id"
                 @click="openQuote(quote)"
                 class="quote-row"
-                :class="{ 'needs-attention': ['new', 'in_review'].includes(quote.status) }"
+                :class="{ 'needs-attention': ['new', 'sent'].includes(quote.status) }"
               >
                 <td :data-cell="'sailor'">{{ quote.name }}</td>
                 <td :data-cell="'yacht'">{{ [quote.yacht_type, quote.yacht_name].filter(Boolean).join(' — ') || '—' }}</td>
@@ -239,12 +239,10 @@ useHead({
 }
 
 .status-new { background: var(--status-new-bg); color: var(--status-new-fg); }
-.status-in_review { background: var(--status-in_review-bg); color: var(--status-in_review-fg); }
-.status-quoted { background: var(--status-quoted-bg); color: var(--status-quoted-fg); }
-.status-finished { background: var(--status-finished-bg); color: var(--status-finished-fg); }
 .status-sent { background: var(--status-sent-bg); color: var(--status-sent-fg); }
+.status-followed_up { background: var(--status-followed_up-bg); color: var(--status-followed_up-fg); }
 .status-won { background: var(--status-won-bg); color: var(--status-won-fg); }
-.status-lost { background: var(--status-lost-bg); color: var(--status-lost-fg); }
+.status-dead { background: var(--status-dead-bg); color: var(--status-dead-fg); }
 
 .actions-cell { width: 1%; }
 
