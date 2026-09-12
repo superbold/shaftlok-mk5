@@ -20,8 +20,7 @@
         <div class="media-chip">
           <template v-if="formattedPrice">
             <i class="fas fa-tag"></i>
-            <span v-if="priceTiers.length">Price by length <strong>{{ formattedPrice }}</strong></span>
-            <span v-else>Price <strong>{{ formattedPrice }}</strong></span>
+            <span>Starting at <strong>{{ formattedPrice }}</strong></span>
           </template>
           <NuxtLink v-else to="/quote" class="media-chip-link">
             <i class="fas fa-envelope"></i>

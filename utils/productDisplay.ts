@@ -76,7 +76,12 @@ export const formatProductPrice = (price: number | null | undefined) => {
   if (price === null || price === undefined) return null
   const amount = Number(price)
   if (Number.isNaN(amount)) return null
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount)
 }
 
 type ProductDetailBlock =
