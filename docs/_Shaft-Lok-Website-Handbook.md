@@ -60,7 +60,7 @@ In `pages/qms/[id].vue`, the Send button is disabled unless **every quoted item 
 
 **Catalog prices on quotes**: The Items Quoted picker loads `products.price` and `products.price_tiers`. Selecting a product seeds that row's **Price ($)** from the catalog (length tiers use line detail or the sailor's `cable_length`). The admin can edit the line price afterward; **Reset from catalog** appears when overridden. **Products** is a read-only sum of line prices. Shipping is a separate required line (details + price); Total is products + shipping. Products without a list price (e.g. Mod VI) leave the price blank for manual entry.
 
-**Quote email**: Quote Total (Products / Shipping / Total), then Items Quoted with each line's name, detail, and price, then message, warnings, and payment.
+**Quote email**: Quote Total (Products / Shipping / Total), a **Valid until** line (exactly one calendar month from send), then Items Quoted with each line's name, detail, and price, then message, warnings, and payment. Validity is display-only — status stays manual (Followed up / Dead). Re-send refreshes `sent_at` and the validity window. QMS “Sent to Sailor” shows the same valid-until date.
 
 ## Product Management
 

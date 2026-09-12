@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import { getApplicableWarnings } from '~/utils/quoteItemWarnings'
 import { PAYMENT_INFO } from '~/utils/paymentInfo'
+import { formatQuoteValidUntil } from '~/utils/quoteValidity'
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event)
@@ -84,6 +85,8 @@ export default defineEventHandler(async (event) => {
   const formattedProducts = money(productsPrice)
   const formattedShipping = money(shippingPrice)
   const formattedTotal = money(grandTotal)
+  const sentAt = new Date().toISOString()
+  const validUntilLabel = formatQuoteValidUntil(sentAt)
   const vesselLine = escapeHtml([quote.yacht_type, quote.yacht_name].filter(Boolean).join(' — '))
   const safeName = escapeHtml(quote.name)
   const safeQuoteNotes = escapeHtml(quote.quote_notes)
@@ -148,6 +151,9 @@ export default defineEventHandler(async (event) => {
             <td style="padding:10px 0 0;border-top:1px solid rgba(56,189,248,0.25);text-align:right;font-size:22px;font-weight:700">${formattedTotal}</td>
           </tr>
         </table>
+        <p style="margin:14px 0 0;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6">
+          This quote is valid until <strong style="color:#EFF6FF">${validUntilLabel}</strong>. After that date, prices and terms may change.
+        </p>
       </div>
       ${itemsHtml}
       <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px;white-space:pre-wrap">${safeQuoteNotes}</p>
@@ -190,7 +196,6 @@ export default defineEventHandler(async (event) => {
     html
   })
 
-  const sentAt = new Date().toISOString()
   const { error: updateError } = await supabase
     .from('quotes')
     .update({

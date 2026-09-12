@@ -69,6 +69,10 @@ PWA features and further image optimization.
 
 ## Done
 
+### Quote validity window ✓
+
+Sailor email (and QMS Sent section) show valid-until = `sent_at` + 1 calendar month. Display-only; no auto status changes. `utils/quoteValidity.ts`.
+
 ### Itemized line prices on quotes ✓
 
 Each `line_items` entry stores editable `price` (seeded from Product Management). Products subtotal = sum of lines; sailor email itemizes name + price. Shipping unchanged.

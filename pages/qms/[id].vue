@@ -246,7 +246,10 @@
 
         <section v-if="quote.sent_html" id="sent-section" class="detail-section">
           <h2 class="section-heading">Sent to Sailor</h2>
-          <p class="section-sub">Exactly what {{ quote.name }} received{{ quote.sent_at ? ` on ${formatDate(quote.sent_at)}` : '' }}.</p>
+          <p class="section-sub">
+            Exactly what {{ quote.name }} received{{ quote.sent_at ? ` on ${formatDate(quote.sent_at)}` : '' }}.
+            <template v-if="quoteValidUntilLabel"> Valid until {{ quoteValidUntilLabel }}.</template>
+          </p>
           <EmailFrame :html="quote.sent_html" :title="`Quote sent to ${quote.name}`" />
         </section>
 
@@ -296,6 +299,7 @@ import {
   parseCableLengthFeet,
   productUsesLengthPricing
 } from '~~/utils/productPricing'
+import { formatQuoteValidUntil } from '~~/utils/quoteValidity'
 
 definePageMeta({
   layout: 'qms-layout',
@@ -329,6 +333,9 @@ const pickableProducts = ref([])
 const statusLabel = quoteStatusLabel
 const formatDate = (value) => value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
 const formatMoney = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value) || 0)
+const quoteValidUntilLabel = computed(() =>
+  quote.value?.sent_at ? formatQuoteValidUntil(quote.value.sent_at, { month: 'short', day: 'numeric', year: 'numeric' }) : ''
+)
 
 const parseMoneyField = (value) => {
   if (value === '' || value == null) return null
