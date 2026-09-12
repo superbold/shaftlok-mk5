@@ -97,11 +97,15 @@
               <input id="propDiameter" v-model="form.propDiameter" type="text" class="form-control" placeholder="e.g. 26 inches" />
             </div>
             <div class="form-group">
+              <label for="propPitch">Propeller Pitch</label>
+              <input id="propPitch" v-model="form.propPitch" type="text" class="form-control" placeholder="e.g. 18 inches" />
+            </div>
+          </div>
+          <div class="form-row three-col">
+            <div class="form-group">
               <label for="numBlades">Number of Blades</label>
               <input id="numBlades" v-model="form.numBlades" type="text" class="form-control" placeholder="e.g. 3 blades" />
             </div>
-          </div>
-          <div class="form-row">
             <div class="form-group">
               <label for="numPropellers">Number of Propellers / Shafts</label>
               <input id="numPropellers" v-model="form.numPropellers" type="text" class="form-control" placeholder="e.g. 1 (2 for twin-shaft boats)" />
@@ -210,6 +214,7 @@ const form = reactive({
   maxHullSpeed: '',
   shaftDiameter: '',
   propDiameter: '',
+  propPitch: '',
   numBlades: '',
   numPropellers: '',
   propType: '',

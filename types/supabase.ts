@@ -160,6 +160,7 @@ export type Database = {
           phone: string | null
           phone_region: string | null
           prop_diameter: string | null
+          prop_pitch: string | null
           prop_type: string | null
           quote_notes: string | null
           quoted_at: string | null
@@ -195,6 +196,7 @@ export type Database = {
           phone?: string | null
           phone_region?: string | null
           prop_diameter?: string | null
+          prop_pitch?: string | null
           prop_type?: string | null
           quote_notes?: string | null
           quoted_at?: string | null
@@ -230,6 +232,7 @@ export type Database = {
           phone?: string | null
           phone_region?: string | null
           prop_diameter?: string | null
+          prop_pitch?: string | null
           prop_type?: string | null
           quote_notes?: string | null
           quoted_at?: string | null

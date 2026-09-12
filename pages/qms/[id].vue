@@ -487,6 +487,7 @@ const sections = computed(() => {
       fields: [
         ['Shaft Diameter', q.shaft_diameter],
         ['Propeller Diameter', q.prop_diameter],
+        ['Propeller Pitch', q.prop_pitch],
         ['Number of Blades', q.num_blades],
         ['Number of Propellers / Shafts', q.num_propellers],
         ['Fixed / Folding / Feathering', q.prop_type]

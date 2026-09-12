@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     company, // honeypot — real visitors never fill this in
     name, email, phone, phoneRegion, address,
     yachtType, yachtName, displacement, maxHullSpeed,
-    shaftDiameter, propDiameter, numBlades, numPropellers, propType,
+    shaftDiameter, propDiameter, propPitch, numBlades, numPropellers, propType,
     engine, transmission, lockingSystem, cableLength, notes
   } = body
 
@@ -63,6 +63,7 @@ export default defineEventHandler(async (event) => {
     max_hull_speed: maxHullSpeed,
     shaft_diameter: shaftDiameter,
     prop_diameter: propDiameter,
+    prop_pitch: propPitch,
     num_blades: numBlades,
     num_propellers: numPropellers,
     prop_type: propType,
@@ -123,6 +124,7 @@ export default defineEventHandler(async (event) => {
       <table style="width:100%;margin-bottom:24px;border-collapse:collapse">
         ${row('Shaft Diameter', escapeHtml(shaftDiameter))}
         ${row('Propeller Diameter', escapeHtml(propDiameter))}
+        ${row('Propeller Pitch', escapeHtml(propPitch))}
         ${row('Number of Blades', escapeHtml(numBlades))}
         ${row('Number of Propellers / Shafts', escapeHtml(numPropellers))}
         ${row('Fixed / Folding / Feathering', escapeHtml(propType))}
