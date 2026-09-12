@@ -31,7 +31,7 @@
               <span class="stat-label">Units shipped</span>
             </div>
             <div class="hero-stat">
-              <span class="stat-value">8</span>
+              <span class="stat-value">6</span>
               <span class="stat-label">Models</span>
             </div>
             <div class="hero-stat">
@@ -195,7 +195,7 @@
     <section class="cta-section" v-reveal>
       <div class="cta-card glass-card">
         <h2>Find the right <span class="shaftlok-font grad-text">Shaft Lok</span> for your vessel</h2>
-        <p>From 20-foot sailboats to mega-yachts — eight models cover every shaft from 45&nbsp;mm to 200&nbsp;mm.</p>
+        <p>From 20-foot sailboats to mega-yachts — six models cover every shaft from 45&nbsp;mm to 200&nbsp;mm.</p>
         <div class="cta-actions">
           <NuxtLink to="/products" class="btn btn-primary">Browse All Products</NuxtLink>
           <NuxtLink to="/contact" class="btn btn-ghost">Talk to Us</NuxtLink>
