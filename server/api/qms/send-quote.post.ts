@@ -36,8 +36,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Quote not found.' })
   }
 
-  if (!quote.quoted_price || !quote.quote_notes) {
-    throw createError({ statusCode: 400, statusMessage: 'Set a price and quote message before sending.' })
+  if (
+    quote.quoted_price == null ||
+    quote.shipping_price == null ||
+    !String(quote.shipping_notes || '').trim() ||
+    !quote.quote_notes
+  ) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Set products price, shipping (details and price), and quote message before sending.'
+    })
   }
 
   const apiKey = process.env.RESEND_API_KEY
@@ -53,10 +61,18 @@ export default defineEventHandler(async (event) => {
   const senderEmail = ADMIN_EMAILS.includes(user.email ?? '') ? user.email! : ADMIN_EMAILS[0]
   const ccEmails = ADMIN_EMAILS.filter((adminEmail) => adminEmail !== senderEmail)
 
-  const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(quote.quoted_price)
+  const money = (value: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
+  const productsPrice = Number(quote.quoted_price)
+  const shippingPrice = Number(quote.shipping_price)
+  const grandTotal = productsPrice + shippingPrice
+  const formattedProducts = money(productsPrice)
+  const formattedShipping = money(shippingPrice)
+  const formattedTotal = money(grandTotal)
   const vesselLine = escapeHtml([quote.yacht_type, quote.yacht_name].filter(Boolean).join(' — '))
   const safeName = escapeHtml(quote.name)
   const safeQuoteNotes = escapeHtml(quote.quote_notes)
+  const safeShippingNotes = escapeHtml(String(quote.shipping_notes).trim())
 
   const lineItems = Array.isArray(quote.line_items)
     ? (quote.line_items as { product_slug: string; product_name: string; detail: string | null }[])
@@ -95,8 +111,21 @@ export default defineEventHandler(async (event) => {
       </p>
 
       <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:18px 20px;margin-bottom:24px">
-        <p style="margin:0;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Quoted Price</p>
-        <p style="margin:6px 0 0;font-family:sans-serif;font-size:28px;font-weight:700;color:#EFF6FF">${formattedPrice}</p>
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Quote Total</p>
+        <table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;color:#EFF6FF">
+          <tr>
+            <td style="padding:0 0 8px;color:#A8BEDC">Products</td>
+            <td style="padding:0 0 8px;text-align:right">${formattedProducts}</td>
+          </tr>
+          <tr>
+            <td style="padding:0 0 8px;color:#A8BEDC">Shipping${safeShippingNotes ? ` — ${safeShippingNotes}` : ''}</td>
+            <td style="padding:0 0 8px;text-align:right">${formattedShipping}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 0 0;border-top:1px solid rgba(56,189,248,0.25);font-weight:700">Total</td>
+            <td style="padding:10px 0 0;border-top:1px solid rgba(56,189,248,0.25);text-align:right;font-size:22px;font-weight:700">${formattedTotal}</td>
+          </tr>
+        </table>
       </div>
       ${itemsHtml}
       <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px;white-space:pre-wrap">${safeQuoteNotes}</p>
@@ -149,6 +178,8 @@ export default defineEventHandler(async (event) => {
       sent_quoted_price: quote.quoted_price,
       sent_quote_notes: quote.quote_notes,
       sent_line_items: quote.line_items,
+      sent_shipping_price: quote.shipping_price,
+      sent_shipping_notes: quote.shipping_notes,
       updated_at: sentAt
     })
     .eq('id', quoteId)

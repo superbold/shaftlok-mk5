@@ -67,11 +67,11 @@
                   {{ s.label }}{{ s.value === 'followed_up' && !canMarkFollowedUp ? ' (send quote first)' : '' }}
                 </option>
               </select>
-              <p v-if="needsPrice || needsMessage" class="field-hint">
-                Set a price and message below before sending.
+              <p v-if="needsPrice || needsShippingPrice || needsShippingNotes || needsMessage" class="field-hint">
+                Set products price, shipping, and message below before sending.
               </p>
               <p v-else-if="editForm.status === 'new'" class="field-hint field-hint-ready">
-                Ready to send — price and message are filled in.
+                Ready to send — products, shipping, and message are filled in.
               </p>
             </div>
 
@@ -110,7 +110,7 @@
             </div>
 
             <div class="form-group">
-              <label for="quoted-price">Price ($)</label>
+              <label for="quoted-price">Products ($)</label>
               <input
                 id="quoted-price"
                 v-model="editForm.quoted_price"
@@ -124,7 +124,7 @@
               />
               <p v-if="needsPrice" class="field-hint">Required before send.</p>
               <p v-else-if="catalogPriceTotal != null && !quotedPriceManual" class="field-hint field-hint-ready">
-                Summed from catalog prices{{ hasLengthPricedLineItem ? ' (length tiers apply)' : '' }}. Edit to add shipping or other adjustments.
+                Summed from catalog prices{{ hasLengthPricedLineItem ? ' (length tiers apply)' : '' }}.
               </p>
               <p v-else-if="unpricedLineItemNames.length" class="field-hint">
                 No list price yet for: {{ unpricedLineItemNames.join(', ') }}.
@@ -137,6 +137,47 @@
               >
                 Recalculate from items
               </button>
+            </div>
+
+            <div class="form-group shipping-section">
+              <label class="section-sublabel">Shipping</label>
+              <div class="shipping-fields">
+                <div class="shipping-notes-field">
+                  <label for="shipping-notes">Details</label>
+                  <input
+                    id="shipping-notes"
+                    v-model="editForm.shipping_notes"
+                    type="text"
+                    class="form-control"
+                    :class="{ 'form-control-attention': needsShippingNotes }"
+                    placeholder="e.g. UPS Ground, 5–7 days — or Included / TBD notes"
+                  />
+                </div>
+                <div class="shipping-price-field">
+                  <label for="shipping-price">Price ($)</label>
+                  <input
+                    id="shipping-price"
+                    v-model="editForm.shipping_price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    class="form-control"
+                    :class="{ 'form-control-attention': needsShippingPrice }"
+                    placeholder="e.g. 85.00"
+                  />
+                </div>
+              </div>
+              <p v-if="needsShippingPrice || needsShippingNotes" class="field-hint">
+                Shipping details and price are required before send (use 0 if shipping is included).
+              </p>
+            </div>
+
+            <div class="form-group quote-total-block">
+              <div class="quote-total-row">
+                <span>Total</span>
+                <strong>{{ formatMoney(quoteGrandTotal) }}</strong>
+              </div>
+              <p class="field-hint field-hint-ready">Products + shipping</p>
             </div>
 
             <div class="form-group">
@@ -210,7 +251,7 @@
         <div v-if="showFirstSendModal" class="modal" @click="showFirstSendModal = false">
           <div class="modal-content" @click.stop>
             <h2 class="modal-title">Send Quote to Sailor</h2>
-            <p class="modal-text">Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive the price, your message, and payment instructions by email.</p>
+            <p class="modal-text">Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive the products/shipping total, your message, and payment instructions by email.</p>
             <div class="modal-actions">
               <button @click="showFirstSendModal = false" class="btn btn-secondary">Cancel</button>
               <button @click="confirmSend" class="btn btn-primary" :disabled="sending">
@@ -273,12 +314,26 @@ const saveError = ref(false)
 const showAlreadySentModal = ref(false)
 const showFirstSendModal = ref(false)
 
-const editForm = ref({ status: 'new', quoted_price: '', quote_notes: '', line_items: [] })
+const editForm = ref({
+  status: 'new',
+  quoted_price: '',
+  shipping_price: '',
+  shipping_notes: '',
+  quote_notes: '',
+  line_items: []
+})
 const pickableProducts = ref([])
 const quotedPriceManual = ref(false)
 
 const statusLabel = quoteStatusLabel
 const formatDate = (value) => value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
+const formatMoney = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value) || 0)
+
+const parseMoneyField = (value) => {
+  if (value === '' || value == null) return null
+  const n = Number(value)
+  return Number.isFinite(n) ? n : null
+}
 
 const getProductBySlug = (slug) =>
   pickableProducts.value.find((p) => p.slug === slug)
@@ -397,7 +452,12 @@ const detailPlaceholder = (slug) =>
 const applicableWarnings = computed(() => getApplicableWarnings(editForm.value.line_items))
 
 const needsPrice = computed(() => editForm.value.quoted_price === '' || editForm.value.quoted_price == null)
+const needsShippingPrice = computed(() => editForm.value.shipping_price === '' || editForm.value.shipping_price == null)
+const needsShippingNotes = computed(() => !editForm.value.shipping_notes?.trim())
 const needsMessage = computed(() => !editForm.value.quote_notes?.trim())
+const quoteGrandTotal = computed(() =>
+  (parseMoneyField(editForm.value.quoted_price) ?? 0) + (parseMoneyField(editForm.value.shipping_price) ?? 0)
+)
 /** Exposed for template — Followed up / Won / Dead decision buttons. */
 const postSendStatuses = POST_SEND_STATUSES
 const canMarkFollowedUp = computed(() =>
@@ -412,8 +472,10 @@ const onStatusChange = (event) => {
 
 const missingSendRequirements = computed(() => {
   const missing = []
-  if (!editForm.value.quoted_price) missing.push('a price')
-  if (!editForm.value.quote_notes) missing.push('a message to the sailor')
+  if (needsPrice.value) missing.push('a products price')
+  if (needsShippingNotes.value) missing.push('shipping details')
+  if (needsShippingPrice.value) missing.push('a shipping price')
+  if (needsMessage.value) missing.push('a message to the sailor')
   return missing
 })
 
@@ -437,10 +499,15 @@ const quoteContentUnchanged = computed(() => {
   const q = quote.value
   if (!q || !q.sent_html || q.sent_quoted_price == null) return false
 
-  const currentPrice = editForm.value.quoted_price === '' ? null : Number(editForm.value.quoted_price)
+  const currentPrice = parseMoneyField(editForm.value.quoted_price)
   const sentPrice = Number(q.sent_quoted_price)
   if (currentPrice !== sentPrice) return false
 
+  const currentShipping = parseMoneyField(editForm.value.shipping_price)
+  const sentShipping = q.sent_shipping_price == null ? null : Number(q.sent_shipping_price)
+  if (currentShipping !== sentShipping) return false
+
+  if ((editForm.value.shipping_notes || null) !== (q.sent_shipping_notes || null)) return false
   if ((editForm.value.quote_notes || null) !== (q.sent_quote_notes || null)) return false
 
   return JSON.stringify(normalizeLineItems(editForm.value.line_items)) === JSON.stringify(normalizeLineItems(q.sent_line_items))
@@ -540,6 +607,8 @@ const loadQuote = async () => {
     editForm.value = {
       status: data.status,
       quoted_price: data.quoted_price ?? '',
+      shipping_price: data.shipping_price ?? '',
+      shipping_notes: data.shipping_notes ?? '',
       quote_notes: data.quote_notes ?? '',
       line_items: lineItems
     }
@@ -563,6 +632,8 @@ const saveQuote = async () => {
       .update({
         status: editForm.value.status,
         quoted_price: editForm.value.quoted_price === '' ? null : editForm.value.quoted_price,
+        shipping_price: editForm.value.shipping_price === '' ? null : editForm.value.shipping_price,
+        shipping_notes: editForm.value.shipping_notes?.trim() || null,
         quote_notes: editForm.value.quote_notes || null,
         line_items: editForm.value.line_items.filter((li) => li.product_slug),
         updated_at: new Date().toISOString()
@@ -594,6 +665,8 @@ const sendQuote = async () => {
       .update({
         status: editForm.value.status,
         quoted_price: editForm.value.quoted_price === '' ? null : editForm.value.quoted_price,
+        shipping_price: editForm.value.shipping_price === '' ? null : editForm.value.shipping_price,
+        shipping_notes: editForm.value.shipping_notes?.trim() || null,
         quote_notes: editForm.value.quote_notes || null,
         line_items: editForm.value.line_items.filter((li) => li.product_slug),
         updated_at: new Date().toISOString()
@@ -874,6 +947,57 @@ textarea.form-control { resize: vertical; }
 
 .btn-link-recalc:hover {
   color: var(--text-hi);
+}
+
+.section-sublabel {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-mid);
+}
+
+.shipping-fields {
+  display: grid;
+  grid-template-columns: 1fr minmax(7rem, 8.5rem);
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.shipping-fields label {
+  margin-bottom: 0.3rem;
+  font-size: 0.78rem;
+}
+
+.quote-total-block {
+  margin-top: -0.35rem;
+}
+
+.quote-total-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: var(--radius-sm);
+  color: var(--text-hi);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+}
+
+.quote-total-row strong {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 640px) {
+  .shipping-fields {
+    grid-template-columns: 1fr;
+  }
 }
 
 .btn-icon {

@@ -8,7 +8,9 @@ Admin-facing quote workflow at `/qms` (list) and `/qms/:id` (detail/edit/send), 
 
 ### One row per quote, always overwritten
 
-A `quotes` row is created once, when a sailor submits the public quote form (`server/api/quote.post.ts`). Every admin action after that — Save, Send, Mark Won/Dead — is an `update` on that same row, never a new insert. There's no versioning: the row only ever holds the *latest* draft (`quoted_price`, `quote_notes`, `line_items`) plus a snapshot of the *last sent* version (`sent_html`, `sent_at`, `sent_quoted_price`, `sent_quote_notes`, `sent_line_items`). A re-send overwrites the previous snapshot — "most recent send wins" (see `docs/QMS_Store-and-View_plan.md`).
+A `quotes` row is created once, when a sailor submits the public quote form (`server/api/quote.post.ts`). Every admin action after that — Save, Send, Mark Won/Dead — is an `update` on that same row, never a new insert. There's no versioning: the row only ever holds the *latest* draft (`quoted_price`, `shipping_price`, `shipping_notes`, `quote_notes`, `line_items`) plus a snapshot of the *last sent* version (`sent_html`, `sent_at`, `sent_quoted_price`, `sent_shipping_price`, `sent_shipping_notes`, `sent_quote_notes`, `sent_line_items`). A re-send overwrites the previous snapshot — "most recent send wins" (see `docs/QMS_Store-and-View_plan.md`).
+
+`quoted_price` is **products only**. Grand total is always `quoted_price + shipping_price`. Pipeline dollars on `/qms` and the list Total column use that grand total.
 
 ### Per-item warnings
 
@@ -22,7 +24,7 @@ The "Send Quote to Sailor" email can include warning/info blocks about how to op
 
 ### "Already Sent" re-send confirmation
 
-`pages/qms/[id].vue` shows a confirmation modal before "Send Quote to Sailor" overwrites an already-sent quote (`quote.sent_html` set). It distinguishes two cases by comparing the current draft to the `sent_quoted_price`/`sent_quote_notes`/`sent_line_items` snapshot:
+`pages/qms/[id].vue` shows a confirmation modal before "Send Quote to Sailor" overwrites an already-sent quote (`quote.sent_html` set). It distinguishes two cases by comparing the current draft to the `sent_quoted_price`/`sent_shipping_price`/`sent_shipping_notes`/`sent_quote_notes`/`sent_line_items` snapshot:
 - Draft unchanged from what was last sent → stronger warning ("this will resend the exact same quote").
 - Draft actually differs → normal re-send confirmation.
 
@@ -46,15 +48,17 @@ Legacy statuses (`quoted`, `in_review`, `finished`, `lost`) were remapped by `su
 
 ### "Send Quote to Sailor" button gating
 
-In `pages/qms/[id].vue`, the Send button is disabled unless **price** and **message** are set. Status no longer gates send — drafting stays on **New** until send succeeds (server sets status to `sent`). The server endpoint (`server/api/qms/send-quote.post.ts`) re-checks price/notes and returns `400` if either is missing.
+In `pages/qms/[id].vue`, the Send button is disabled unless **products price**, **shipping** (details + price), and **message** are set. Shipping price may be `0` when shipping is included — details still required. Status no longer gates send — drafting stays on **New** until send succeeds (server sets status to `sent`). The server endpoint (`server/api/qms/send-quote.post.ts`) re-checks the same fields and returns `400` if any are missing.
 
-`missingSendRequirements` lists unmet requirements; `sendRequirementsHint` turns that into one sentence — e.g. "Before sending, you still need a price and a message to the sailor." — shown under the buttons and as the button's `title` tooltip.
+`missingSendRequirements` lists unmet requirements; `sendRequirementsHint` turns that into one sentence — e.g. "Before sending, you still need a products price, shipping details, a shipping price, and a message to the sailor." — shown under the buttons and as the button's `title` tooltip.
 
-**Proactive field guidance** (`pages/qms/[id].vue`): Price and Message fields show a gold highlight and inline "Required before send" hint while empty. A helper under the status dropdown says "Ready to send" when status is New and both fields are complete. **Followed up** is disabled with suffix `(send quote first)` until the quote has been emailed.
+**Proactive field guidance** (`pages/qms/[id].vue`): Products, Shipping, and Message fields show a gold highlight and inline "Required before send" hint while empty. A helper under the status dropdown says "Ready to send" when status is New and all required fields are complete. **Followed up** is disabled with suffix `(send quote first)` until the quote has been emailed.
 
 **First-send confirmation**: Before the first email ever goes out (`sent_html` empty), clicking Send opens a confirm modal ("Send this quote to …?") — separate from the Already Sent re-send modal.
 
-**Catalog prices on quotes**: The Items Quoted picker loads `products.price` and `products.price_tiers`. When the admin selects products, **Price ($)** auto-sums list prices from Product Management (dropdown shows each product's price when set). Products with **length tiers** (Marine Control Cable) use the tier matching the line-item detail (e.g. `15 ft`) or the sailor's `cable_length` from the inquiry. The admin can still edit the total for shipping or custom adjustments; **Recalculate from items** resets to the catalog sum. Products without a list price (e.g. Mod VI) are skipped in the sum — hint shown on that row.
+**Catalog prices on quotes**: The Items Quoted picker loads `products.price` and `products.price_tiers`. When the admin selects products, **Products ($)** auto-sums list prices from Product Management (dropdown shows each product's price when set). Products with **length tiers** (Marine Control Cable) use the tier matching the line-item detail (e.g. `15 ft`) or the sailor's `cable_length` from the inquiry. The admin can still edit the products total; **Recalculate from items** resets to the catalog sum. Shipping is a separate required line (details + price); Total is read-only products + shipping. Products without a list price (e.g. Mod VI) are skipped in the sum — hint shown on that row.
+
+**Quote email**: Shows Products / Shipping (with details) / Total, then items, message, warnings, and payment.
 
 ## Product Management
 

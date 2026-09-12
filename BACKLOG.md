@@ -6,10 +6,6 @@ Prioritized open work for Shaft Lok MK5. Completed items live at the bottom unde
 
 ## Next up (P1 — owner workflow)
 
-### Shipping cost on quotes
-
-Owner handles shipping manually in the **Message to Sailor** field for now (e.g. "shipping included" / "shipping TBD"). No app field yet — revisit if itemized shipping on the quote email becomes necessary.
-
 ### Product/MOD price history
 
 Owner wants to track MOD and locking-system price changes over time (materials, machining, etc.) without losing history.
@@ -73,6 +69,10 @@ PWA features and further image optimization.
 
 ## Done
 
+### Shipping on quotes ✓
+
+`quoted_price` = products only; `shipping_price` + `shipping_notes` required before send (price may be `$0` if included). Total = products + shipping on QMS form, list/pipeline, and sailor email. Migration: `20260912_add_quote_shipping.sql`.
+
 ### "Already Sent" re-send confirmation ✓
 
 `pages/qms/[id].vue` confirmation modal before overwriting `quote.sent_html`; distinguishes unchanged vs. changed re-sends using `sent_quoted_price` / `sent_quote_notes` / `sent_line_items` snapshot columns (`supabase/migrations/20260809_add_quote_sent_snapshot.sql`).
@@ -95,7 +95,7 @@ Dynamic `/products/[slug]` from the `products` table; admin CRUD at `/products/m
 
 ### QMS proactive send validation ✓
 
-Price and Message fields highlight with inline hints while empty. Send requires those two fields (status stays New until send). Handbook: "Send Quote to Sailor" button gating.
+Products, Shipping (details + price), and Message fields highlight with inline hints while empty. Send requires those fields (status stays New until send). Handbook: "Send Quote to Sailor" button gating.
 
 ### Simplified quote statuses ✓
 

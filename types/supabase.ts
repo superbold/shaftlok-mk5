@@ -170,7 +170,11 @@ export type Database = {
           sent_line_items: Json | null
           sent_quote_notes: string | null
           sent_quoted_price: number | null
+          sent_shipping_notes: string | null
+          sent_shipping_price: number | null
           shaft_diameter: string | null
+          shipping_notes: string | null
+          shipping_price: number | null
           status: string
           transmission: string | null
           updated_at: string
@@ -206,7 +210,11 @@ export type Database = {
           sent_line_items?: Json | null
           sent_quote_notes?: string | null
           sent_quoted_price?: number | null
+          sent_shipping_notes?: string | null
+          sent_shipping_price?: number | null
           shaft_diameter?: string | null
+          shipping_notes?: string | null
+          shipping_price?: number | null
           status?: string
           transmission?: string | null
           updated_at?: string
@@ -242,7 +250,11 @@ export type Database = {
           sent_line_items?: Json | null
           sent_quote_notes?: string | null
           sent_quoted_price?: number | null
+          sent_shipping_notes?: string | null
+          sent_shipping_price?: number | null
           shaft_diameter?: string | null
+          shipping_notes?: string | null
+          shipping_price?: number | null
           status?: string
           transmission?: string | null
           updated_at?: string

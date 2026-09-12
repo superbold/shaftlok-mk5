@@ -63,7 +63,7 @@
                   STATUS
                   <i class="fas fa-sort" :class="getSortIcon('status')"></i>
                 </th>
-                <th>PRICE</th>
+                <th>TOTAL</th>
                 <th></th>
               </tr>
             </thead>
@@ -82,7 +82,7 @@
                 <td :data-cell="'status'">
                   <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
                 </td>
-                <td :data-cell="'price'">{{ quote.quoted_price ? formatPrice(quote.quoted_price) : '—' }}</td>
+                <td :data-cell="'price'">{{ formatQuoteTotal(quote) }}</td>
                 <td :data-cell="'actions'" class="actions-cell">
                   <button @click.stop="qmsCrud?.openDeleteModal(quote)" class="delete-icon-btn" title="Delete quote" aria-label="Delete quote">
                     <i class="fas fa-trash"></i>
@@ -134,10 +134,24 @@ const formatPipelinePrice = (value) => new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0
 }).format(value || 0)
 
+const quoteGrandTotal = (quote) => {
+  const products = Number(quote?.quoted_price)
+  const shipping = Number(quote?.shipping_price)
+  const hasProducts = Number.isFinite(products)
+  const hasShipping = Number.isFinite(shipping)
+  if (!hasProducts && !hasShipping) return null
+  return (hasProducts ? products : 0) + (hasShipping ? shipping : 0)
+}
+
+const formatQuoteTotal = (quote) => {
+  const total = quoteGrandTotal(quote)
+  return total == null ? '—' : formatPrice(total)
+}
+
 const statusPipeline = computed(() =>
   QUOTE_STATUSES.map((s) => {
     const inStage = quotes.value.filter((q) => q.status === s.value)
-    const total = inStage.reduce((sum, q) => sum + (Number(q.quoted_price) || 0), 0)
+    const total = inStage.reduce((sum, q) => sum + (quoteGrandTotal(q) || 0), 0)
     return {
       value: s.value,
       label: s.label,
