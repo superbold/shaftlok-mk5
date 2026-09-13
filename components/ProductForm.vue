@@ -364,6 +364,7 @@
             {{ modelValue.display !== false ? 'Visible on site' : 'Hidden from site' }}
           </span>
         </label>
+        <p class="field-hint">Hidden items still appear in Quote Management under Items Quoted.</p>
       </div>
     </div>
   </div>
@@ -588,6 +589,13 @@ select.form-control {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.display-toggle .field-hint {
+  margin: 0;
+  color: var(--text-low);
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .display-toggle-label {

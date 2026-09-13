@@ -120,7 +120,6 @@
             <p class="hint-note">
               If your shaft isn’t a stock size, we can machine a custom bore — extra cost may apply, especially on larger Mods.
               Don’t worry: we can remove this later if it isn’t the right fit for your vessel.
-              <NuxtLink to="/products/custom-bore" class="inline-link">Learn more about Custom Bore</NuxtLink>
             </p>
           </div>
           <div class="form-row three-col">

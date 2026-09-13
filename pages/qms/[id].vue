@@ -444,12 +444,15 @@ const getCatalogLinePrice = (item) => {
 }
 
 const productOptionLabel = (product) => {
+  const hidden = product.display === false ? ' (not on site)' : ''
   if (productUsesLengthPricing(product)) {
     const range = getProductPriceRangeFromProduct(product)
-    return range ? `${product.name} — length-priced (${range})` : `${product.name} — length-priced`
+    return range
+      ? `${product.name} — length-priced (${range})${hidden}`
+      : `${product.name} — length-priced${hidden}`
   }
   const formatted = formatProductPrice(product.price)
-  return formatted ? `${product.name} — ${formatted}` : product.name
+  return formatted ? `${product.name} — ${formatted}${hidden}` : `${product.name}${hidden}`
 }
 
 const selectedLineItems = () =>
@@ -582,8 +585,11 @@ const serializeLineItems = (items) => (Array.isArray(items) ? items : [])
     price: parseMoneyField(li.price)
   }))
 
-const detailPlaceholder = (slug) =>
-  slug === 'marine-control-cable' ? 'e.g. 15 ft' : 'e.g. x2 (optional)'
+const detailPlaceholder = (slug) => {
+  if (slug === 'marine-control-cable') return 'e.g. 15 ft'
+  if (slug === 'custom-bore') return 'e.g. Mod III / port shaft'
+  return 'e.g. x2 (optional)'
+}
 
 const applicableWarnings = computed(() => getApplicableWarnings(editForm.value.line_items))
 
@@ -895,11 +901,14 @@ const markDecision = async (decision) => {
 const loadPickableProducts = async () => {
   const { data } = await supabase
     .from('products')
-    .select('id, name, slug, price, price_tiers')
-    .eq('display', true)
+    .select('id, name, slug, price, price_tiers, display')
     .order('id', { ascending: true })
 
-  pickableProducts.value = data || []
+  pickableProducts.value = (data || []).slice().sort((a, b) => {
+    const vis = (b.display !== false ? 1 : 0) - (a.display !== false ? 1 : 0)
+    if (vis) return vis
+    return a.id - b.id
+  })
 }
 
 const loadLibraryDocs = async () => {
