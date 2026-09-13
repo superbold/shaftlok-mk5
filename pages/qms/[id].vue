@@ -705,7 +705,9 @@ const sections = computed(() => {
         ['Shaft Diameter', q.shaft_diameter],
         ['Propeller Diameter', q.prop_diameter],
         ['Propeller Pitch', q.prop_pitch],
-        ['Custom Bore Interest', q.custom_bore_requested ? 'Yes — may need custom bore (confirm or remove in Items Quoted)' : 'No'],
+        ...(q.custom_bore_requested
+          ? [['Custom Bore Interest', 'Yes — sailor checked this on an older RFQ']]
+          : []),
         ['Number of Blades', q.num_blades],
         ['Number of Propellers / Shafts', q.num_propellers],
         ['Fixed / Folding / Feathering', q.prop_type]
