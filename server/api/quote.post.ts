@@ -26,7 +26,8 @@ function looksLikeGibberish(name: string): boolean {
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const {
-    company, // honeypot — real visitors never fill this in
+    company, // legacy honeypot name — still treat as filled-by-bot
+    hpWebsite, // current honeypot — real visitors never fill this in
     name, email, phone, phoneRegion, address,
     yachtType, yachtName, displacement, maxHullSpeed,
     shaftDiameter, propDiameter, propPitch, customBoreRequested,
@@ -39,8 +40,12 @@ export default defineEventHandler(async (event) => {
   }
 
   // Silently pretend success for bots so they don't learn to adjust — don't
-  // save to Supabase or notify Sean.
-  if (company || looksLikeGibberish(name)) {
+  // save to Supabase or notify Sean. Trim so leftover whitespace isn't a drop.
+  const honeypot = String(hpWebsite || company || '').trim()
+  if (honeypot || looksLikeGibberish(name)) {
+    console.info('Quote request dropped as likely bot', {
+      reason: honeypot ? 'honeypot' : 'gibberish-name'
+    })
     return { ok: true }
   }
 

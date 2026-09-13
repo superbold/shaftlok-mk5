@@ -16,10 +16,21 @@
     <div class="quote-wrap">
       <form v-if="!submitted" class="quote-form glass-card" @submit.prevent="submitForm">
 
-        <!-- Honeypot: hidden from real visitors, bots tend to fill every input they find -->
+        <!-- Honeypot: hidden from real visitors. Do not name this "company" —
+             browsers and password managers autofill that and the server then
+             silently drops the request as a bot. -->
         <div class="hp-field" aria-hidden="true">
-          <label for="company">Leave this field blank</label>
-          <input id="company" v-model="form.company" type="text" tabindex="-1" autocomplete="off" />
+          <label for="hp-website">Leave this field blank</label>
+          <input
+            id="hp-website"
+            v-model="form.hpWebsite"
+            name="hp_website"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+            data-lpignore="true"
+            data-1p-ignore="true"
+          />
         </div>
 
         <div class="form-section">
@@ -213,7 +224,7 @@ const route = useRoute()
 const discountApplied = computed(() => route.query.discount === 'yacht-list-50')
 
 const form = reactive({
-  company: '', // honeypot — must stay empty
+  hpWebsite: '', // honeypot — must stay empty; not named "company" (autofill)
   name: '',
   email: '',
   phone: '',

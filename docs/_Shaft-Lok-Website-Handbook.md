@@ -10,6 +10,8 @@ Admin-facing quote workflow at `/qms` (list) and `/qms/:id` (detail/edit/send), 
 
 A `quotes` row is created once, when a sailor submits the public quote form (`server/api/quote.post.ts`). Every admin action after that — Save, Send, Mark Won/Dead — is an `update` on that same row, never a new insert. There's no versioning: the row only ever holds the *latest* draft (`quoted_price`, `shipping_price`, `shipping_notes`, `quote_notes`, `line_items`) plus a snapshot of the *last sent* version (`sent_html`, `sent_at`, `sent_quoted_price`, `sent_shipping_price`, `sent_shipping_notes`, `sent_quote_notes`, `sent_line_items`). A re-send overwrites the previous snapshot — "most recent send wins" (see `docs/QMS_Store-and-View_plan.md`).
 
+The public form silently drops suspected bots (filled honeypot, or a name that looks like random characters) and still shows "Request Sent" so bots don't learn to adjust. The honeypot must not be named `company` — browsers autofill that and would drop real sailors (and Sean testing the form). Drops log `Quote request dropped as likely bot` in Vercel.
+
 `quoted_price` is **products only** — always the sum of `line_items[].price`. Grand total is always `quoted_price + shipping_price`. Pipeline dollars on `/qms` and the list Total column use that grand total.
 
 Each `line_items` entry is `{ product_slug, product_name, detail, price }`. Price is seeded from Product Management (`products.price` / length tiers) when the admin picks a product, then editable on the quote. `price_manual` is UI-only and not persisted.
