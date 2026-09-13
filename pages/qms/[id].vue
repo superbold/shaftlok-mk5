@@ -16,31 +16,36 @@
       <template v-else-if="quote">
         <div class="detail-head glass-card">
           <div>
-            <h1>{{ quote.name }}</h1>
-            <p class="detail-sub">{{ quote.email }} · submitted {{ formatDate(quote.created_at) }}</p>
+            <h1>{{ editForm.name || quote.name }}</h1>
+            <p class="detail-sub">{{ editForm.email || quote.email }} · submitted {{ formatDate(quote.created_at) }}</p>
           </div>
           <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
         </div>
 
         <section id="inquiry-section" class="detail-section">
           <h2 class="section-heading">Inquiry</h2>
+          <p class="section-sub">
+            Fill in what you have and Save. You can come back later with the rest.
+            Saving here does not email the sailor or your inbox.
+          </p>
 
-          <div v-for="section in sections" :key="section.title" class="glass-card summary-card">
-            <h2 class="section-label"><i :class="section.icon"></i> {{ section.title }}</h2>
-            <dl>
-              <template v-for="[label, value] in section.fields" :key="label">
-                <div class="field-row">
-                  <dt>{{ label }}</dt>
-                  <dd>{{ value || '—' }}</dd>
-                </div>
-              </template>
-            </dl>
-          </div>
-
-          <div v-if="quote.notes" class="glass-card summary-card">
-            <h2 class="section-label"><i class="fas fa-sticky-note"></i> Sailor's Notes</h2>
-            <p class="notes-text">{{ quote.notes }}</p>
-          </div>
+          <form class="glass-card action-card inquiry-card" @submit.prevent="saveQuote">
+            <p v-if="quote.custom_bore_requested" class="field-hint">
+              This sailor checked Custom Bore on an older RFQ. Add it under Items Quoted if they still need it.
+            </p>
+            <QuoteForm
+              v-model="editForm"
+              id-prefix="inquiry"
+              notes-placeholder="Anything from the call or email…"
+            />
+            <div class="action-buttons">
+              <button type="submit" class="btn btn-secondary" :disabled="saving">
+                <i class="fas fa-spinner fa-spin" v-if="saving"></i>
+                {{ saving ? 'Saving...' : 'Save' }}
+              </button>
+            </div>
+            <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
+          </form>
         </section>
 
         <section id="quote-section" class="detail-section">
@@ -347,6 +352,7 @@ import {
   productUsesLengthPricing
 } from '~~/utils/productPricing'
 import { formatQuoteValidUntil } from '~~/utils/quoteValidity'
+import { emptyQuoteInquiry, inquiryFromQuote, inquiryColumnsFromForm } from '~~/utils/quoteInquiry'
 
 definePageMeta({
   layout: 'qms-layout',
@@ -374,7 +380,8 @@ const editForm = ref({
   shipping_notes: '',
   quote_notes: '',
   line_items: [],
-  attachment_ids: []
+  attachment_ids: [],
+  ...emptyQuoteInquiry()
 })
 const pickableProducts = ref([])
 const libraryDocs = ref([])
@@ -439,7 +446,7 @@ const getCatalogLinePrice = (item) => {
   return getProductLineItemPrice(
     getProductBySlug(item.product_slug),
     item.detail,
-    quote.value?.cable_length
+    editForm.value.cable_length || quote.value?.cable_length
   )
 }
 
@@ -517,7 +524,7 @@ const lineItemPriceHint = (item) => {
     return `Edited — catalog is ${formatProductPrice(catalog)}.`
   }
   if (catalog != null && !item.price_manual) {
-    const feet = parseCableLengthFeet(item.detail) ?? parseCableLengthFeet(quote.value?.cable_length)
+    const feet = parseCableLengthFeet(item.detail) ?? parseCableLengthFeet(editForm.value.cable_length || quote.value?.cable_length)
     return feet && productUsesLengthPricing(product)
       ? `From catalog: ${formatProductPrice(catalog)} (${feet}′ tier)`
       : `From catalog: ${formatProductPrice(catalog)}`
@@ -525,7 +532,7 @@ const lineItemPriceHint = (item) => {
   if (productUsesLengthPricing(product)) {
     const tiers = getResolvedProductPriceTiers(product)
     const bounds = tiers ? getTierLengthBounds(tiers) : { minFeet: 1, maxFeet: 30 }
-    const feet = parseCableLengthFeet(item.detail) ?? parseCableLengthFeet(quote.value?.cable_length)
+    const feet = parseCableLengthFeet(item.detail) ?? parseCableLengthFeet(editForm.value.cable_length || quote.value?.cable_length)
     if (feet != null) {
       return `Length ${feet}′ is outside the ${bounds.minFeet}–${bounds.maxFeet}′ catalog range — enter price manually.`
     }
@@ -556,8 +563,8 @@ const onLineItemProductChange = (i, slug) => {
   item.product_slug = slug
   item.product_name = product?.name ?? ''
   item.price_manual = false
-  if (slug === MARINE_CONTROL_CABLE_SLUG && quote.value?.cable_length && !item.detail?.trim()) {
-    item.detail = `${quote.value.cable_length} ft`
+  if (slug === MARINE_CONTROL_CABLE_SLUG && (editForm.value.cable_length || quote.value?.cable_length) && !item.detail?.trim()) {
+    item.detail = `${editForm.value.cable_length || quote.value.cable_length} ft`
   }
   seedLineItemPrice(i, { force: true })
 }
@@ -660,77 +667,6 @@ const quoteContentUnchanged = computed(() => {
   return JSON.stringify(normalizeLineItems(editForm.value.line_items)) === JSON.stringify(normalizeLineItems(q.sent_line_items))
 })
 
-const lockingSystemLabel = computed(() => {
-  if (!quote.value) return ''
-  if (quote.value.locking_system === 'cable') {
-    return `Marine Control Cable${quote.value.cable_length ? ` — ${quote.value.cable_length} ft` : ''}`
-  }
-  if (quote.value.locking_system === 'spring') return 'Simple Spring Locking System'
-  if (quote.value.locking_system === 'unsure') return 'Not sure — needs guidance'
-  return ''
-})
-
-const phoneLabel = computed(() => {
-  if (!quote.value?.phone) return ''
-  return `${quote.value.phone}${quote.value.phone_region === 'europe' ? ' (Europe / International)' : ' (US / Canada)'}`
-})
-
-const sections = computed(() => {
-  if (!quote.value) return []
-  const q = quote.value
-  return [
-    {
-      title: 'Contact',
-      icon: 'fas fa-user',
-      fields: [
-        ['Email', q.email],
-        ['Phone', phoneLabel.value],
-        ['Address', q.address]
-      ]
-    },
-    {
-      title: 'Vessel',
-      icon: 'fas fa-ship',
-      fields: [
-        ['Yacht Type & Length', q.yacht_type],
-        ['Yacht Name', q.yacht_name],
-        ['Displacement', q.displacement],
-        ['Max Hull Speed', q.max_hull_speed]
-      ]
-    },
-    {
-      title: 'Propeller',
-      icon: 'fas fa-fan',
-      fields: [
-        ['Shaft Diameter', q.shaft_diameter],
-        ['Propeller Diameter', q.prop_diameter],
-        ['Propeller Pitch', q.prop_pitch],
-        ...(q.custom_bore_requested
-          ? [['Custom Bore Interest', 'Yes — sailor checked this on an older RFQ']]
-          : []),
-        ['Number of Blades', q.num_blades],
-        ['Number of Propellers / Shafts', q.num_propellers],
-        ['Fixed / Folding / Feathering', q.prop_type]
-      ]
-    },
-    {
-      title: 'Engine & Transmission',
-      icon: 'fas fa-tachometer-alt',
-      fields: [
-        ['Engine Make & HP', q.engine],
-        ['Transmission Make & Ratio', q.transmission]
-      ]
-    },
-    {
-      title: 'Locking System',
-      icon: 'fas fa-lock',
-      fields: [
-        ['Interested In', lockingSystemLabel.value]
-      ]
-    }
-  ]
-})
-
 const loadQuote = async () => {
   try {
     loading.value = true
@@ -780,7 +716,8 @@ const loadQuote = async () => {
       shipping_notes: data.shipping_notes ?? '',
       quote_notes: data.quote_notes ?? '',
       line_items: lineItems,
-      attachment_ids: Array.isArray(data.attachment_ids) ? [...data.attachment_ids] : []
+      attachment_ids: Array.isArray(data.attachment_ids) ? [...data.attachment_ids] : [],
+      ...inquiryFromQuote(data)
     }
     syncQuotedPriceFromLineItems()
   } catch (err) {
@@ -799,9 +736,17 @@ const saveQuote = async () => {
 
     syncQuotedPriceFromLineItems()
 
+    const inquiry = inquiryColumnsFromForm(editForm.value)
+    if (!inquiry.name || !inquiry.email) {
+      saveMessage.value = 'Name and email are required.'
+      saveError.value = true
+      return
+    }
+
     const { error: updateError } = await supabase
       .from('quotes')
       .update({
+        ...inquiry,
         status: editForm.value.status,
         quoted_price: editForm.value.quoted_price === '' ? null : editForm.value.quoted_price,
         shipping_price: editForm.value.shipping_price === '' ? null : editForm.value.shipping_price,

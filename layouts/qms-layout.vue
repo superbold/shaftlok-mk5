@@ -23,7 +23,7 @@
       @delete="deleteQuote"
     >
       <template #form="{ formData }">
-        <QuoteForm v-model="quoteForm" />
+        <QuoteForm v-model="quoteForm" show-inbox-note />
       </template>
       <template #delete-preview="{ item }">
         <strong>{{ item?.name }}</strong><br>
@@ -34,6 +34,8 @@
 </template>
 
 <script setup>
+import { emptyQuoteInquiry, inquiryColumnsFromForm } from '~~/utils/quoteInquiry'
+
 const supabase = useSupabaseClient()
 const searchTerm = ref('')
 const quoteCount = ref(0)
@@ -42,20 +44,10 @@ const showCrudModal = ref(false)
 const crudMode = ref('create')
 const selectedQuoteForModal = ref(null)
 const isLoading = ref(false)
-const quoteForm = ref({
-  name: '',
-  email: '',
-  phone: '',
-  notes: ''
-})
+const quoteForm = ref(emptyQuoteInquiry())
 
 const resetForm = () => {
-  quoteForm.value = {
-    name: '',
-    email: '',
-    phone: '',
-    notes: ''
-  }
+  quoteForm.value = emptyQuoteInquiry()
 }
 
 const openCreateModal = () => {
@@ -80,9 +72,15 @@ const saveQuote = async () => {
   try {
     isLoading.value = true
 
+    const inquiry = inquiryColumnsFromForm(quoteForm.value)
+    if (!inquiry.name || !inquiry.email) {
+      alert('Name and email are required.')
+      return
+    }
+
     const { error } = await supabase
       .from('quotes')
-      .insert([{ ...quoteForm.value, status: 'new', read_at: new Date().toISOString() }])
+      .insert([{ ...inquiry, status: 'new', read_at: new Date().toISOString() }])
 
     if (error) throw error
 
