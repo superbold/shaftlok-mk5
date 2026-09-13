@@ -727,6 +727,17 @@ const loadQuote = async () => {
 
     if (fetchError) throw fetchError
 
+    if (!data.read_at) {
+      const now = new Date().toISOString()
+      const { error: readError } = await supabase
+        .from('quotes')
+        .update({ read_at: now })
+        .eq('id', data.id)
+        .is('read_at', null)
+
+      if (!readError) data.read_at = now
+    }
+
     quote.value = data
     const lineItems = Array.isArray(data.line_items)
       ? data.line_items.map((item) => ({

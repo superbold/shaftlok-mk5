@@ -82,7 +82,7 @@ const saveQuote = async () => {
 
     const { error } = await supabase
       .from('quotes')
-      .insert([{ ...quoteForm.value, status: 'new' }])
+      .insert([{ ...quoteForm.value, status: 'new', read_at: new Date().toISOString() }])
 
     if (error) throw error
 

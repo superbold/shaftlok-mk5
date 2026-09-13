@@ -32,6 +32,10 @@ The "Send Quote to Sailor" email can include warning/info blocks about how to op
 
 Legacy quotes sent before the snapshot columns existed (`sent_quoted_price` null despite `sent_html` being set) fall back to the normal wording rather than misreporting "unchanged."
 
+### Unread inquiry marker
+
+The cyan left bar on `/qms` list rows marks inquiries the owner has not opened yet (`quotes.read_at` is null). New sailor submissions from `/quote` start unread. Opening `/qms/:id` stamps `read_at` and the bar goes away. Quotes Sean creates himself in QMS are marked read on insert. Migration: `20260913_add_quote_read_at.sql`.
+
 ### Status list: app vs. database
 
 `utils/quoteStatus.ts` (`QUOTE_STATUSES`) is the source of truth for valid quote statuses: `new`, `sent`, `followed_up`, `won`, `dead`. The `quotes` table has a matching `quotes_status_check` CHECK constraint — the two aren't kept in sync automatically.

@@ -206,6 +206,7 @@ export type Database = {
           quote_notes: string | null
           quoted_at: string | null
           quoted_price: number | null
+          read_at: string | null
           sent_at: string | null
           sent_attachment_ids: string[] | null
           sent_html: string | null
@@ -249,6 +250,7 @@ export type Database = {
           quote_notes?: string | null
           quoted_at?: string | null
           quoted_price?: number | null
+          read_at?: string | null
           sent_at?: string | null
           sent_attachment_ids?: string[] | null
           sent_html?: string | null
@@ -292,6 +294,7 @@ export type Database = {
           quote_notes?: string | null
           quoted_at?: string | null
           quoted_price?: number | null
+          read_at?: string | null
           sent_at?: string | null
           sent_attachment_ids?: string[] | null
           sent_html?: string | null

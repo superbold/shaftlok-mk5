@@ -73,7 +73,8 @@
                 :key="quote.id"
                 @click="openQuote(quote)"
                 class="quote-row"
-                :class="{ 'needs-attention': ['new', 'sent'].includes(quote.status) }"
+                :class="{ 'needs-attention': !quote.read_at }"
+                :title="quote.read_at ? undefined : 'Unread inquiry'"
               >
                 <td :data-cell="'sailor'">{{ quote.name }}</td>
                 <td :data-cell="'yacht'">{{ [quote.yacht_type, quote.yacht_name].filter(Boolean).join(' — ') || '—' }}</td>
@@ -324,6 +325,7 @@ useHead({
   transition: background-color 0.2s ease;
 }
 
+/* Unread inquiry — owner has not opened this quote yet */
 .quote-row.needs-attention td:first-child {
   box-shadow: inset 3px 0 0 var(--accent);
 }
