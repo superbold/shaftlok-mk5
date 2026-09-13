@@ -163,19 +163,33 @@ header {
 .menu-toggle {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  background: none;
-  border: none;
+  justify-content: center;
+  gap: 5px;
+  width: 2.8rem;
+  height: 2.8rem;
+  padding: 0 0.6rem;
+  background: rgba(148, 197, 255, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 12px;
   cursor: pointer;
-  padding: 0.35rem;
+  flex-shrink: 0;
+  transition: border-color 0.25s ease;
 }
+
+.menu-toggle:hover { border-color: var(--accent); }
 
 .menu-toggle .bar {
   display: block;
-  width: 1.25rem;
   height: 2px;
+  width: 100%;
   background: var(--text-hi);
+  border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
+
+.menu-open .menu-toggle .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-open .menu-toggle .bar:nth-child(2) { opacity: 0; }
+.menu-open .menu-toggle .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 .mobile-menu {
   display: flex;
@@ -216,14 +230,6 @@ header {
 @media (min-width: 768px) {
   .library-nav-section {
     display: flex;
-  }
-
-  .menu-toggle {
-    display: none;
-  }
-
-  .mobile-menu {
-    display: none;
   }
 }
 </style>
