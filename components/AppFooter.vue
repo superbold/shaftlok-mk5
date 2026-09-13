@@ -176,14 +176,14 @@
 
 .footer-col li { margin-bottom: 0.55rem; }
 
-.footer-col a {
+.footer-col a:not(.btn) {
   color: var(--text-mid);
   text-decoration: none;
   font-size: 0.95rem;
   transition: color 0.2s ease;
 }
 
-.footer-col a:hover { color: var(--accent); }
+.footer-col a:not(.btn):hover { color: var(--accent); }
 
 .footer-contact p {
   display: flex;
