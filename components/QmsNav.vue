@@ -1,7 +1,7 @@
 <template>
   <header :class="{ 'menu-open': menuOpen }">
     <div class="nav-inner">
-      <NuxtLink to="/" class="brand">
+      <NuxtLink to="/" class="brand" title="Public website">
         <img src="/assets/images/Logo_propeller_only.png" alt="Shaft Lok propeller logo" class="brand-mark">
         <span class="brand-name"><span class="brand-shaft">Shaft Lok</span><span class="brand-inc">QUOTES</span></span>
       </NuxtLink>
@@ -44,7 +44,7 @@
       </div>
 
       <button
-        class="menu-toggle"
+        class="menu-toggle admin-ring"
         :aria-expanded="menuOpen"
         aria-label="Toggle navigation menu"
         @click="menuOpen = !menuOpen"
@@ -259,6 +259,14 @@ header {
 }
 
 .menu-toggle:hover { border-color: var(--accent); }
+
+.menu-toggle.admin-ring {
+  border-color: rgba(248, 113, 113, 0.55);
+}
+
+.menu-toggle.admin-ring:hover { border-color: #F87171; }
+
+.menu-toggle.admin-ring .bar { background: #FCA5A5; }
 
 .menu-toggle .bar {
   height: 2px;

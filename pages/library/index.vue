@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="yacht-container">
-      <BreadcrumbNav :items="[{ name: 'Shaft Lok Library' }]" />
+      <BreadcrumbNav admin :items="[{ name: 'Shaft Lok Library' }]" />
 
       <div class="library-intro-block">
         <p class="library-intro">

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="yacht-container">
-      <BreadcrumbNav :items="[{ name: 'Yacht List' }]" />
+      <BreadcrumbNav :admin="isAdmin" :items="[{ name: 'Yacht List' }]" />
 
       <div v-if="loading" class="loading-indicator">
         <i class="fas fa-spinner fa-spin"></i>

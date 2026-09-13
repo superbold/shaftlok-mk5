@@ -17,7 +17,7 @@
     </div>
 
     <!-- Sign In / Forgot Password Form -->
-    <div class="signin-form-container">
+    <div v-if="!alreadyAdmin" class="signin-form-container">
       <div class="form-card">
         <Transition
           name="collapse"
@@ -134,10 +134,10 @@
     </div>
 
     <!-- Admin Dashboard Selection Modal -->
-    <div v-if="showAdminModal" class="modal-overlay" @click="showAdminModal = false">
+    <div v-if="showAdminModal" class="modal-overlay" @click="onAdminOverlayClick">
       <div class="admin-modal" @click.stop>
         <div class="admin-modal-header">
-          <h3>Welcome, Admin!</h3>
+          <h3>{{ alreadyAdmin ? 'Admin Access' : 'Welcome, Admin!' }}</h3>
           <p>Which area would you like to manage today?</p>
         </div>
 
@@ -202,8 +202,8 @@
         </div>
 
         <div class="admin-modal-footer">
-          <button @click="showAdminModal = false" class="btn btn-secondary">
-            Cancel
+          <button @click="dismissAdminModal" class="btn btn-secondary">
+            {{ alreadyAdmin ? 'Public site' : 'Cancel' }}
           </button>
           <button @click="proceedToAdminArea" class="btn btn-primary">
             Continue
@@ -288,6 +288,7 @@ const handleForgotPassword = async () => {
 }
 
 const showAdminModal = ref(false)
+const alreadyAdmin = ref(false)
 const adminChoice = ref('qms')
 
 const handleSignIn = async () => {
@@ -337,6 +338,40 @@ const checkAdminRoleAndRedirect = async (user) => {
     await supabase.auth.signOut()
   }
 }
+
+const resumeAdminSession = async () => {
+  const { data } = await supabase.auth.getUser()
+  const user = data.user
+  if (!user) return
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role === 'admin') {
+    alreadyAdmin.value = true
+    showAdminModal.value = true
+  }
+}
+
+const onAdminOverlayClick = () => {
+  if (alreadyAdmin.value) return
+  showAdminModal.value = false
+}
+
+const dismissAdminModal = async () => {
+  if (alreadyAdmin.value) {
+    await navigateTo('/')
+    return
+  }
+  showAdminModal.value = false
+}
+
+onMounted(() => {
+  resumeAdminSession()
+})
 
 const proceedToAdminArea = async () => {
   // Keep the modal up (instead of revealing the sign-in form underneath)

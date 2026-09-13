@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="yacht-container narrow">
-      <BreadcrumbNav :items="[{ name: 'Quote Management', to: '/qms' }, { name: quote?.name || 'Quote' }]" />
+      <BreadcrumbNav admin :items="[{ name: 'Quote Management', to: '/qms' }, { name: quote?.name || 'Quote' }]" />
 
       <div v-if="loading" class="loading-indicator">
         <i class="fas fa-spinner fa-spin"></i>

@@ -74,6 +74,14 @@ In `pages/qms/[id].vue`, the Send button is disabled unless **every quoted item 
 
 On `/quote`, an always-on optional checkbox **“I may need a custom bore”** sits under Shaft Diameter with reassuring copy (can remove later if not a fit). Checking it sets `quotes.custom_bore_requested` and pre-seeds a Custom Bore line item (detail = shaft diameter when provided). Sean confirms or removes it on QMS after the call. Migration: `20260912_add_custom_bore.sql`.
 
+## Admin chrome
+
+Admin pages (QMS, Library, Product Management, and Yacht List while Sean is signed in) use a **red** house breadcrumb and hamburger so they are visually distinct from the public site. The house goes to `/adminaccess` (the area picker) — not the public homepage. The Shaft Lok logo in those headers goes to `/` (the public landing page).
+
+`/adminaccess` shows the sign-in form to visitors. If Sean is already signed in, it skips the form and opens the same “which area?” picker. Overlay click does not dismiss it; **Public site** goes to `/`.
+
+Public pages keep the cyan breadcrumb with house → `/`.
+
 ## Shaft Lok Library
 
 Admin shared document store at `/library` (also linked from `/adminaccess` after sign-in, and from QMS / Product Management nav). Admins upload PDFs and common files once; metadata lives in `library_documents`, files in private Storage bucket `shaft-lok-library` (20 MB/file; PDF, Word, text, JPEG, PNG, WebP). Download uses short-lived signed URLs. Upload, download, and delete are all available on the Library page. Admin-only via RLS. Migration: `20260913_shaft_lok_library.sql`.

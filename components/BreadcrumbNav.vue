@@ -1,7 +1,14 @@
 <template>
-  <nav class="breadcrumb" aria-label="Breadcrumb">
+  <nav class="breadcrumb" :class="{ 'is-admin': admin }" aria-label="Breadcrumb">
     <span class="breadcrumb-item">
-      <NuxtLink to="/" class="breadcrumb-link"><i class="fas fa-house"></i><span class="sr-only">Home</span></NuxtLink>
+      <NuxtLink
+        :to="admin ? '/adminaccess' : '/'"
+        class="breadcrumb-link"
+        :title="admin ? 'Admin Access' : 'Home'"
+      >
+        <i class="fas fa-house"></i>
+        <span class="sr-only">{{ admin ? 'Admin Access' : 'Home' }}</span>
+      </NuxtLink>
     </span>
     <span v-for="(item, index) in items" :key="index" class="breadcrumb-item">
       <NuxtLink v-if="item.to" :to="item.to" class="breadcrumb-link">{{ item.name }}</NuxtLink>
@@ -16,9 +23,12 @@ interface BreadcrumbItem {
   to?: string
 }
 
-defineProps<{
+withDefaults(defineProps<{
   items: BreadcrumbItem[]
-}>()
+  admin?: boolean
+}>(), {
+  admin: false
+})
 </script>
 
 <style scoped>
@@ -36,6 +46,11 @@ defineProps<{
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   margin-bottom: 2rem;
+}
+
+.breadcrumb.is-admin {
+  background: rgba(60, 18, 24, 0.55);
+  border-color: rgba(248, 113, 113, 0.4);
 }
 
 .breadcrumb-item {
@@ -58,12 +73,17 @@ defineProps<{
 
 .breadcrumb-link:hover { color: var(--accent); }
 
+.breadcrumb.is-admin .breadcrumb-link { color: #FCA5A5; }
+.breadcrumb.is-admin .breadcrumb-link:hover { color: #F87171; }
+
 .breadcrumb-link i { font-size: 0.78rem; }
 
 .breadcrumb-current {
   color: var(--accent);
   font-weight: 600;
 }
+
+.breadcrumb.is-admin .breadcrumb-current { color: #FCA5A5; }
 
 .sr-only {
   position: absolute;
