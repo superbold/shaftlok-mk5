@@ -15,6 +15,7 @@
           <i class="fas fa-envelope contact-icon"></i>
           <h3>Email</h3>
           <p><a href="mailto:sean.nigel@shaftlok.com">sean.nigel@shaftlok.com</a></p>
+          <NuxtLink to="/quote" class="btn btn-primary contact-cta">Get a Quote</NuxtLink>
         </div>
         <div class="contact-card glass-card hoverable" v-reveal="80">
           <i class="fas fa-phone contact-icon"></i>
@@ -263,12 +264,18 @@ definePageMeta({
   font-size: 0.98rem;
 }
 
-.contact-card a {
+.contact-card p a {
   color: var(--accent);
   text-decoration: none;
 }
 
-.contact-card a:hover { color: var(--accent-2); }
+.contact-card p a:hover { color: var(--accent-2); }
+
+.contact-cta {
+  margin-top: 1rem;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.92rem;
+}
 
 .contact-aside {
   display: flex;
