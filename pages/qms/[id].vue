@@ -252,6 +252,15 @@
               </div>
             </div>
 
+            <div class="form-group">
+              <label>Terms and Conditions Sent With Every Quote</label>
+              <div class="preview-block">
+                <ol class="preview-terms">
+                  <li v-for="term in TERMS_AND_CONDITIONS" :key="term">{{ term }}</li>
+                </ol>
+              </div>
+            </div>
+
             <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
 
             <div class="action-buttons">
@@ -292,7 +301,7 @@
           <div class="modal-content" @click.stop>
             <h2 class="modal-title">Send Quote to Sailor</h2>
             <p class="modal-text">
-              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive the products/shipping total, your message, and payment instructions by email.
+              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive the products/shipping total, your message, payment instructions, and terms and conditions by email.
               <template v-if="selectedAttachmentCount"> {{ selectedAttachmentCount }} library document{{ selectedAttachmentCount === 1 ? '' : 's' }} will be attached.</template>
             </p>
             <div class="modal-actions">
@@ -1260,6 +1269,18 @@ textarea.form-control { resize: vertical; }
 }
 
 .preview-text:last-child { margin-bottom: 0; }
+
+.preview-terms {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--text-mid);
+  font-size: 0.87rem;
+  line-height: 1.55;
+}
+
+.preview-terms li { margin-bottom: 0.45rem; }
+
+.preview-terms li:last-child { margin-bottom: 0; }
 
 .preview-empty {
   margin: 0;

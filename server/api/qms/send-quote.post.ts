@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import { getApplicableWarnings } from '~/utils/quoteItemWarnings'
 import { PAYMENT_INFO } from '~/utils/paymentInfo'
+import { TERMS_AND_CONDITIONS } from '~/utils/termsAndConditions'
 import { formatQuoteValidUntil } from '~/utils/quoteValidity'
 
 export default defineEventHandler(async (event) => {
@@ -229,6 +230,10 @@ export default defineEventHandler(async (event) => {
           Name: ${PAYMENT_INFO.beneficiary.name}, ${PAYMENT_INFO.beneficiary.address}
         </p>
         <p style="margin:0;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6">${PAYMENT_INFO.support}</p>
+      </div>
+      <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
+        <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Terms and Conditions</p>
+        ${TERMS_AND_CONDITIONS.map((term, index) => `<p style="margin:0 0 ${index === TERMS_AND_CONDITIONS.length - 1 ? '0' : '10px'};font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.7">${index + 1}. ${escapeHtml(term)}</p>`).join('')}
       </div>
 
       <p style="margin:0;font-family:sans-serif;font-size:14px;color:#A8BEDC">

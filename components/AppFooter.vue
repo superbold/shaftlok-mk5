@@ -42,6 +42,7 @@
             <li><NuxtLink to="/about">About Us</NuxtLink></li>
             <li><NuxtLink to="/contact">Contact</NuxtLink></li>
             <li><NuxtLink to="/privacy">Privacy Policy</NuxtLink></li>
+            <li><NuxtLink to="/terms">Terms and Conditions</NuxtLink></li>
           </ul>
         </div>
 
@@ -58,6 +59,7 @@
         <p>
           &copy; {{ new Date().getFullYear() }} <span class="footer-wordmark-sm">Shaft Lok</span> Inc. All rights reserved.
           &nbsp;|&nbsp; <NuxtLink to="/privacy">Privacy Policy</NuxtLink>
+          &nbsp;|&nbsp; <NuxtLink to="/terms">Terms and Conditions</NuxtLink>
           &nbsp;|&nbsp; Patents
           <a href="https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4389199" target="_blank" rel="noopener">#4389199</a>
           and

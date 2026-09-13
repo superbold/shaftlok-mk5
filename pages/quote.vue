@@ -198,7 +198,8 @@
 
         <p class="privacy-note">
           Your information is used solely to respond to your quote request.
-          See our <NuxtLink to="/privacy">Privacy Policy</NuxtLink>.
+          See our <NuxtLink to="/privacy">Privacy Policy</NuxtLink>
+          and <NuxtLink to="/terms">Terms and Conditions</NuxtLink>.
         </p>
 
         <button type="submit" class="btn btn-primary submit-btn" :disabled="loading">
