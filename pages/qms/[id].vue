@@ -196,6 +196,41 @@
             </div>
 
             <div class="form-group">
+              <label>Email Attachments (from Shaft Lok Library)</label>
+              <p class="field-hint field-hint-ready">
+                Optional. Checked files are attached when you send.
+                <NuxtLink to="/library" class="inline-link">Manage library</NuxtLink>
+              </p>
+              <div v-if="libraryDocs.length" class="attach-list">
+                <label
+                  v-for="doc in libraryDocs"
+                  :key="doc.id"
+                  class="attach-row"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="editForm.attachment_ids.includes(doc.id)"
+                    @change="toggleAttachment(doc.id, $event.target.checked)"
+                  />
+                  <span class="attach-meta">
+                    <span class="attach-title">{{ doc.title || doc.file_name }}</span>
+                    <span class="attach-sub">{{ doc.file_name }} · {{ formatBytes(doc.file_size) }}</span>
+                  </span>
+                </label>
+              </div>
+              <p v-else class="preview-empty">
+                No documents in the library yet.
+                <NuxtLink to="/library" class="inline-link">Upload files</NuxtLink>
+                to attach them here.
+              </p>
+              <p v-if="selectedAttachmentCount" class="field-hint">
+                {{ selectedAttachmentCount }} selected
+                <template v-if="selectedAttachmentBytes"> · {{ formatBytes(selectedAttachmentBytes) }} total</template>
+                <template v-if="attachmentsMayBeTooLarge"> — email may be too large; remove some files.</template>
+              </p>
+            </div>
+
+            <div class="form-group">
               <label>Warnings That Will Be Included</label>
               <div v-if="applicableWarnings.length" class="preview-stack">
                 <div v-for="warning in applicableWarnings" :key="warning.title" class="preview-block">
@@ -256,7 +291,10 @@
         <div v-if="showFirstSendModal" class="modal" @click="showFirstSendModal = false">
           <div class="modal-content" @click.stop>
             <h2 class="modal-title">Send Quote to Sailor</h2>
-            <p class="modal-text">Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive the products/shipping total, your message, and payment instructions by email.</p>
+            <p class="modal-text">
+              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive the products/shipping total, your message, and payment instructions by email.
+              <template v-if="selectedAttachmentCount"> {{ selectedAttachmentCount }} library document{{ selectedAttachmentCount === 1 ? '' : 's' }} will be attached.</template>
+            </p>
             <div class="modal-actions">
               <button @click="showFirstSendModal = false" class="btn btn-secondary">Cancel</button>
               <button @click="confirmSend" class="btn btn-primary" :disabled="sending">
@@ -326,9 +364,49 @@ const editForm = ref({
   shipping_price: '',
   shipping_notes: '',
   quote_notes: '',
-  line_items: []
+  line_items: [],
+  attachment_ids: []
 })
 const pickableProducts = ref([])
+const libraryDocs = ref([])
+
+/** Soft cap: Resend total email size is ~40MB; leave room for HTML. */
+const ATTACHMENT_WARN_BYTES = 35 * 1024 * 1024
+
+const formatBytes = (bytes) => {
+  const n = Number(bytes) || 0
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`
+}
+
+const normalizeAttachmentIds = (ids) =>
+  [...(Array.isArray(ids) ? ids : [])].map(String).filter(Boolean).sort()
+
+const sameAttachmentIds = (a, b) =>
+  JSON.stringify(normalizeAttachmentIds(a)) === JSON.stringify(normalizeAttachmentIds(b))
+
+const selectedAttachmentCount = computed(() => editForm.value.attachment_ids.length)
+
+const selectedAttachmentBytes = computed(() => {
+  const selected = new Set(editForm.value.attachment_ids)
+  return libraryDocs.value
+    .filter((doc) => selected.has(doc.id))
+    .reduce((sum, doc) => sum + (Number(doc.file_size) || 0), 0)
+})
+
+const attachmentsMayBeTooLarge = computed(() =>
+  selectedAttachmentBytes.value > ATTACHMENT_WARN_BYTES
+)
+
+const toggleAttachment = (id, checked) => {
+  const ids = editForm.value.attachment_ids
+  if (checked) {
+    if (!ids.includes(id)) ids.push(id)
+  } else {
+    editForm.value.attachment_ids = ids.filter((existing) => existing !== id)
+  }
+}
 
 const statusLabel = quoteStatusLabel
 const formatDate = (value) => value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
@@ -562,6 +640,7 @@ const quoteContentUnchanged = computed(() => {
 
   if ((editForm.value.shipping_notes || null) !== (q.sent_shipping_notes || null)) return false
   if ((editForm.value.quote_notes || null) !== (q.sent_quote_notes || null)) return false
+  if (!sameAttachmentIds(editForm.value.attachment_ids, q.sent_attachment_ids)) return false
 
   return JSON.stringify(normalizeLineItems(editForm.value.line_items)) === JSON.stringify(normalizeLineItems(q.sent_line_items))
 })
@@ -672,7 +751,8 @@ const loadQuote = async () => {
       shipping_price: data.shipping_price ?? '',
       shipping_notes: data.shipping_notes ?? '',
       quote_notes: data.quote_notes ?? '',
-      line_items: lineItems
+      line_items: lineItems,
+      attachment_ids: Array.isArray(data.attachment_ids) ? [...data.attachment_ids] : []
     }
     syncQuotedPriceFromLineItems()
   } catch (err) {
@@ -700,6 +780,7 @@ const saveQuote = async () => {
         shipping_notes: editForm.value.shipping_notes?.trim() || null,
         quote_notes: editForm.value.quote_notes || null,
         line_items: serializeLineItems(editForm.value.line_items),
+        attachment_ids: editForm.value.attachment_ids,
         updated_at: new Date().toISOString()
       })
       .eq('id', quote.value.id)
@@ -735,6 +816,7 @@ const sendQuote = async () => {
         shipping_notes: editForm.value.shipping_notes?.trim() || null,
         quote_notes: editForm.value.quote_notes || null,
         line_items: serializeLineItems(editForm.value.line_items),
+        attachment_ids: editForm.value.attachment_ids,
         updated_at: new Date().toISOString()
       })
       .eq('id', quote.value.id)
@@ -800,8 +882,23 @@ const loadPickableProducts = async () => {
   pickableProducts.value = data || []
 }
 
+const loadLibraryDocs = async () => {
+  const { data, error: fetchError } = await supabase
+    .from('library_documents')
+    .select('id, title, file_name, file_size, content_type, created_at')
+    .order('title', { ascending: true })
+
+  if (fetchError) {
+    console.error('Error loading library documents:', fetchError)
+    libraryDocs.value = []
+    return
+  }
+
+  libraryDocs.value = data || []
+}
+
 onMounted(async () => {
-  await loadPickableProducts()
+  await Promise.all([loadPickableProducts(), loadLibraryDocs()])
   await loadQuote()
 })
 
@@ -1158,6 +1255,58 @@ textarea.form-control { resize: vertical; }
   color: var(--text-low);
   font-size: 0.87rem;
   font-style: italic;
+}
+
+.inline-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.attach-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 16rem;
+  overflow: auto;
+  padding: 0.15rem 0;
+}
+
+.attach-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-hi);
+  font-weight: 400;
+}
+
+.attach-row input {
+  margin-top: 0.2rem;
+  flex: none;
+}
+
+.attach-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.attach-title {
+  font-size: 0.9rem;
+  color: var(--text-hi);
+}
+
+.attach-sub {
+  font-size: 0.78rem;
+  color: var(--text-mid);
+  word-break: break-word;
 }
 
 .save-message {

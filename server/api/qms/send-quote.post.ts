@@ -99,6 +99,54 @@ export default defineEventHandler(async (event) => {
     price: linePrices[index] as number
   }))
 
+  const attachmentIds = Array.isArray(quote.attachment_ids)
+    ? (quote.attachment_ids as string[]).filter(Boolean)
+    : []
+
+  const emailAttachments: { filename: string; content: Buffer }[] = []
+  const attachmentLabels: string[] = []
+
+  if (attachmentIds.length) {
+    const { data: docs, error: docsError } = await supabase
+      .from('library_documents')
+      .select('id, title, file_name, storage_path')
+      .in('id', attachmentIds)
+
+    if (docsError) {
+      console.error('Error loading library documents for quote:', docsError)
+      throw createError({ statusCode: 500, statusMessage: 'Could not load library attachments.' })
+    }
+
+    const byId = new Map((docs || []).map((doc) => [doc.id, doc]))
+    if (byId.size !== attachmentIds.length) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'One or more selected library documents are missing. Re-check attachments and try again.'
+      })
+    }
+
+    for (const id of attachmentIds) {
+      const doc = byId.get(id)!
+      const { data: blob, error: downloadError } = await supabase.storage
+        .from('shaft-lok-library')
+        .download(doc.storage_path)
+
+      if (downloadError || !blob) {
+        console.error('Error downloading library file for quote:', doc.id, downloadError)
+        throw createError({
+          statusCode: 500,
+          statusMessage: `Could not attach “${doc.file_name}”. Try again or remove it from the quote.`
+        })
+      }
+
+      emailAttachments.push({
+        filename: doc.file_name,
+        content: Buffer.from(await blob.arrayBuffer())
+      })
+      attachmentLabels.push(doc.title || doc.file_name)
+    }
+  }
+
   const itemsHtml = `
       <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
         <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Items Quoted</p>
@@ -157,6 +205,14 @@ export default defineEventHandler(async (event) => {
       </div>
       ${itemsHtml}
       <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px;white-space:pre-wrap">${safeQuoteNotes}</p>
+      ${attachmentLabels.length ? `
+      <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
+        <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Attached Documents</p>
+        <ul style="margin:0;padding:0 0 0 18px;font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.7">
+          ${attachmentLabels.map((label) => `<li style="margin:0 0 4px">${escapeHtml(label)}</li>`).join('')}
+        </ul>
+        <p style="margin:10px 0 0;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6">These files are attached to this email for offline use.</p>
+      </div>` : ''}
       ${warningsHtml}
       <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
         <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Payment</p>
@@ -193,7 +249,8 @@ export default defineEventHandler(async (event) => {
     replyTo: senderEmail,
     cc: ccEmails,
     subject: 'Your Shaft Lok Quote',
-    html
+    html,
+    ...(emailAttachments.length ? { attachments: emailAttachments } : {})
   })
 
   const { error: updateError } = await supabase
@@ -202,6 +259,7 @@ export default defineEventHandler(async (event) => {
       status: 'sent',
       quoted_price: productsPrice,
       line_items: normalizedLineItems,
+      attachment_ids: attachmentIds,
       sent_at: sentAt,
       sent_html: html,
       sent_quoted_price: productsPrice,
@@ -209,6 +267,7 @@ export default defineEventHandler(async (event) => {
       sent_line_items: normalizedLineItems,
       sent_shipping_price: quote.shipping_price,
       sent_shipping_notes: quote.shipping_notes,
+      sent_attachment_ids: attachmentIds,
       updated_at: sentAt
     })
     .eq('id', quoteId)

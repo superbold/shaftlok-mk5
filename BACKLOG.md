@@ -6,6 +6,10 @@ Prioritized open work for Shaft Lok MK5. Completed items live at the bottom unde
 
 ## Next up (P1 — owner workflow)
 
+### Update quote banking details
+
+Owner wants payment block on sailor quote emails to use the Shaft Lok bank account.
+
 ### Product/MOD price history
 
 Owner wants to track MOD and locking-system price changes over time (materials, machining, etc.) without losing history.
@@ -68,6 +72,14 @@ PWA features and further image optimization.
 ---
 
 ## Done
+
+### Attach Shaft Lok Library docs to quote emails ✓
+
+QMS quote detail: pick library files; Resend sends them as attachments. Columns `attachment_ids` / `sent_attachment_ids`. Migration: `20260913_quote_library_attachments.sql`.
+
+### Shaft Lok Library ✓
+
+Admin document library at `/library` + portal choice on `/adminaccess`. Private Supabase Storage bucket `shaft-lok-library` + `library_documents` table. Migration: `20260913_shaft_lok_library.sql`.
 
 ### Custom Bore product + quote upsell ✓
 

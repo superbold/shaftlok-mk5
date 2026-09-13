@@ -68,6 +68,14 @@ In `pages/qms/[id].vue`, the Send button is disabled unless **every quoted item 
 
 On `/quote`, an always-on optional checkbox **“I may need a custom bore”** sits under Shaft Diameter with reassuring copy (can remove later if not a fit). Checking it sets `quotes.custom_bore_requested` and pre-seeds a Custom Bore line item (detail = shaft diameter when provided). Sean confirms or removes it on QMS after the call. Migration: `20260912_add_custom_bore.sql`.
 
+## Shaft Lok Library
+
+Admin shared document store at `/library` (also linked from `/adminaccess` after sign-in, and from QMS / Product Management nav). Admins upload PDFs and common files once; metadata lives in `library_documents`, files in private Storage bucket `shaft-lok-library` (20 MB/file; PDF, Word, text, JPEG, PNG, WebP). Download uses short-lived signed URLs. Upload, download, and delete are all available on the Library page. Admin-only via RLS. Migration: `20260913_shaft_lok_library.sql`.
+
+### Attach library docs to quote emails
+
+On a QMS quote detail page, under **Email Attachments**, Sean checks library files for that send. IDs are stored on `quotes.attachment_ids`. On send, the API downloads each file from Storage and passes them to Resend as email attachments; the email HTML lists the titles. `sent_attachment_ids` snapshots what went out (used for “unchanged since last send” checks). Missing/deleted library rows fail the send with a clear error. Migration: `20260913_quote_library_attachments.sql`.
+
 ## Product Management
 
 Admin-facing product catalog editing at `/products/manage`, linked from `/adminaccess`. Public sailors see `/products` (catalog) and `/products/[slug]` (detail pages). All copy and specs live in the Supabase `products` table — there are no static per-product Vue pages anymore.

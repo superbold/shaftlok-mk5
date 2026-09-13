@@ -57,6 +57,7 @@
 
     <Transition name="drop">
       <nav v-if="menuOpen" class="mobile-menu" aria-label="Site">
+        <NuxtLink to="/library" class="mobile-link" @click="menuOpen = false"><i class="fas fa-book"></i> Shaft Lok Library</NuxtLink>
         <NuxtLink to="/yacht-list" class="mobile-link" @click="menuOpen = false"><i class="fas fa-ship"></i> Yacht List</NuxtLink>
         <NuxtLink to="/products/manage" class="mobile-link" @click="menuOpen = false"><i class="fas fa-cogs"></i> Product Management</NuxtLink>
         <button @click="emit('sign-out')" class="mobile-link mobile-signout">

@@ -184,6 +184,20 @@
                 <span>Product Management</span>
               </div>
             </label>
+
+            <label class="radio-option">
+              <input
+                type="radio"
+                v-model="adminChoice"
+                value="library"
+                name="admin-choice"
+              >
+              <span class="radio-custom"></span>
+              <div class="option-content">
+                <i class="fas fa-book"></i>
+                <span>Shaft Lok Library</span>
+              </div>
+            </label>
           </div>
         </div>
 
@@ -333,6 +347,8 @@ const proceedToAdminArea = async () => {
     await router.push('/yacht-list')
   } else if (adminChoice.value === 'products') {
     await router.push('/products/manage')
+  } else if (adminChoice.value === 'library') {
+    await router.push('/library')
   }
   showAdminModal.value = false
 }

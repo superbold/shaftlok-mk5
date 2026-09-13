@@ -119,6 +119,45 @@ export type Database = {
         }
         Relationships: []
       }
+      library_documents: {
+        Row: {
+          content_type: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          file_name: string
+          file_size: number | null
+          id: string
+          storage_path: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_name: string
+          file_size?: number | null
+          id?: string
+          storage_path: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_name?: string
+          file_size?: number | null
+          id?: string
+          storage_path?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -143,6 +182,7 @@ export type Database = {
       quotes: {
         Row: {
           address: string | null
+          attachment_ids: string[]
           cable_length: string | null
           created_at: string
           custom_bore_requested: boolean
@@ -167,6 +207,7 @@ export type Database = {
           quoted_at: string | null
           quoted_price: number | null
           sent_at: string | null
+          sent_attachment_ids: string[] | null
           sent_html: string | null
           sent_line_items: Json | null
           sent_quote_notes: string | null
@@ -184,6 +225,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          attachment_ids?: string[]
           cable_length?: string | null
           created_at?: string
           custom_bore_requested?: boolean
@@ -208,6 +250,7 @@ export type Database = {
           quoted_at?: string | null
           quoted_price?: number | null
           sent_at?: string | null
+          sent_attachment_ids?: string[] | null
           sent_html?: string | null
           sent_line_items?: Json | null
           sent_quote_notes?: string | null
@@ -225,6 +268,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          attachment_ids?: string[]
           cable_length?: string | null
           created_at?: string
           custom_bore_requested?: boolean
@@ -249,6 +293,7 @@ export type Database = {
           quoted_at?: string | null
           quoted_price?: number | null
           sent_at?: string | null
+          sent_attachment_ids?: string[] | null
           sent_html?: string | null
           sent_line_items?: Json | null
           sent_quote_notes?: string | null
