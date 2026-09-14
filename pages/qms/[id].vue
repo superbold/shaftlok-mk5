@@ -22,6 +22,22 @@
           <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
         </div>
 
+        <section id="sent-section" class="detail-section">
+          <h2 class="section-heading">{{ quote.sent_html ? 'Sent to Sailor' : 'Email to Sailor' }}</h2>
+          <p v-if="quote.sent_html" class="section-sub">
+            Exactly what {{ quote.name }} received{{ quote.sent_at ? ` on ${formatDate(quote.sent_at)}` : '' }}.
+            <template v-if="quoteValidUntilLabel"> Valid until {{ quoteValidUntilLabel }}.</template>
+            Edits below are not in this email until you send again.
+          </p>
+          <p v-else class="section-sub">
+            Live preview of the email the sailor will receive. It updates as you edit Inquiry and Quote below.
+          </p>
+          <EmailFrame
+            :html="quote.sent_html || sailorPreviewHtml"
+            :title="quote.sent_html ? `Quote sent to ${quote.name}` : `Quote preview for ${editForm.name || quote.name}`"
+          />
+        </section>
+
         <section id="inquiry-section" class="detail-section">
           <h2 class="section-heading">Inquiry</h2>
           <p class="section-sub">
@@ -52,6 +68,31 @@
           <h2 class="section-heading section-heading-quote">Quote</h2>
 
           <div class="glass-card action-card">
+            <div class="worksheet-toolbar">
+              <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
+              <div class="action-buttons">
+                <button @click="saveQuote" class="btn btn-secondary" :disabled="saving">
+                  <i class="fas fa-spinner fa-spin" v-if="saving"></i>
+                  {{ saving ? 'Saving...' : 'Save' }}
+                </button>
+                <button
+                  @click="handleSendClick"
+                  class="btn btn-primary"
+                  :disabled="sending || missingSendRequirements.length > 0"
+                  :title="sendRequirementsHint"
+                >
+                  <i class="fas fa-spinner fa-spin" v-if="sending"></i>
+                  <i class="fas fa-paper-plane" v-else></i>
+                  {{ sending ? 'Sending...' : 'Send Quote to Sailor' }}
+                </button>
+              </div>
+              <p v-if="missingSendRequirements.length" class="send-hint">{{ sendRequirementsHint }}</p>
+              <div v-if="postSendStatuses.includes(quote.status)" class="decision-buttons">
+                <button @click="markDecision('won')" class="btn btn-won" :disabled="deciding">Mark Won</button>
+                <button @click="markDecision('dead')" class="btn btn-lost" :disabled="deciding">Mark Dead</button>
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="status" class="status-label">
                 Status
@@ -247,17 +288,6 @@
             </div>
 
             <div class="form-group">
-              <label>Payment Info Sent With Every Quote</label>
-              <div class="preview-block">
-                <p class="preview-text">{{ PAYMENT_INFO.intro }}</p>
-                <p class="preview-text">{{ PAYMENT_INFO.method }}</p>
-                <p class="preview-text">{{ PAYMENT_INFO.bank.name }}, {{ PAYMENT_INFO.bank.phone }} · Swift {{ PAYMENT_INFO.bank.swift }} · Routing {{ PAYMENT_INFO.bank.routing }}</p>
-                <p class="preview-text">{{ PAYMENT_INFO.bank.address }}</p>
-                <p class="preview-text">{{ PAYMENT_INFO.beneficiary.name }} — {{ PAYMENT_INFO.beneficiary.accountType }} #{{ PAYMENT_INFO.beneficiary.accountNumber }}</p>
-              </div>
-            </div>
-
-            <div class="form-group">
               <label>Terms and Conditions Sent With Every Quote</label>
               <div class="preview-block">
                 <ol class="preview-terms">
@@ -266,47 +296,25 @@
               </div>
             </div>
 
-            <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
-
-            <div class="action-buttons">
-              <button @click="saveQuote" class="btn btn-secondary" :disabled="saving">
-                <i class="fas fa-spinner fa-spin" v-if="saving"></i>
-                {{ saving ? 'Saving...' : 'Save' }}
-              </button>
-              <button
-                @click="handleSendClick"
-                class="btn btn-primary"
-                :disabled="sending || missingSendRequirements.length > 0"
-                :title="sendRequirementsHint"
-              >
-                <i class="fas fa-spinner fa-spin" v-if="sending"></i>
-                <i class="fas fa-paper-plane" v-else></i>
-                {{ sending ? 'Sending...' : 'Send Quote to Sailor' }}
-              </button>
-            </div>
-            <p v-if="missingSendRequirements.length" class="send-hint">{{ sendRequirementsHint }}</p>
-
-            <div v-if="postSendStatuses.includes(quote.status)" class="decision-buttons">
-              <button @click="markDecision('won')" class="btn btn-won" :disabled="deciding">Mark Won</button>
-              <button @click="markDecision('dead')" class="btn btn-lost" :disabled="deciding">Mark Dead</button>
+            <div class="form-group">
+              <label>Payment Info Sent With Every Quote</label>
+              <div class="preview-block">
+                <p class="preview-text">{{ PAYMENT_INFO.intro }}</p>
+                <p class="preview-text">{{ PAYMENT_INFO.method }}</p>
+                <p class="preview-text">{{ PAYMENT_INFO.bank.name }}, {{ PAYMENT_INFO.bank.phone }} · Swift {{ PAYMENT_INFO.bank.swift }} · Routing {{ PAYMENT_INFO.bank.routing }}</p>
+                <p class="preview-text">{{ PAYMENT_INFO.bank.address }}</p>
+                <p class="preview-text">{{ PAYMENT_INFO.beneficiary.name }} — {{ PAYMENT_INFO.beneficiary.accountType }} #{{ PAYMENT_INFO.beneficiary.accountNumber }}</p>
+                <p class="preview-text">{{ PAYMENT_INFO.support }}</p>
+              </div>
             </div>
           </div>
-        </section>
-
-        <section v-if="quote.sent_html" id="sent-section" class="detail-section">
-          <h2 class="section-heading">Sent to Sailor</h2>
-          <p class="section-sub">
-            Exactly what {{ quote.name }} received{{ quote.sent_at ? ` on ${formatDate(quote.sent_at)}` : '' }}.
-            <template v-if="quoteValidUntilLabel"> Valid until {{ quoteValidUntilLabel }}.</template>
-          </p>
-          <EmailFrame :html="quote.sent_html" :title="`Quote sent to ${quote.name}`" />
         </section>
 
         <div v-if="showFirstSendModal" class="modal" @click="showFirstSendModal = false">
           <div class="modal-content" @click.stop>
             <h2 class="modal-title">Send Quote to Sailor</h2>
             <p class="modal-text">
-              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive the products/shipping total, your message, payment instructions, and terms and conditions by email.
+              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive your message, their inquiry details, items quoted, payment instructions, terms, and the quote total by email.
               <template v-if="selectedAttachmentCount"> {{ selectedAttachmentCount }} library document{{ selectedAttachmentCount === 1 ? '' : 's' }} will be attached.</template>
             </p>
             <div class="modal-actions">
@@ -353,6 +361,7 @@ import {
 } from '~~/utils/productPricing'
 import { formatQuoteValidUntil } from '~~/utils/quoteValidity'
 import { emptyQuoteInquiry, inquiryFromQuote, inquiryColumnsFromForm } from '~~/utils/quoteInquiry'
+import { buildSailorQuoteHtml } from '~~/utils/sailorQuoteHtml'
 
 definePageMeta({
   layout: 'qms-layout',
@@ -600,6 +609,49 @@ const detailPlaceholder = (slug) => {
 
 const applicableWarnings = computed(() => getApplicableWarnings(editForm.value.line_items))
 
+const selectedAttachmentLabels = computed(() => {
+  const selected = new Set(editForm.value.attachment_ids)
+  return libraryDocs.value
+    .filter((doc) => selected.has(doc.id))
+    .map((doc) => doc.title || doc.file_name)
+})
+
+const sailorPreviewHtml = computed(() =>
+  buildSailorQuoteHtml({
+    name: editForm.value.name || quote.value?.name || '',
+    phone: editForm.value.phone,
+    phone_region: editForm.value.phone_region,
+    address: editForm.value.address,
+    yacht_type: editForm.value.yacht_type,
+    yacht_name: editForm.value.yacht_name,
+    displacement: editForm.value.displacement,
+    max_hull_speed: editForm.value.max_hull_speed,
+    shaft_diameter: editForm.value.shaft_diameter,
+    prop_diameter: editForm.value.prop_diameter,
+    prop_pitch: editForm.value.prop_pitch,
+    num_blades: editForm.value.num_blades,
+    num_propellers: editForm.value.num_propellers,
+    prop_type: editForm.value.prop_type,
+    engine: editForm.value.engine,
+    transmission: editForm.value.transmission,
+    locking_system: editForm.value.locking_system,
+    cable_length: editForm.value.cable_length,
+    notes: editForm.value.notes,
+    quote_notes: editForm.value.quote_notes || '',
+    shipping_notes: String(editForm.value.shipping_notes || '').trim(),
+    shipping_price: parseMoneyField(editForm.value.shipping_price) ?? 0,
+    products_price: parseMoneyField(editForm.value.quoted_price) ?? 0,
+    line_items: selectedLineItems().map((item) => ({
+      product_name: item.product_name ?? '',
+      detail: item.detail || null,
+      price: parseMoneyField(item.price) ?? 0
+    })),
+    attachment_labels: selectedAttachmentLabels.value,
+    warnings: applicableWarnings.value,
+    valid_until_label: formatQuoteValidUntil(new Date())
+  })
+)
+
 const needsPrice = computed(() => {
   const selected = selectedLineItems()
   if (!selected.length) return true
@@ -663,6 +715,9 @@ const quoteContentUnchanged = computed(() => {
   if ((editForm.value.shipping_notes || null) !== (q.sent_shipping_notes || null)) return false
   if ((editForm.value.quote_notes || null) !== (q.sent_quote_notes || null)) return false
   if (!sameAttachmentIds(editForm.value.attachment_ids, q.sent_attachment_ids)) return false
+  if (JSON.stringify(inquiryColumnsFromForm(editForm.value)) !== JSON.stringify(inquiryColumnsFromForm(inquiryFromQuote(q)))) {
+    return false
+  }
 
   return JSON.stringify(normalizeLineItems(editForm.value.line_items)) === JSON.stringify(normalizeLineItems(q.sent_line_items))
 })
@@ -779,10 +834,18 @@ const sendQuote = async () => {
 
     syncQuotedPriceFromLineItems()
 
-    // Persist any pending edits before sending
+    const inquiry = inquiryColumnsFromForm(editForm.value)
+    if (!inquiry.name || !inquiry.email) {
+      saveMessage.value = 'Name and email are required.'
+      saveError.value = true
+      return
+    }
+
+    // Persist any pending edits before sending so the email matches this page.
     const { error: updateError } = await supabase
       .from('quotes')
       .update({
+        ...inquiry,
         status: editForm.value.status,
         quoted_price: editForm.value.quoted_price === '' ? null : editForm.value.quoted_price,
         shipping_price: editForm.value.shipping_price === '' ? null : editForm.value.shipping_price,
@@ -942,6 +1005,21 @@ useHead({
 .action-card {
   background: rgba(245, 198, 107, 0.05);
   border-color: rgba(245, 198, 107, 0.3);
+}
+
+.worksheet-toolbar {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.worksheet-toolbar .save-message {
+  margin: 0 0 0.85rem;
+}
+
+.worksheet-toolbar .decision-buttons {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
 }
 
 .section-label {
