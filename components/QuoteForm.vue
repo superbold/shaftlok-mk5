@@ -399,13 +399,18 @@ const updateField = (field, value) => {
 .form-control {
   width: 100%;
   padding: 0.7rem 0.9rem;
-  background: rgba(13, 27, 54, 0.65);
-  border: 1px solid var(--line-strong);
+  background: rgba(4, 10, 24, 0.72);
+  border: 1px solid rgba(148, 197, 255, 0.42);
   border-radius: var(--radius-sm);
   color: var(--text-hi);
   font-size: 1rem;
   box-sizing: border-box;
+  cursor: text;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:hover {
+  border-color: var(--accent);
 }
 
 .form-control:focus {

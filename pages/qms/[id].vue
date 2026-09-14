@@ -30,7 +30,7 @@
             Edits below are not in this email until you send again.
           </p>
           <p v-else class="section-sub">
-            Live preview of the email the sailor will receive. It updates as you edit Inquiry and Quote below.
+            Live preview of the email the sailor will receive. The cards in this preview are not clickable — edit them in Inquiry and Quote below.
           </p>
           <EmailFrame
             :html="quote.sent_html || sailorPreviewHtml"
@@ -39,13 +39,21 @@
         </section>
 
         <section id="inquiry-section" class="detail-section">
-          <h2 class="section-heading">Inquiry</h2>
+          <h2 class="section-heading section-heading-quote">Inquiry</h2>
           <p class="section-sub">
-            Fill in what you have and Save. You can come back later with the rest.
-            Saving here does not email the sailor or your inbox.
+            Click any box to edit. Save writes this quote only — it does not email the sailor or your inbox.
           </p>
 
           <form class="glass-card action-card inquiry-card" @submit.prevent="saveQuote">
+            <div class="worksheet-toolbar">
+              <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
+              <div class="action-buttons">
+                <button type="submit" class="btn btn-secondary" :disabled="saving">
+                  <i class="fas fa-spinner fa-spin" v-if="saving"></i>
+                  {{ saving ? 'Saving...' : 'Save' }}
+                </button>
+              </div>
+            </div>
             <p v-if="quote.custom_bore_requested" class="field-hint">
               This sailor checked Custom Bore on an older RFQ. Add it under Items Quoted if they still need it.
             </p>
@@ -60,7 +68,6 @@
                 {{ saving ? 'Saving...' : 'Save' }}
               </button>
             </div>
-            <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
           </form>
         </section>
 
@@ -1005,6 +1012,20 @@ useHead({
 .action-card {
   background: rgba(245, 198, 107, 0.05);
   border-color: rgba(245, 198, 107, 0.3);
+}
+
+.inquiry-card :deep(.form-control) {
+  cursor: text;
+  background: rgba(4, 10, 24, 0.72);
+  border: 1px solid rgba(148, 197, 255, 0.42);
+}
+
+.inquiry-card :deep(.form-control:hover) {
+  border-color: var(--accent);
+}
+
+.inquiry-card :deep(.radio-option) {
+  cursor: pointer;
 }
 
 .worksheet-toolbar {
