@@ -39,7 +39,7 @@
         </section>
 
         <section id="inquiry-section" class="detail-section">
-          <h2 class="section-heading section-heading-quote">Inquiry</h2>
+          <h2 class="section-heading">Inquiry</h2>
           <p class="section-sub">
             Click any box to edit. Save writes this quote only — it does not email the sailor or your inbox.
           </p>
@@ -72,7 +72,7 @@
         </section>
 
         <section id="quote-section" class="detail-section">
-          <h2 class="section-heading section-heading-quote">Quote</h2>
+          <h2 class="section-heading">Quote</h2>
 
           <div class="glass-card action-card">
             <div class="worksheet-toolbar">
@@ -132,16 +132,20 @@
               <label>Items Quoted</label>
               <div v-for="(item, i) in editForm.line_items" :key="i" class="line-item-row">
                 <div class="line-item-product">
-                  <select
-                    class="form-control"
-                    :value="item.product_slug"
-                    @change="onLineItemProductChange(i, $event.target.value)"
-                  >
-                    <option value="" disabled>Select a product…</option>
-                    <option v-for="p in pickableProducts" :key="p.slug" :value="p.slug">
-                      {{ productOptionLabel(p) }}
-                    </option>
-                  </select>
+                  <div class="tabbed-field">
+                    <span v-if="!item.product_slug" class="attention-tab">Product</span>
+                    <select
+                      class="form-control"
+                      :class="{ 'form-control-attention': !item.product_slug }"
+                      :value="item.product_slug"
+                      @change="onLineItemProductChange(i, $event.target.value)"
+                    >
+                      <option value="" disabled>Select a product…</option>
+                      <option v-for="p in pickableProducts" :key="p.slug" :value="p.slug">
+                        {{ productOptionLabel(p) }}
+                      </option>
+                    </select>
+                  </div>
                   <p v-if="lineItemPriceHint(item)" class="line-item-hint" :class="{ 'line-item-hint-ready': getCatalogLinePrice(item) != null && !item.price_manual }">
                     {{ lineItemPriceHint(item) }}
                   </p>
@@ -161,7 +165,11 @@
                   :placeholder="detailPlaceholder(item.product_slug)"
                   @input="onLineItemDetailInput(i)"
                 />
-                <div class="line-item-price">
+                <div class="line-item-price tabbed-field">
+                  <span
+                    v-if="item.product_slug && parseMoneyField(item.price) == null"
+                    class="attention-tab"
+                  >Price</span>
                   <input
                     v-model="item.price"
                     type="number"
@@ -178,14 +186,17 @@
                   <i class="fas fa-times"></i>
                 </button>
               </div>
-              <button type="button" class="btn btn-secondary" @click="addLineItem">
-                <i class="fas fa-plus"></i> Add Item
-              </button>
+              <div class="tabbed-field tabbed-field-button">
+                <span v-if="!editForm.line_items.length" class="attention-tab">Add item</span>
+                <button type="button" class="btn btn-secondary" @click="addLineItem">
+                  <i class="fas fa-plus"></i> Add Item
+                </button>
+              </div>
               <p v-if="needsPrice" class="field-hint">Each item needs a price before send.</p>
             </div>
 
             <div class="form-group">
-              <div class="quote-subtotal-row" :class="{ 'is-incomplete': needsPrice }">
+              <div class="quote-subtotal-row">
                 <span>Products</span>
                 <strong>{{ needsPrice ? '—' : formatMoney(editForm.quoted_price) }}</strong>
               </div>
@@ -199,27 +210,33 @@
               <div class="shipping-fields">
                 <div class="shipping-notes-field">
                   <label for="shipping-notes">Details</label>
-                  <input
-                    id="shipping-notes"
-                    v-model="editForm.shipping_notes"
-                    type="text"
-                    class="form-control"
-                    :class="{ 'form-control-attention': needsShippingNotes }"
-                    placeholder="e.g. UPS Ground, 5–7 days — or Included / TBD notes"
-                  />
+                  <div class="tabbed-field">
+                    <span v-if="needsShippingNotes" class="attention-tab">Details</span>
+                    <input
+                      id="shipping-notes"
+                      v-model="editForm.shipping_notes"
+                      type="text"
+                      class="form-control"
+                      :class="{ 'form-control-attention': needsShippingNotes }"
+                      placeholder="e.g. UPS Ground, 5–7 days — or Included / TBD notes"
+                    />
+                  </div>
                 </div>
                 <div class="shipping-price-field">
                   <label for="shipping-price">Price ($)</label>
-                  <input
-                    id="shipping-price"
-                    v-model="editForm.shipping_price"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    class="form-control"
-                    :class="{ 'form-control-attention': needsShippingPrice }"
-                    placeholder="e.g. 85.00"
-                  />
+                  <div class="tabbed-field">
+                    <span v-if="needsShippingPrice" class="attention-tab">Amount</span>
+                    <input
+                      id="shipping-price"
+                      v-model="editForm.shipping_price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      class="form-control"
+                      :class="{ 'form-control-attention': needsShippingPrice }"
+                      placeholder="e.g. 85.00"
+                    />
+                  </div>
                 </div>
               </div>
               <p v-if="needsShippingPrice || needsShippingNotes" class="field-hint">
@@ -237,14 +254,17 @@
 
             <div class="form-group">
               <label for="quote-notes">Message to Sailor</label>
-              <textarea
-                id="quote-notes"
-                v-model="editForm.quote_notes"
-                rows="6"
-                class="form-control"
-                :class="{ 'form-control-attention': needsMessage }"
-                placeholder="What's included, lead time, anything else the sailor should know..."
-              ></textarea>
+              <div class="tabbed-field">
+                <span v-if="needsMessage" class="attention-tab">Message</span>
+                <textarea
+                  id="quote-notes"
+                  v-model="editForm.quote_notes"
+                  rows="6"
+                  class="form-control"
+                  :class="{ 'form-control-attention': needsMessage }"
+                  placeholder="What's included, lead time, anything else the sailor should know..."
+                ></textarea>
+              </div>
               <p v-if="needsMessage" class="field-hint">Required before send.</p>
             </div>
 
@@ -995,10 +1015,6 @@ useHead({
   margin: 0;
 }
 
-.section-heading-quote {
-  color: var(--gold);
-}
-
 .section-sub {
   margin: -0.75rem 0 0;
   color: var(--text-mid);
@@ -1007,11 +1023,6 @@ useHead({
 
 .summary-card, .action-card {
   padding: 1.5rem 1.7rem;
-}
-
-.action-card {
-  background: rgba(245, 198, 107, 0.05);
-  border-color: rgba(245, 198, 107, 0.3);
 }
 
 .inquiry-card :deep(.form-control) {
@@ -1133,6 +1144,35 @@ dl { margin: 0; }
   box-shadow: 0 0 0 3px rgba(245, 198, 107, 0.2);
 }
 
+.tabbed-field {
+  position: relative;
+  padding-top: 0.15rem;
+}
+
+.tabbed-field-button {
+  display: inline-block;
+}
+
+.attention-tab {
+  position: absolute;
+  top: 0;
+  right: 0.7rem;
+  transform: translateY(-58%);
+  z-index: 1;
+  background: var(--gold);
+  color: #04121F;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 0.28rem 0.5rem 0.32rem;
+  border-radius: 3px 3px 0 0;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(2, 8, 23, 0.35);
+}
+
 .field-hint {
   margin: 0.45rem 0 0;
   font-size: 0.82rem;
@@ -1151,6 +1191,7 @@ textarea.form-control { resize: vertical; }
   gap: 0.5rem;
   margin-bottom: 0.75rem;
   align-items: flex-start;
+  overflow: visible;
 }
 
 .line-item-product {
@@ -1192,10 +1233,6 @@ textarea.form-control { resize: vertical; }
   color: var(--text-hi);
   font-family: var(--font-display);
   font-size: 0.92rem;
-}
-
-.quote-subtotal-row.is-incomplete {
-  border-color: rgba(245, 198, 107, 0.45);
 }
 
 .quote-subtotal-row strong {
