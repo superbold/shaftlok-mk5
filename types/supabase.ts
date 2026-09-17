@@ -204,6 +204,7 @@ export type Database = {
           prop_pitch: string | null
           prop_type: string | null
           quote_notes: string | null
+          quote_number: string | null
           quoted_at: string | null
           quoted_price: number | null
           read_at: string | null
@@ -248,6 +249,7 @@ export type Database = {
           prop_pitch?: string | null
           prop_type?: string | null
           quote_notes?: string | null
+          quote_number?: string | null
           quoted_at?: string | null
           quoted_price?: number | null
           read_at?: string | null
@@ -292,6 +294,7 @@ export type Database = {
           prop_pitch?: string | null
           prop_type?: string | null
           quote_notes?: string | null
+          quote_number?: string | null
           quoted_at?: string | null
           quoted_price?: number | null
           read_at?: string | null

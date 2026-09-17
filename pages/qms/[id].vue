@@ -17,25 +17,32 @@
         <div class="detail-head glass-card">
           <div>
             <h1>{{ editForm.name || quote.name }}</h1>
-            <p class="detail-sub">{{ editForm.email || quote.email }} · submitted {{ formatDate(quote.created_at) }}</p>
+            <p class="detail-sub">
+              <span v-if="displayedQuoteNumber">{{ displayedQuoteNumber }} · </span>{{ editForm.email || quote.email }} · submitted {{ formatDate(quote.created_at) }}
+            </p>
           </div>
           <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
         </div>
 
         <section id="sent-section" class="detail-section">
-          <h2 class="section-heading">{{ quote.sent_html ? 'Sent to Sailor' : 'Email to Sailor' }}</h2>
-          <p v-if="quote.sent_html" class="section-sub">
-            Exactly what {{ quote.name }} received{{ quote.sent_at ? ` on ${formatDate(quote.sent_at)}` : '' }}.
-            <template v-if="quoteValidUntilLabel"> Valid until {{ quoteValidUntilLabel }}.</template>
-            Edits below are not in this email until you send again.
-          </p>
-          <p v-else class="section-sub">
-            Live preview of the email the sailor will receive. The cards in this preview are not clickable — edit them in Inquiry and Quote below.
+          <h2 class="section-heading">Email to Sailor</h2>
+          <p class="section-sub">
+            Live preview of the email Send will use. The cards in this preview are not clickable — edit them in Inquiry and Quote below.
           </p>
           <EmailFrame
-            :html="quote.sent_html || sailorPreviewHtml"
-            :title="quote.sent_html ? `Quote sent to ${quote.name}` : `Quote preview for ${editForm.name || quote.name}`"
+            :html="sailorPreviewHtml"
+            :title="`Quote preview for ${editForm.name || quote.name}`"
           />
+        </section>
+
+        <section v-if="quote.sent_html" id="last-sent-section" class="detail-section">
+          <h2 class="section-heading">Last Sent</h2>
+          <p class="section-sub">
+            What {{ quote.name }} received{{ quote.sent_at ? ` on ${formatDate(quote.sent_at)}` : '' }}, shown in the current email layout.
+            <template v-if="quoteValidUntilLabel"> Valid until {{ quoteValidUntilLabel }}.</template>
+            Edits above are not in this copy until you send again.
+          </p>
+          <EmailFrame :html="lastSentHtml" :title="`Quote sent to ${quote.name}`" />
         </section>
 
         <section id="inquiry-section" class="detail-section">
@@ -130,6 +137,13 @@
 
             <div class="form-group">
               <label>Items Quoted</label>
+              <div class="line-item-head">
+                <span class="line-item-product">Product</span>
+                <span class="line-item-detail">Detail</span>
+                <span class="line-item-qty">Qty</span>
+                <span class="line-item-price">Price</span>
+                <span class="line-item-remove" aria-hidden="true"></span>
+              </div>
               <div v-for="(item, i) in editForm.line_items" :key="i" class="line-item-row">
                 <div class="line-item-product">
                   <div class="tabbed-field">
@@ -165,13 +179,26 @@
                   :placeholder="detailPlaceholder(item.product_slug)"
                   @input="onLineItemDetailInput(i)"
                 />
+                <div class="line-item-qty">
+                  <input
+                    v-model="item.qty"
+                    type="number"
+                    min="1"
+                    step="1"
+                    class="form-control"
+                    placeholder="Qty"
+                    aria-label="Quantity"
+                    @input="onLineItemQtyInput(i)"
+                    @blur="clampLineItemQty(i)"
+                  />
+                </div>
                 <div class="line-item-price tabbed-field">
                   <span
                     v-if="item.product_slug && parseMoneyField(item.price) == null"
                     class="attention-tab"
                   >Price</span>
                   <input
-                    v-model="item.price"
+                    :value="lineItemDisplayPrice(item)"
                     type="number"
                     step="0.01"
                     min="0"
@@ -179,10 +206,10 @@
                     :class="{ 'form-control-attention': item.product_slug && parseMoneyField(item.price) == null }"
                     placeholder="Price"
                     aria-label="Item price"
-                    @input="onLineItemPriceInput(i)"
+                    @input="onLineItemAmountInput(i, $event.target.value)"
                   />
                 </div>
-                <button type="button" class="btn btn-secondary btn-icon" @click="removeLineItem(i)" aria-label="Remove item">
+                <button type="button" class="btn btn-secondary btn-icon line-item-remove" @click="removeLineItem(i)" aria-label="Remove item">
                   <i class="fas fa-times"></i>
                 </button>
               </div>
@@ -198,10 +225,10 @@
             <div class="form-group">
               <div class="quote-subtotal-row">
                 <span>Products</span>
-                <strong>{{ needsPrice ? '—' : formatMoney(editForm.quoted_price) }}</strong>
+                <strong>{{ needsPrice ? '—' : formatMoney(productsSubtotal) }}</strong>
               </div>
               <p v-if="!needsPrice" class="field-hint field-hint-ready">
-                Sum of item prices{{ hasLengthPricedLineItem ? ' (length tiers apply when seeded)' : '' }}.
+                Sum of item prices (qty × each).
               </p>
             </div>
 
@@ -387,8 +414,10 @@ import {
   productUsesLengthPricing
 } from '~~/utils/productPricing'
 import { formatQuoteValidUntil } from '~~/utils/quoteValidity'
+import { quoteNumberFor } from '~~/utils/quoteNumber'
 import { emptyQuoteInquiry, inquiryFromQuote, inquiryColumnsFromForm } from '~~/utils/quoteInquiry'
-import { buildSailorQuoteHtml } from '~~/utils/sailorQuoteHtml'
+import { lineItemAmount, parseLineQty } from '~~/utils/quoteLineItem'
+import { buildSailorQuoteHtml, restyleSentSailorQuoteHtml } from '~~/utils/sailorQuoteHtml'
 
 definePageMeta({
   layout: 'qms-layout',
@@ -486,6 +515,14 @@ const getCatalogLinePrice = (item) => {
   )
 }
 
+const isUnpricedAmount = (stored) => stored == null || stored === 0
+
+const lineItemUnitPrice = (item) => {
+  const stored = parseMoneyField(item.price)
+  if (!isUnpricedAmount(stored)) return stored
+  return getCatalogLinePrice(item) ?? stored
+}
+
 const productOptionLabel = (product) => {
   const hidden = product.display === false ? ' (not on site)' : ''
   if (productUsesLengthPricing(product)) {
@@ -503,11 +540,11 @@ const selectedLineItems = () =>
 
 const syncQuotedPriceFromLineItems = () => {
   const selected = selectedLineItems()
-  if (!selected.length || selected.some((item) => parseMoneyField(item.price) == null)) {
+  if (!selected.length || selected.some((item) => lineItemUnitPrice(item) == null)) {
     editForm.value.quoted_price = ''
     return
   }
-  const total = selected.reduce((sum, item) => sum + parseMoneyField(item.price), 0)
+  const total = selected.reduce((sum, item) => sum + lineItemAmount(lineItemUnitPrice(item), item.qty), 0)
   editForm.value.quoted_price = Number(total.toFixed(2))
 }
 
@@ -535,7 +572,7 @@ const hydrateLineItemPrices = (items) => {
     }
     const stored = parseMoneyField(item.price)
     const catalog = getCatalogLinePrice(item)
-    if (stored == null && catalog != null) {
+    if (isUnpricedAmount(stored) && catalog != null) {
       item.price = Number(catalog.toFixed(2))
       item.price_manual = false
     } else if (stored != null) {
@@ -548,22 +585,23 @@ const hydrateLineItemPrices = (items) => {
   }
 }
 
-const hasLengthPricedLineItem = computed(() =>
-  editForm.value.line_items.some((item) => productUsesLengthPricing(getProductBySlug(item.product_slug)))
-)
-
 const lineItemPriceHint = (item) => {
   if (!item.product_slug) return ''
   const product = getProductBySlug(item.product_slug)
   const catalog = getCatalogLinePrice(item)
   if (item.price_manual && catalog != null) {
-    return `Edited — catalog is ${formatProductPrice(catalog)}.`
+    const qty = parseLineQty(item.qty)
+    return qty > 1
+      ? `Edited — catalog is ${formatProductPrice(catalog)} each × ${qty}.`
+      : `Edited — catalog is ${formatProductPrice(catalog)}.`
   }
   if (catalog != null && !item.price_manual) {
     const feet = parseCableLengthFeet(item.detail) ?? parseCableLengthFeet(editForm.value.cable_length || quote.value?.cable_length)
-    return feet && productUsesLengthPricing(product)
+    const qty = parseLineQty(item.qty)
+    const each = feet && productUsesLengthPricing(product)
       ? `From catalog: ${formatProductPrice(catalog)} (${feet}′ tier)`
       : `From catalog: ${formatProductPrice(catalog)}`
+    return qty > 1 ? `${each} × ${qty}` : each
   }
   if (productUsesLengthPricing(product)) {
     const tiers = getResolvedProductPriceTiers(product)
@@ -585,6 +623,7 @@ const addLineItem = () => {
     product_slug: '',
     product_name: '',
     detail: '',
+    qty: 1,
     price: '',
     price_manual: false
   })
@@ -609,8 +648,31 @@ const onLineItemDetailInput = (i) => {
   seedLineItemPrice(i)
 }
 
-const onLineItemPriceInput = (i) => {
-  editForm.value.line_items[i].price_manual = true
+const onLineItemQtyInput = (i) => {
+  syncQuotedPriceFromLineItems()
+}
+
+const clampLineItemQty = (i) => {
+  const item = editForm.value.line_items[i]
+  item.qty = parseLineQty(item.qty)
+  syncQuotedPriceFromLineItems()
+}
+
+const lineItemDisplayPrice = (item) => {
+  const unit = lineItemUnitPrice(item)
+  if (unit == null) return item.price ?? ''
+  return lineItemAmount(unit, item.qty)
+}
+
+const onLineItemAmountInput = (i, raw) => {
+  const item = editForm.value.line_items[i]
+  item.price_manual = true
+  const entered = parseMoneyField(raw)
+  if (entered == null) {
+    item.price = raw
+  } else {
+    item.price = Number((entered / parseLineQty(item.qty)).toFixed(2))
+  }
   syncQuotedPriceFromLineItems()
 }
 
@@ -625,27 +687,26 @@ const serializeLineItems = (items) => (Array.isArray(items) ? items : [])
     product_slug: li.product_slug,
     product_name: li.product_name ?? '',
     detail: li.detail?.trim() ? li.detail.trim() : null,
-    price: parseMoneyField(li.price)
+    qty: parseLineQty(li.qty),
+    price: lineItemUnitPrice(li)
   }))
 
 const detailPlaceholder = (slug) => {
   if (slug === 'marine-control-cable') return 'e.g. 15 ft'
   if (slug === 'custom-bore') return 'e.g. Mod III / port shaft'
-  return 'e.g. x2 (optional)'
+  return 'optional note'
 }
 
 const applicableWarnings = computed(() => getApplicableWarnings(editForm.value.line_items))
 
-const selectedAttachmentLabels = computed(() => {
-  const selected = new Set(editForm.value.attachment_ids)
-  return libraryDocs.value
-    .filter((doc) => selected.has(doc.id))
-    .map((doc) => doc.title || doc.file_name)
-})
+const displayedQuoteNumber = computed(() =>
+  quoteNumberFor(quote.value, editForm.value.name || quote.value?.name)
+)
 
 const sailorPreviewHtml = computed(() =>
   buildSailorQuoteHtml({
     name: editForm.value.name || quote.value?.name || '',
+    email: editForm.value.email || quote.value?.email || '',
     phone: editForm.value.phone,
     phone_region: editForm.value.phone_region,
     address: editForm.value.address,
@@ -665,30 +726,45 @@ const sailorPreviewHtml = computed(() =>
     cable_length: editForm.value.cable_length,
     notes: editForm.value.notes,
     quote_notes: editForm.value.quote_notes || '',
+    quote_number: displayedQuoteNumber.value,
     shipping_notes: String(editForm.value.shipping_notes || '').trim(),
     shipping_price: parseMoneyField(editForm.value.shipping_price) ?? 0,
-    products_price: parseMoneyField(editForm.value.quoted_price) ?? 0,
+    products_price: productsSubtotal.value ?? 0,
     line_items: selectedLineItems().map((item) => ({
       product_name: item.product_name ?? '',
       detail: item.detail || null,
-      price: parseMoneyField(item.price) ?? 0
+      qty: parseLineQty(item.qty),
+      price: lineItemUnitPrice(item) ?? 0
     })),
-    attachment_labels: selectedAttachmentLabels.value,
     warnings: applicableWarnings.value,
     valid_until_label: formatQuoteValidUntil(new Date())
   })
 )
 
+const lastSentHtml = computed(() =>
+  restyleSentSailorQuoteHtml(quote.value?.sent_html || '', {
+    name: quote.value?.name,
+    email: quote.value?.email,
+    quote_number: displayedQuoteNumber.value
+  })
+)
+
+const productsSubtotal = computed(() => {
+  const selected = selectedLineItems()
+  if (!selected.length || selected.some((item) => lineItemUnitPrice(item) == null)) return null
+  return Number(selected.reduce((sum, item) => sum + lineItemAmount(lineItemUnitPrice(item), item.qty), 0).toFixed(2))
+})
+
 const needsPrice = computed(() => {
   const selected = selectedLineItems()
   if (!selected.length) return true
-  return selected.some((item) => parseMoneyField(item.price) == null)
+  return selected.some((item) => lineItemUnitPrice(item) == null)
 })
 const needsShippingPrice = computed(() => editForm.value.shipping_price === '' || editForm.value.shipping_price == null)
 const needsShippingNotes = computed(() => !editForm.value.shipping_notes?.trim())
 const needsMessage = computed(() => !editForm.value.quote_notes?.trim())
 const quoteGrandTotal = computed(() =>
-  (parseMoneyField(editForm.value.quoted_price) ?? 0) + (parseMoneyField(editForm.value.shipping_price) ?? 0)
+  (productsSubtotal.value ?? 0) + (parseMoneyField(editForm.value.shipping_price) ?? 0)
 )
 /** Exposed for template — Followed up / Won / Dead decision buttons. */
 const postSendStatuses = POST_SEND_STATUSES
@@ -779,6 +855,7 @@ const loadQuote = async () => {
           product_slug: item.product_slug ?? '',
           product_name: item.product_name ?? '',
           detail: item.detail ?? '',
+          qty: parseLineQty(item.qty),
           price: item.price ?? '',
           price_manual: false
         }))
@@ -834,6 +911,7 @@ const saveQuote = async () => {
         shipping_price: editForm.value.shipping_price === '' ? null : editForm.value.shipping_price,
         shipping_notes: editForm.value.shipping_notes?.trim() || null,
         quote_notes: editForm.value.quote_notes || null,
+        quote_number: quote.value.quote_number || quoteNumberFor(quote.value, inquiry.name) || null,
         line_items: serializeLineItems(editForm.value.line_items),
         attachment_ids: editForm.value.attachment_ids,
         updated_at: new Date().toISOString()
@@ -878,6 +956,7 @@ const sendQuote = async () => {
         shipping_price: editForm.value.shipping_price === '' ? null : editForm.value.shipping_price,
         shipping_notes: editForm.value.shipping_notes?.trim() || null,
         quote_notes: editForm.value.quote_notes || null,
+        quote_number: quote.value.quote_number || quoteNumberFor(quote.value, inquiry.name) || null,
         line_items: serializeLineItems(editForm.value.line_items),
         attachment_ids: editForm.value.attachment_ids,
         updated_at: new Date().toISOString()
@@ -1186,11 +1265,25 @@ dl { margin: 0; }
 
 textarea.form-control { resize: vertical; }
 
+.line-item-head,
 .line-item-row {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
   align-items: flex-start;
+}
+
+.line-item-head {
+  margin-bottom: 0.35rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+
+.line-item-row {
+  margin-bottom: 0.75rem;
   overflow: visible;
 }
 
@@ -1204,8 +1297,16 @@ textarea.form-control { resize: vertical; }
   min-width: 5rem;
 }
 
+.line-item-qty {
+  flex: 0 0 4.25rem;
+}
+
 .line-item-price {
   flex: 0 0 6.5rem;
+}
+
+.line-item-remove {
+  flex: 0 0 2.75rem;
 }
 
 .line-item-hint {
@@ -1304,6 +1405,10 @@ textarea.form-control { resize: vertical; }
 }
 
 @media (max-width: 640px) {
+  .line-item-head {
+    display: none;
+  }
+
   .line-item-row {
     flex-wrap: wrap;
   }
@@ -1313,7 +1418,11 @@ textarea.form-control { resize: vertical; }
   }
 
   .line-item-detail {
-    flex: 1 1 calc(100% - 8rem);
+    flex: 1 1 calc(100% - 12.5rem);
+  }
+
+  .line-item-qty {
+    flex: 0 0 4.25rem;
   }
 
   .line-item-price {

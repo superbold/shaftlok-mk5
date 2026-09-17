@@ -2,6 +2,8 @@ import { Resend } from 'resend'
 import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import { getApplicableWarnings } from '~/utils/quoteItemWarnings'
 import { formatQuoteValidUntil } from '~/utils/quoteValidity'
+import { formatQuoteNumber, quoteNumberFor } from '~/utils/quoteNumber'
+import { lineItemAmount, parseLineQty } from '~/utils/quoteLineItem'
 import { buildSailorQuoteHtml } from '~/utils/sailorQuoteHtml'
 
 export default defineEventHandler(async (event) => {
@@ -38,7 +40,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const lineItems = Array.isArray(quote.line_items)
-    ? (quote.line_items as { product_slug: string; product_name: string; detail: string | null; price?: number | null }[])
+    ? (quote.line_items as { product_slug: string; product_name: string; detail: string | null; qty?: number | null; price?: number | null }[])
         .filter((item) => item?.product_slug)
     : []
 
@@ -62,7 +64,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const productsPrice = Number(
-    linePrices.reduce((sum, price) => sum + (price as number), 0).toFixed(2)
+    lineItems.reduce((sum, item, index) => sum + lineItemAmount(linePrices[index] as number, item.qty), 0).toFixed(2)
   )
 
   const apiKey = process.env.RESEND_API_KEY
@@ -81,11 +83,13 @@ export default defineEventHandler(async (event) => {
   const shippingPrice = Number(quote.shipping_price)
   const sentAt = new Date().toISOString()
   const validUntilLabel = formatQuoteValidUntil(sentAt)
+  const quoteNumber = quoteNumberFor(quote, quote.name) || formatQuoteNumber(sentAt, quote.name)
 
   const normalizedLineItems = lineItems.map((item, index) => ({
     product_slug: item.product_slug,
     product_name: item.product_name ?? '',
     detail: item.detail || null,
+    qty: parseLineQty(item.qty),
     price: linePrices[index] as number
   }))
 
@@ -94,7 +98,6 @@ export default defineEventHandler(async (event) => {
     : []
 
   const emailAttachments: { filename: string; content: Buffer }[] = []
-  const attachmentLabels: string[] = []
 
   if (attachmentIds.length) {
     const { data: docs, error: docsError } = await supabase
@@ -133,12 +136,12 @@ export default defineEventHandler(async (event) => {
         filename: doc.file_name,
         content: Buffer.from(await blob.arrayBuffer())
       })
-      attachmentLabels.push(doc.title || doc.file_name)
     }
   }
 
   const html = buildSailorQuoteHtml({
     name: quote.name,
+    email: quote.email,
     phone: quote.phone,
     phone_region: quote.phone_region,
     address: quote.address,
@@ -158,11 +161,11 @@ export default defineEventHandler(async (event) => {
     cable_length: quote.cable_length,
     notes: quote.notes,
     quote_notes: quote.quote_notes,
+    quote_number: quoteNumber,
     shipping_notes: String(quote.shipping_notes).trim(),
     shipping_price: shippingPrice,
     products_price: productsPrice,
     line_items: normalizedLineItems,
-    attachment_labels: attachmentLabels,
     warnings: getApplicableWarnings(normalizedLineItems),
     valid_until_label: validUntilLabel
   })
@@ -172,7 +175,7 @@ export default defineEventHandler(async (event) => {
     to: quote.email,
     replyTo: senderEmail,
     cc: ccEmails,
-    subject: 'Your Shaft Lok Quote',
+    subject: quoteNumber ? `Your Shaft Lok Quote ${quoteNumber}` : 'Your Shaft Lok Quote',
     html,
     ...(emailAttachments.length ? { attachments: emailAttachments } : {})
   })
@@ -186,6 +189,7 @@ export default defineEventHandler(async (event) => {
       attachment_ids: attachmentIds,
       sent_at: sentAt,
       sent_html: html,
+      quote_number: quoteNumber,
       sent_quoted_price: productsPrice,
       sent_quote_notes: quote.quote_notes,
       sent_line_items: normalizedLineItems,

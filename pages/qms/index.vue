@@ -46,6 +46,10 @@
           <table class="yacht-table">
             <thead>
               <tr>
+                <th @click="sortBy('quote_number')" class="sortable">
+                  QUOTE #
+                  <i class="fas fa-sort" :class="getSortIcon('quote_number')"></i>
+                </th>
                 <th @click="sortBy('name')" class="sortable">
                   SAILOR
                   <i class="fas fa-sort" :class="getSortIcon('name')"></i>
@@ -76,6 +80,7 @@
                 :class="{ 'needs-attention': !quote.read_at }"
                 :title="quote.read_at ? undefined : 'Unread inquiry'"
               >
+                <td :data-cell="'quote #'">{{ quoteNumberOf(quote) || '—' }}</td>
                 <td :data-cell="'sailor'">{{ quote.name }}</td>
                 <td :data-cell="'yacht'">{{ [quote.yacht_type, quote.yacht_name].filter(Boolean).join(' — ') || '—' }}</td>
                 <td :data-cell="'submitted'">{{ formatDate(quote.created_at) }}</td>
@@ -106,6 +111,7 @@
 
 <script setup>
 import { ref, computed, onMounted, inject } from 'vue'
+import { quoteNumberFor } from '~~/utils/quoteNumber'
 
 definePageMeta({
   layout: 'qms-layout',
@@ -134,6 +140,8 @@ const formatPipelinePrice = (value) => new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0
 }).format(value || 0)
+
+const quoteNumberOf = (quote) => quoteNumberFor(quote, quote?.name)
 
 const quoteGrandTotal = (quote) => {
   const products = Number(quote?.quoted_price)
@@ -179,13 +187,14 @@ const filteredQuotes = computed(() => {
       (q.name || '').toLowerCase().includes(search) ||
       (q.email || '').toLowerCase().includes(search) ||
       (q.yacht_type || '').toLowerCase().includes(search) ||
-      (q.yacht_name || '').toLowerCase().includes(search)
+      (q.yacht_name || '').toLowerCase().includes(search) ||
+      quoteNumberOf(q).toLowerCase().includes(search)
     )
   }
 
   filtered = [...filtered].sort((a, b) => {
-    const aVal = a[sortColumn.value] || ''
-    const bVal = b[sortColumn.value] || ''
+    const aVal = sortColumn.value === 'quote_number' ? quoteNumberOf(a) : (a[sortColumn.value] || '')
+    const bVal = sortColumn.value === 'quote_number' ? quoteNumberOf(b) : (b[sortColumn.value] || '')
     const result = aVal.toString().localeCompare(bVal.toString(), undefined, { numeric: true })
     return sortDirection.value === 'asc' ? result : -result
   })

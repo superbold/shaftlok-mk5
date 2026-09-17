@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { formatQuoteNumber } from '~/utils/quoteNumber'
 
 // Random-string bot fill tends to scatter capitals mid-word (e.g.
 // "dHyguUkdYCpiJjmITIi") and skimp on vowels, unlike real names — which may
@@ -76,7 +77,8 @@ export default defineEventHandler(async (event) => {
     engine, transmission,
     locking_system: lockingSystem,
     cable_length: cableLength,
-    notes
+    notes,
+    quote_number: formatQuoteNumber(new Date(), name) || null
   })
 
   if (insertError) {

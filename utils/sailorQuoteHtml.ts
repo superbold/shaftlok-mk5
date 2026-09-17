@@ -1,4 +1,5 @@
 import { PAYMENT_INFO } from '~/utils/paymentInfo'
+import { lineItemAmount, parseLineQty } from '~/utils/quoteLineItem'
 import { TERMS_AND_CONDITIONS } from '~/utils/termsAndConditions'
 
 const HTML_ESCAPES: Record<string, string> = {
@@ -23,6 +24,21 @@ const card = (title: string, body: string) => `
         ${body}
       </div>`
 
+const itemsQuotedTableHtml = (rows: { itemHtml: string; qty: string | number; priceHtml: string }[]) =>
+  `<table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;color:#EFF6FF">
+          <tr>
+            <td style="padding:0 12px 8px 0;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Item</td>
+            <td style="padding:0 12px 8px 0;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Qty</td>
+            <td style="padding:0 0 8px;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Price</td>
+          </tr>
+          ${rows.map((row) => `
+          <tr>
+            <td style="padding:0 12px 10px 0;vertical-align:top;color:#EFF6FF">${row.itemHtml}</td>
+            <td style="padding:0 12px 10px 0;text-align:right;white-space:nowrap;vertical-align:top;color:#A8BEDC">${row.qty}</td>
+            <td style="padding:0 0 10px;text-align:right;white-space:nowrap;vertical-align:top">${row.priceHtml}</td>
+          </tr>`).join('')}
+        </table>`
+
 const field = (label: string, value: unknown) => {
   const text = String(value ?? '').trim()
   if (!text) return ''
@@ -46,6 +62,7 @@ const phoneLabel = (phone?: string | null, region?: string | null) => {
 export type SailorQuoteLineItem = {
   product_name: string
   detail?: string | null
+  qty?: number
   price: number
 }
 
@@ -56,6 +73,7 @@ export type SailorQuoteWarning = {
 
 export type SailorQuoteInput = {
   name: string
+  email?: string | null
   phone?: string | null
   phone_region?: string | null
   address?: string | null
@@ -75,11 +93,11 @@ export type SailorQuoteInput = {
   cable_length?: string | null
   notes?: string | null
   quote_notes: string
+  quote_number?: string | null
   shipping_notes: string
   shipping_price: number
   products_price: number
   line_items: SailorQuoteLineItem[]
-  attachment_labels: string[]
   warnings: SailorQuoteWarning[]
   valid_until_label: string
 }
@@ -90,66 +108,39 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
   const grandTotal = Number(input.products_price || 0) + Number(input.shipping_price || 0)
   const shippingNotes = escapeHtml(String(input.shipping_notes || '').trim())
 
-  const contactHtml = [
+  const inquiryBody = [
+    field('Name', input.name),
+    field('Email', input.email),
     field('Phone', phoneLabel(input.phone, input.phone_region)),
-    field('Address', input.address)
-  ].join('')
-
-  const vesselHtml = [
+    field('Address', input.address),
     field('Yacht Type & Length', input.yacht_type),
     field('Yacht Name', input.yacht_name),
     field('Displacement', input.displacement),
-    field('Max Hull Speed', input.max_hull_speed)
-  ].join('')
-
-  const propellerHtml = [
+    field('Max Hull Speed', input.max_hull_speed),
     field('Shaft Diameter', input.shaft_diameter),
     field('Propeller Diameter', input.prop_diameter),
     field('Propeller Pitch', input.prop_pitch),
     field('Number of Blades', input.num_blades),
     field('Number of Propellers / Shafts', input.num_propellers),
-    field('Fixed / Folding / Feathering', input.prop_type)
-  ].join('')
-
-  const engineHtml = [
+    field('Fixed / Folding / Feathering', input.prop_type),
     field('Engine Make & HP', input.engine),
-    field('Transmission Make & Ratio', input.transmission)
+    field('Transmission Make & Ratio', input.transmission),
+    field('Interested In', lockingLabel(input.locking_system, input.cable_length)),
+    input.notes?.trim()
+      ? `<p style="margin:8px 0 0;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6;white-space:pre-wrap">${escapeHtml(input.notes)}</p>`
+      : ''
   ].join('')
 
-  const lockingHtml = field('Interested In', lockingLabel(input.locking_system, input.cable_length))
-  const notesHtml = input.notes?.trim()
-    ? `<p style="margin:0;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6;white-space:pre-wrap">${escapeHtml(input.notes)}</p>`
-    : ''
-
-  const inquiryHtml = [
-    contactHtml ? card('Contact', contactHtml) : '',
-    vesselHtml ? card('Vessel', vesselHtml) : '',
-    propellerHtml ? card('Propeller', propellerHtml) : '',
-    engineHtml ? card('Engine & Transmission', engineHtml) : '',
-    lockingHtml ? card('Locking System', lockingHtml) : '',
-    notesHtml ? card('Notes', notesHtml) : ''
-  ].join('')
+  const inquiryHtml = inquiryBody ? card('Inquiry', inquiryBody) : ''
 
   const itemsHtml = card(
     'Items Quoted',
-    `<table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;color:#EFF6FF">
-          ${input.line_items.map((item) => `
-          <tr>
-            <td style="padding:0 12px 10px 0;vertical-align:top;color:#EFF6FF">${escapeHtml(item.product_name)}${item.detail ? ` — ${escapeHtml(item.detail)}` : ''}</td>
-            <td style="padding:0 0 10px;text-align:right;white-space:nowrap;vertical-align:top">${money(item.price)}</td>
-          </tr>`).join('')}
-        </table>`
+    itemsQuotedTableHtml(input.line_items.map((item) => ({
+      itemHtml: `${escapeHtml(item.product_name)}${item.detail ? ` — ${escapeHtml(item.detail)}` : ''}`,
+      qty: parseLineQty(item.qty),
+      priceHtml: money(lineItemAmount(item.price, item.qty))
+    })))
   )
-
-  const attachmentsHtml = input.attachment_labels.length
-    ? card(
-      'Attached Documents',
-      `<ul style="margin:0;padding:0 0 0 18px;font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.7">
-          ${input.attachment_labels.map((label) => `<li style="margin:0 0 4px">${escapeHtml(label)}</li>`).join('')}
-        </ul>
-        <p style="margin:10px 0 0;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6">These files are attached to this email for offline use.</p>`
-    )
-    : ''
 
   const warningsHtml = input.warnings.map((warning) =>
     card(
@@ -214,6 +205,7 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
     <div style="background:linear-gradient(135deg,#0D1B36,#071020);padding:28px 32px;border-bottom:1px solid rgba(56,189,248,0.15)">
       <p style="margin:0 0 4px;font-family:sans-serif;font-size:12px;letter-spacing:0.12em;color:#38BDF8;text-transform:uppercase">Shaft Lok Inc.</p>
       <h1 style="margin:0;font-family:sans-serif;font-size:22px;color:#EFF6FF">Your Shaft Lok Quote</h1>
+      ${input.quote_number ? `<p style="margin:8px 0 0;font-family:sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8">Quote ${escapeHtml(input.quote_number)}</p>` : ''}
     </div>
 
     <div style="padding:28px 32px">
@@ -224,7 +216,6 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
       <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px;white-space:pre-wrap">${escapeHtml(input.quote_notes)}</p>
       ${inquiryHtml}
       ${itemsHtml}
-      ${attachmentsHtml}
       ${warningsHtml}
       ${termsHtml}
       ${paymentHtml}
@@ -241,4 +232,144 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
   </div>
 </body>
 </html>`
+}
+
+const SENT_CARD_RE = /<div style="background:rgba\(148,197,255,0\.06\);border:1px solid rgba\(148,197,255,0\.18\);border-radius:10px;padding:18px 20px;margin-bottom:24px">[\s\S]*?<\/div>/g
+const SENT_CARD_TITLE_RE = /<p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0\.06em;text-transform:uppercase;color:#38BDF8">([^<]+)<\/p>/
+
+const INQUIRY_SECTION_TITLES = [
+  'contact',
+  'vessel',
+  'propeller',
+  'engine & transmission',
+  'locking system',
+  'notes'
+]
+
+const decodeCardTitle = (title: string) =>
+  title.replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').trim().toLowerCase()
+
+const withInquiryNameEmail = (
+  body: string,
+  contact?: { name?: string | null; email?: string | null }
+) => {
+  if (/>Name: <\/span>/.test(body)) return body
+  return `${field('Name', contact?.name)}${field('Email', contact?.email)}${body}`
+}
+
+const restyleItemsQuotedBody = (body: string) => {
+  if (/>Item</.test(body) && />Qty</.test(body) && />Price</.test(body)) return body
+
+  const rows: { itemHtml: string; qty: string; priceHtml: string }[] = []
+  for (const match of body.matchAll(/<tr>([\s\S]*?)<\/tr>/g)) {
+    const cells = [...match[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((cell) => cell[1].trim())
+    const labels = cells.map((html) => html.replace(/<[^>]+>/g, '').trim().toLowerCase())
+    if (labels.includes('item') || labels.includes('qty') || labels.includes('price')) continue
+    if (cells.length >= 3) {
+      rows.push({
+        itemHtml: cells[0],
+        qty: cells[1].replace(/<[^>]+>/g, '').trim() || '1',
+        priceHtml: cells[2]
+      })
+    } else if (cells.length === 2) {
+      rows.push({ itemHtml: cells[0], qty: '1', priceHtml: cells[1] })
+    }
+  }
+
+  return rows.length ? itemsQuotedTableHtml(rows) : body
+}
+
+const quoteNumberLine = (quoteNumber: string) =>
+  `<p style="margin:8px 0 0;font-family:sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8">Quote ${escapeHtml(quoteNumber)}</p>`
+
+const withQuoteNumberHeader = (html: string, quoteNumber?: string | null) => {
+  if (!quoteNumber || /Quote \d{4}-\d{4}-/.test(html)) return html
+  return html.replace(
+    /(<h1[^>]*>Your Shaft Lok Quote<\/h1>)/,
+    `$1\n      ${quoteNumberLine(quoteNumber)}`
+  )
+}
+
+export function restyleSentSailorQuoteHtml(
+  html: string,
+  contact?: { name?: string | null; email?: string | null; quote_number?: string | null }
+) {
+  if (!html) return html
+
+  const matches = [...html.matchAll(SENT_CARD_RE)]
+  if (!matches.length) return withQuoteNumberHeader(html, contact?.quote_number)
+
+  const inquiryCards: { full: string; title: string; body: string; index: number }[] = []
+  const existingInquiry: { full: string; body: string; index: number }[] = []
+  const replacements: { start: number; end: number; html: string }[] = []
+
+  for (const match of matches) {
+    const full = match[0]
+    const titleMatch = full.match(SENT_CARD_TITLE_RE)
+    if (!titleMatch || match.index == null) continue
+
+    const title = titleMatch[1]
+    const decoded = decodeCardTitle(title)
+    const body = full.slice((titleMatch.index ?? 0) + titleMatch[0].length).replace(/<\/div>\s*$/, '').trim()
+    const index = match.index
+
+    if (decoded === 'attached documents') {
+      replacements.push({ start: index, end: index + full.length, html: '' })
+      continue
+    }
+
+    if (decoded === 'items quoted') {
+      replacements.push({
+        start: index,
+        end: index + full.length,
+        html: card('Items Quoted', restyleItemsQuotedBody(body))
+      })
+      continue
+    }
+
+    if (decoded === 'inquiry') {
+      existingInquiry.push({ full, body, index })
+      continue
+    }
+
+    if (INQUIRY_SECTION_TITLES.includes(decoded)) {
+      inquiryCards.push({ full, title, body, index })
+    }
+  }
+
+  if (inquiryCards.length) {
+    const orderedBodies = [...inquiryCards]
+      .sort((a, b) => {
+        const order = INQUIRY_SECTION_TITLES.indexOf(decodeCardTitle(a.title)) - INQUIRY_SECTION_TITLES.indexOf(decodeCardTitle(b.title))
+        return order || a.index - b.index
+      })
+      .map((item) => item.body)
+      .join('')
+
+    const first = [...inquiryCards].sort((a, b) => a.index - b.index)[0]
+    replacements.push({
+      start: first.index,
+      end: first.index + first.full.length,
+      html: card('Inquiry', withInquiryNameEmail(orderedBodies, contact))
+    })
+    for (const item of inquiryCards) {
+      if (item.index === first.index) continue
+      replacements.push({ start: item.index, end: item.index + item.full.length, html: '' })
+    }
+  } else if (existingInquiry.length) {
+    const target = existingInquiry[0]
+    replacements.push({
+      start: target.index,
+      end: target.index + target.full.length,
+      html: card('Inquiry', withInquiryNameEmail(target.body, contact))
+    })
+  }
+
+  if (!replacements.length) return withQuoteNumberHeader(html, contact?.quote_number)
+
+  let result = html
+  for (const replacement of replacements.sort((a, b) => b.start - a.start)) {
+    result = result.slice(0, replacement.start) + replacement.html + result.slice(replacement.end)
+  }
+  return withQuoteNumberHeader(result, contact?.quote_number)
 }
