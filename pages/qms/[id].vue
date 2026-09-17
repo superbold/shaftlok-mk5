@@ -15,13 +15,65 @@
 
       <template v-else-if="quote">
         <div class="detail-head glass-card">
-          <div>
-            <h1>{{ editForm.name || quote.name }}</h1>
-            <p class="detail-sub">
-              <span v-if="displayedQuoteNumber">{{ displayedQuoteNumber }} · </span>{{ editForm.email || quote.email }} · submitted {{ formatDate(quote.created_at) }}
+          <div class="detail-head-top">
+            <div>
+              <h1>{{ editForm.name || quote.name }}</h1>
+              <p class="detail-sub">
+                <span v-if="displayedQuoteNumber">{{ displayedQuoteNumber }} · </span>{{ editForm.email || quote.email }} · submitted {{ formatDate(quote.created_at) }}
+              </p>
+            </div>
+            <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
+          </div>
+
+          <div class="quote-actions">
+            <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
+            <div class="quote-actions-row">
+              <button type="button" class="btn btn-secondary" :disabled="saving" @click="saveQuote">
+                <i class="fas fa-spinner fa-spin" v-if="saving"></i>
+                {{ saving ? 'Saving...' : 'Save' }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                :disabled="sending || missingSendRequirements.length > 0"
+                :title="sendRequirementsHint"
+                @click="handleSendClick"
+              >
+                <i class="fas fa-spinner fa-spin" v-if="sending"></i>
+                <i class="fas fa-paper-plane" v-else></i>
+                {{ sending ? 'Sending...' : 'Send Quote' }}
+              </button>
+              <template v-if="postSendStatuses.includes(quote.status)">
+                <button type="button" class="btn btn-won" :disabled="deciding" @click="markDecision('won')">Mark Won</button>
+                <button type="button" class="btn btn-lost" :disabled="deciding" @click="markDecision('dead')">Mark Dead</button>
+              </template>
+              <div class="quote-actions-status">
+                <label for="status" class="status-label">
+                  Status
+                  <QuoteStatusLegend />
+                </label>
+                <select
+                  id="status"
+                  :value="editForm.status"
+                  class="form-control"
+                  @change="onStatusChange($event)"
+                >
+                  <option
+                    v-for="s in QUOTE_STATUSES"
+                    :key="s.value"
+                    :value="s.value"
+                    :disabled="s.value === 'followed_up' && !canMarkFollowedUp"
+                  >
+                    {{ s.label }}{{ s.value === 'followed_up' && !canMarkFollowedUp ? ' (send quote first)' : '' }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <p v-if="missingSendRequirements.length" class="send-hint">{{ sendRequirementsHint }}</p>
+            <p v-else-if="editForm.status === 'new'" class="field-hint field-hint-ready">
+              Ready to send — items, shipping, and message are filled in.
             </p>
           </div>
-          <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
         </div>
 
         <section id="sent-section" class="detail-section">
@@ -80,61 +132,11 @@
 
         <section id="quote-section" class="detail-section">
           <h2 class="section-heading">Quote</h2>
+          <p class="section-sub">
+            Items, shipping, message, and attachments.
+          </p>
 
           <div class="glass-card action-card">
-            <div class="worksheet-toolbar">
-              <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
-              <div class="action-buttons">
-                <button @click="saveQuote" class="btn btn-secondary" :disabled="saving">
-                  <i class="fas fa-spinner fa-spin" v-if="saving"></i>
-                  {{ saving ? 'Saving...' : 'Save' }}
-                </button>
-                <button
-                  @click="handleSendClick"
-                  class="btn btn-primary"
-                  :disabled="sending || missingSendRequirements.length > 0"
-                  :title="sendRequirementsHint"
-                >
-                  <i class="fas fa-spinner fa-spin" v-if="sending"></i>
-                  <i class="fas fa-paper-plane" v-else></i>
-                  {{ sending ? 'Sending...' : 'Send Quote to Sailor' }}
-                </button>
-              </div>
-              <p v-if="missingSendRequirements.length" class="send-hint">{{ sendRequirementsHint }}</p>
-              <div v-if="postSendStatuses.includes(quote.status)" class="decision-buttons">
-                <button @click="markDecision('won')" class="btn btn-won" :disabled="deciding">Mark Won</button>
-                <button @click="markDecision('dead')" class="btn btn-lost" :disabled="deciding">Mark Dead</button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="status" class="status-label">
-                Status
-                <QuoteStatusLegend />
-              </label>
-              <select
-                id="status"
-                :value="editForm.status"
-                class="form-control"
-                @change="onStatusChange($event)"
-              >
-                <option
-                  v-for="s in QUOTE_STATUSES"
-                  :key="s.value"
-                  :value="s.value"
-                  :disabled="s.value === 'followed_up' && !canMarkFollowedUp"
-                >
-                  {{ s.label }}{{ s.value === 'followed_up' && !canMarkFollowedUp ? ' (send quote first)' : '' }}
-                </option>
-              </select>
-              <p v-if="needsPrice || needsShippingPrice || needsShippingNotes || needsMessage" class="field-hint">
-                Set item prices, shipping, and message below before sending.
-              </p>
-              <p v-else-if="editForm.status === 'new'" class="field-hint field-hint-ready">
-                Ready to send — items, shipping, and message are filled in.
-              </p>
-            </div>
-
             <div class="form-group">
               <label>Items Quoted</label>
               <div class="line-item-head">
@@ -1058,11 +1060,18 @@ useHead({
 
 .detail-head {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.15rem;
+  padding: 1.6rem 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-head-top {
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.6rem 1.8rem;
-  margin-bottom: 1.5rem;
 }
 
 .detail-head h1 {
@@ -1118,19 +1127,39 @@ useHead({
   cursor: pointer;
 }
 
-.worksheet-toolbar {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--line);
+.quote-actions {
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--line);
 }
 
-.worksheet-toolbar .save-message {
-  margin: 0 0 0.85rem;
+.quote-actions .save-message {
+  margin: 0 0 0.75rem;
 }
 
-.worksheet-toolbar .decision-buttons {
-  margin-top: 0.9rem;
-  padding-top: 0.9rem;
+.quote-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+.quote-actions-row .btn {
+  width: auto;
+  padding: 0.65rem 1.15rem;
+}
+
+.quote-actions-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 11rem;
+  flex: 1 1 11rem;
+  max-width: 16rem;
+}
+
+.quote-actions .send-hint,
+.quote-actions .field-hint {
+  margin: 0.7rem 0 0;
 }
 
 .section-label {
