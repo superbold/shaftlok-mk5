@@ -78,8 +78,33 @@
 
         <div class="quote-workspace">
           <div class="owner-pane">
+        <section id="message-section" class="detail-section">
+          <div class="workspace-head message-head">
+            <h2 class="section-heading">Message to Sailor</h2>
+            <p class="section-sub">
+              This is the note at the top of the email, after the greeting.
+            </p>
+          </div>
+          <div class="glass-card action-card message-card">
+            <div class="form-group">
+              <div class="tabbed-field">
+                <span v-if="needsMessage" class="attention-tab">Message</span>
+                <textarea
+                  id="quote-notes"
+                  v-model="editForm.quote_notes"
+                  rows="6"
+                  class="form-control"
+                  :class="{ 'form-control-attention': needsMessage }"
+                  placeholder="What's included, lead time, anything else the sailor should know..."
+                ></textarea>
+              </div>
+              <p v-if="needsMessage" class="field-hint">Required before send.</p>
+            </div>
+          </div>
+        </section>
+
         <section id="inquiry-section" class="detail-section">
-          <div class="workspace-head">
+          <div class="workspace-head inquiry-head">
             <h2 class="section-heading">Inquiry</h2>
             <p class="section-sub">
               Click any box to edit. Save writes this quote only — it does not email the sailor or your inbox.
@@ -116,7 +141,7 @@
         <section id="quote-section" class="detail-section">
           <h2 class="section-heading">Quote</h2>
           <p class="section-sub">
-            Items, shipping, message, and attachments.
+            Items, shipping, and attachments.
           </p>
 
           <div class="glass-card action-card">
@@ -262,22 +287,6 @@
                 <strong>{{ formatMoney(quoteGrandTotal) }}</strong>
               </div>
               <p class="field-hint field-hint-ready">Products + shipping</p>
-            </div>
-
-            <div class="form-group">
-              <label for="quote-notes">Message to Sailor</label>
-              <div class="tabbed-field">
-                <span v-if="needsMessage" class="attention-tab">Message</span>
-                <textarea
-                  id="quote-notes"
-                  v-model="editForm.quote_notes"
-                  rows="6"
-                  class="form-control"
-                  :class="{ 'form-control-attention': needsMessage }"
-                  placeholder="What's included, lead time, anything else the sailor should know..."
-                ></textarea>
-              </div>
-              <p v-if="needsMessage" class="field-hint">Required before send.</p>
             </div>
 
             <div class="form-group">
@@ -1179,7 +1188,9 @@ useHead({
     display: grid;
     grid-template-columns: minmax(0, 1.08fr) minmax(24rem, 0.92fr);
     grid-template-areas:
-      "inquiry-head customer-head"
+      "message-head customer-head"
+      "message-body customer-preview"
+      "inquiry-head customer-preview"
       "inquiry-body customer-preview"
       "quote customer-preview";
     column-gap: 1.5rem;
@@ -1188,12 +1199,15 @@ useHead({
   }
 
   .owner-pane,
+  #message-section,
   #inquiry-section,
   .customer-col {
     display: contents;
   }
 
-  .workspace-head { grid-area: inquiry-head; }
+  .message-head { grid-area: message-head; }
+  .message-card { grid-area: message-body; min-width: 0; }
+  .inquiry-head { grid-area: inquiry-head; }
   .inquiry-card { grid-area: inquiry-body; min-width: 0; }
   #quote-section { grid-area: quote; }
   .customer-pane-head { grid-area: customer-head; }
@@ -1266,6 +1280,10 @@ useHead({
 
 .summary-card, .action-card {
   padding: 1.5rem 1.7rem;
+}
+
+.message-card .form-group {
+  margin-bottom: 0;
 }
 
 .inquiry-card :deep(.form-control) {
