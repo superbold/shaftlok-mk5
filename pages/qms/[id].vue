@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="yacht-container narrow">
+    <div class="yacht-container quote-detail">
       <BreadcrumbNav admin :items="[{ name: 'Quote Management', to: '/qms' }, { name: quote?.name || 'Quote' }]" />
 
       <div v-if="loading" class="loading-indicator">
@@ -15,93 +15,76 @@
 
       <template v-else-if="quote">
         <div class="detail-head glass-card">
-          <div class="detail-head-top">
-            <div>
-              <h1>{{ editForm.name || quote.name }}</h1>
+          <div class="detail-head-main">
+            <div class="detail-identity">
+              <div class="detail-identity-row">
+                <h1>{{ editForm.name || quote.name }}</h1>
+                <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
+              </div>
               <p class="detail-sub">
                 <span v-if="displayedQuoteNumber">{{ displayedQuoteNumber }} · </span>{{ editForm.email || quote.email }} · submitted {{ formatDate(quote.created_at) }}
               </p>
             </div>
-            <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
-          </div>
 
-          <div class="quote-actions">
-            <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
-            <div class="quote-actions-row">
-              <button type="button" class="btn btn-secondary" :disabled="saving" @click="saveQuote">
-                <i class="fas fa-spinner fa-spin" v-if="saving"></i>
-                {{ saving ? 'Saving...' : 'Save' }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                :disabled="sending || missingSendRequirements.length > 0"
-                :title="sendRequirementsHint"
-                @click="handleSendClick"
-              >
-                <i class="fas fa-spinner fa-spin" v-if="sending"></i>
-                <i class="fas fa-paper-plane" v-else></i>
-                {{ sending ? 'Sending...' : 'Send Quote' }}
-              </button>
-              <template v-if="postSendStatuses.includes(quote.status)">
-                <button type="button" class="btn btn-won" :disabled="deciding" @click="markDecision('won')">Mark Won</button>
-                <button type="button" class="btn btn-lost" :disabled="deciding" @click="markDecision('dead')">Mark Dead</button>
-              </template>
-              <div class="quote-actions-status">
-                <label for="status" class="status-label">
-                  Status
-                  <QuoteStatusLegend />
-                </label>
-                <select
-                  id="status"
-                  :value="editForm.status"
-                  class="form-control"
-                  @change="onStatusChange($event)"
+            <div class="quote-actions">
+              <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
+              <div class="quote-actions-row">
+                <button type="button" class="btn btn-secondary" :disabled="saving" @click="saveQuote">
+                  <i class="fas fa-spinner fa-spin" v-if="saving"></i>
+                  {{ saving ? 'Saving...' : 'Save' }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  :disabled="sending || missingSendRequirements.length > 0"
+                  :title="sendRequirementsHint"
+                  @click="handleSendClick"
                 >
-                  <option
-                    v-for="s in QUOTE_STATUSES"
-                    :key="s.value"
-                    :value="s.value"
-                    :disabled="s.value === 'followed_up' && !canMarkFollowedUp"
+                  <i class="fas fa-spinner fa-spin" v-if="sending"></i>
+                  <i class="fas fa-paper-plane" v-else></i>
+                  {{ sending ? 'Sending...' : 'Send Quote' }}
+                </button>
+                <template v-if="postSendStatuses.includes(quote.status)">
+                  <button type="button" class="btn btn-won" :disabled="deciding" @click="markDecision('won')">Mark Won</button>
+                  <button type="button" class="btn btn-lost" :disabled="deciding" @click="markDecision('dead')">Mark Dead</button>
+                </template>
+                <div class="quote-actions-status">
+                  <QuoteStatusLegend />
+                  <select
+                    id="status"
+                    :value="editForm.status"
+                    class="form-control"
+                    aria-label="Status"
+                    @change="onStatusChange($event)"
                   >
-                    {{ s.label }}{{ s.value === 'followed_up' && !canMarkFollowedUp ? ' (send quote first)' : '' }}
-                  </option>
-                </select>
+                    <option
+                      v-for="s in QUOTE_STATUSES"
+                      :key="s.value"
+                      :value="s.value"
+                      :disabled="s.value === 'followed_up' && !canMarkFollowedUp"
+                    >
+                      {{ s.label }}{{ s.value === 'followed_up' && !canMarkFollowedUp ? ' (send quote first)' : '' }}
+                    </option>
+                  </select>
+                </div>
               </div>
             </div>
-            <p v-if="missingSendRequirements.length" class="send-hint">{{ sendRequirementsHint }}</p>
-            <p v-else-if="editForm.status === 'new'" class="field-hint field-hint-ready">
-              Ready to send — items, shipping, and message are filled in.
-            </p>
           </div>
+          <p v-if="missingSendRequirements.length" class="send-hint">{{ sendRequirementsHint }}</p>
+          <p v-else-if="editForm.status === 'new'" class="field-hint field-hint-ready">
+            Ready to send — items, shipping, and message are filled in.
+          </p>
         </div>
 
-        <section id="sent-section" class="detail-section">
-          <h2 class="section-heading">Email to Sailor</h2>
-          <p class="section-sub">
-            Live preview of the email Send will use. The cards in this preview are not clickable — edit them in Inquiry and Quote below.
-          </p>
-          <EmailFrame
-            :html="sailorPreviewHtml"
-            :title="`Quote preview for ${editForm.name || quote.name}`"
-          />
-        </section>
-
-        <section v-if="quote.sent_html" id="last-sent-section" class="detail-section">
-          <h2 class="section-heading">Last Sent</h2>
-          <p class="section-sub">
-            What {{ quote.name }} received{{ quote.sent_at ? ` on ${formatDate(quote.sent_at)}` : '' }}, shown in the current email layout.
-            <template v-if="quoteValidUntilLabel"> Valid until {{ quoteValidUntilLabel }}.</template>
-            Edits above are not in this copy until you send again.
-          </p>
-          <EmailFrame :html="lastSentHtml" :title="`Quote sent to ${quote.name}`" />
-        </section>
-
+        <div class="quote-workspace">
+          <div class="owner-pane">
         <section id="inquiry-section" class="detail-section">
-          <h2 class="section-heading">Inquiry</h2>
-          <p class="section-sub">
-            Click any box to edit. Save writes this quote only — it does not email the sailor or your inbox.
-          </p>
+          <div class="workspace-head">
+            <h2 class="section-heading">Inquiry</h2>
+            <p class="section-sub">
+              Click any box to edit. Save writes this quote only — it does not email the sailor or your inbox.
+            </p>
+          </div>
 
           <form class="glass-card action-card inquiry-card" @submit.prevent="saveQuote">
             <div class="worksheet-toolbar">
@@ -365,6 +348,48 @@
             </div>
           </div>
         </section>
+          </div>
+
+          <aside class="customer-col" aria-label="Customer view">
+            <div class="customer-pane-head">
+              <div v-if="quote.sent_html" class="customer-pane-tabs" role="tablist" aria-label="Customer view">
+                <button
+                  type="button"
+                  role="tab"
+                  :aria-selected="customerPaneTab === 'preview'"
+                  :class="{ 'is-active': customerPaneTab === 'preview' }"
+                  @click="customerPaneTab = 'preview'"
+                >
+                  Email to Sailor
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  :aria-selected="customerPaneTab === 'sent'"
+                  :class="{ 'is-active': customerPaneTab === 'sent' }"
+                  @click="customerPaneTab = 'sent'"
+                >
+                  Last Sent
+                </button>
+              </div>
+              <h2 v-else id="sent-section" class="section-heading">Email to Sailor</h2>
+              <p v-if="showingLastSent" class="section-sub">
+                Sent{{ quote.sent_at ? ` ${formatDate(quote.sent_at)}` : '' }}<template v-if="quoteValidUntilLabel"> · valid until {{ quoteValidUntilLabel }}</template>.
+                Edits on the left are not in this copy until you send again.
+              </p>
+              <p v-else class="section-sub">
+                Live preview of the email Send will use. Cards here are not clickable — edit Inquiry and Quote on the left.
+              </p>
+            </div>
+            <div class="customer-preview">
+              <EmailFrame
+                flush
+                :html="customerPaneHtml"
+                :title="showingLastSent ? `Quote sent to ${quote.name}` : `Quote preview for ${editForm.name || quote.name}`"
+              />
+            </div>
+          </aside>
+        </div>
 
         <div v-if="showFirstSendModal" class="modal" @click="showFirstSendModal = false">
           <div class="modal-content" @click.stop>
@@ -439,6 +464,7 @@ const saveMessage = ref('')
 const saveError = ref(false)
 const showAlreadySentModal = ref(false)
 const showFirstSendModal = ref(false)
+const customerPaneTab = ref('preview')
 
 const editForm = ref({
   status: 'new',
@@ -751,6 +777,13 @@ const lastSentHtml = computed(() =>
   })
 )
 
+const showingLastSent = computed(() =>
+  customerPaneTab.value === 'sent' && Boolean(quote.value?.sent_html)
+)
+const customerPaneHtml = computed(() =>
+  showingLastSent.value ? lastSentHtml.value : sailorPreviewHtml.value
+)
+
 const productsSubtotal = computed(() => {
   const selected = selectedLineItems()
   if (!selected.length || selected.some((item) => lineItemUnitPrice(item) == null)) return null
@@ -1056,33 +1089,155 @@ useHead({
 </script>
 
 <style scoped>
-.narrow { max-width: 1000px; }
+.quote-detail {
+  max-width: 1600px;
+}
+
+.quote-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.owner-pane {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+.customer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.workspace-head,
+.customer-pane-head {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.workspace-head .section-heading,
+.customer-pane-head .section-heading {
+  margin: 0;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.workspace-head .section-sub,
+.customer-pane-head .section-sub {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.customer-pane-head {
+  align-items: center;
+}
+
+.customer-pane-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 0.2rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.2rem;
+  background: rgba(13, 27, 54, 0.65);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+}
+
+.customer-pane-tabs button {
+  margin: 0;
+  padding: 0.45rem 0.95rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-mid);
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.customer-pane-tabs button:hover {
+  color: var(--text-hi);
+}
+
+.customer-pane-tabs button.is-active {
+  background: var(--grad-accent);
+  color: #04121F;
+}
+
+@media (min-width: 1100px) {
+  .quote-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(24rem, 0.92fr);
+    grid-template-areas:
+      "inquiry-head customer-head"
+      "inquiry-body customer-preview"
+      "quote customer-preview";
+    column-gap: 1.5rem;
+    row-gap: 0.5rem;
+    align-items: start;
+  }
+
+  .owner-pane,
+  #inquiry-section,
+  .customer-col {
+    display: contents;
+  }
+
+  .workspace-head { grid-area: inquiry-head; }
+  .inquiry-card { grid-area: inquiry-body; min-width: 0; }
+  #quote-section { grid-area: quote; }
+  .customer-pane-head { grid-area: customer-head; }
+  .customer-preview { grid-area: customer-preview; min-width: 0; }
+}
 
 .detail-head {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 1.15rem;
-  padding: 1.6rem 1.8rem;
-  margin-bottom: 1.5rem;
+  gap: 0.65rem;
+  padding: 1.05rem 1.35rem;
+  margin-bottom: 1.15rem;
 }
 
-.detail-head-top {
+.detail-head-main {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem 1.25rem;
+}
+
+.detail-identity {
+  min-width: 0;
+  flex: 1 1 16rem;
+}
+
+.detail-identity-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
 }
 
 .detail-head h1 {
-  margin: 0 0 0.3rem;
+  margin: 0;
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   color: var(--text-hi);
 }
 
 .detail-sub {
-  margin: 0;
+  margin: 0.28rem 0 0;
   color: var(--text-mid);
   font-size: 0.9rem;
 }
@@ -1128,38 +1283,43 @@ useHead({
 }
 
 .quote-actions {
-  padding-top: 1.15rem;
-  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
 }
 
 .quote-actions .save-message {
-  margin: 0 0 0.75rem;
+  margin: 0;
 }
 
 .quote-actions-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.65rem;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
 }
 
 .quote-actions-row .btn {
   width: auto;
-  padding: 0.65rem 1.15rem;
+  padding: 0.55rem 1rem;
+  flex: none;
 }
 
 .quote-actions-status {
   display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  min-width: 11rem;
-  flex: 1 1 11rem;
-  max-width: 16rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 10rem;
+  max-width: 12.5rem;
+  flex: none;
 }
 
-.quote-actions .send-hint,
-.quote-actions .field-hint {
-  margin: 0.7rem 0 0;
+.detail-head .send-hint,
+.detail-head .field-hint {
+  margin: 0;
 }
 
 .section-label {
@@ -1216,12 +1376,6 @@ dl { margin: 0; }
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-mid);
-}
-
-.status-label {
-  display: flex !important;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .form-control {
@@ -1434,6 +1588,36 @@ textarea.form-control { resize: vertical; }
 }
 
 @media (max-width: 640px) {
+  .line-item-head {
+    display: none;
+  }
+
+  .line-item-row {
+    flex-wrap: wrap;
+  }
+
+  .line-item-product {
+    flex: 1 1 100%;
+  }
+
+  .line-item-detail {
+    flex: 1 1 calc(100% - 12.5rem);
+  }
+
+  .line-item-qty {
+    flex: 0 0 4.25rem;
+  }
+
+  .line-item-price {
+    flex: 0 0 6.5rem;
+  }
+
+  .shipping-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container (max-width: 700px) {
   .line-item-head {
     display: none;
   }
