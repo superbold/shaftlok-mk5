@@ -148,47 +148,13 @@
             <div class="form-group">
               <label>Items Quoted</label>
               <div class="line-item-head">
-                <span class="line-item-product">Product</span>
-                <span class="line-item-detail">Detail</span>
                 <span class="line-item-qty">Qty</span>
-                <span class="line-item-price">Price</span>
+                <span class="line-item-product">Item</span>
+                <span class="line-item-price">Unit Price</span>
+                <span class="line-item-total">Total</span>
                 <span class="line-item-remove" aria-hidden="true"></span>
               </div>
               <div v-for="(item, i) in editForm.line_items" :key="i" class="line-item-row">
-                <div class="line-item-product">
-                  <div class="tabbed-field">
-                    <span v-if="!item.product_slug" class="attention-tab">Product</span>
-                    <select
-                      class="form-control"
-                      :class="{ 'form-control-attention': !item.product_slug }"
-                      :value="item.product_slug"
-                      @change="onLineItemProductChange(i, $event.target.value)"
-                    >
-                      <option value="" disabled>Select a product…</option>
-                      <option v-for="p in pickableProducts" :key="p.slug" :value="p.slug">
-                        {{ productOptionLabel(p) }}
-                      </option>
-                    </select>
-                  </div>
-                  <p v-if="lineItemPriceHint(item)" class="line-item-hint" :class="{ 'line-item-hint-ready': getCatalogLinePrice(item) != null && !item.price_manual }">
-                    {{ lineItemPriceHint(item) }}
-                  </p>
-                  <button
-                    v-if="item.price_manual && getCatalogLinePrice(item) != null"
-                    type="button"
-                    class="btn-link-recalc"
-                    @click="resetLineItemPrice(i)"
-                  >
-                    Reset from catalog
-                  </button>
-                </div>
-                <input
-                  v-model="item.detail"
-                  type="text"
-                  class="form-control line-item-detail"
-                  :placeholder="detailPlaceholder(item.product_slug)"
-                  @input="onLineItemDetailInput(i)"
-                />
                 <div class="line-item-qty">
                   <input
                     v-model="item.qty"
@@ -202,22 +168,60 @@
                     @blur="clampLineItemQty(i)"
                   />
                 </div>
+                <div class="line-item-product">
+                  <div class="tabbed-field">
+                    <span v-if="!item.product_slug" class="attention-tab">Item</span>
+                    <select
+                      class="form-control"
+                      :class="{ 'form-control-attention': !item.product_slug }"
+                      :value="item.product_slug"
+                      @change="onLineItemProductChange(i, $event.target.value)"
+                    >
+                      <option value="" disabled>Select a product…</option>
+                      <option v-for="p in pickableProducts" :key="p.slug" :value="p.slug">
+                        {{ productOptionLabel(p) }}
+                      </option>
+                    </select>
+                  </div>
+                  <input
+                    v-model="item.detail"
+                    type="text"
+                    class="form-control line-item-detail"
+                    :placeholder="detailPlaceholder(item.product_slug)"
+                    aria-label="Item detail"
+                    @input="onLineItemDetailInput(i)"
+                  />
+                  <p v-if="lineItemPriceHint(item)" class="line-item-hint" :class="{ 'line-item-hint-ready': getCatalogLinePrice(item) != null && !item.price_manual }">
+                    {{ lineItemPriceHint(item) }}
+                  </p>
+                  <button
+                    v-if="item.price_manual && getCatalogLinePrice(item) != null"
+                    type="button"
+                    class="btn-link-recalc"
+                    @click="resetLineItemPrice(i)"
+                  >
+                    Reset from catalog
+                  </button>
+                </div>
                 <div class="line-item-price tabbed-field">
                   <span
                     v-if="item.product_slug && parseMoneyField(item.price) == null"
                     class="attention-tab"
                   >Price</span>
                   <input
-                    :value="lineItemDisplayPrice(item)"
+                    :value="lineItemUnitPrice(item) ?? item.price ?? ''"
                     type="number"
                     step="0.01"
                     min="0"
                     class="form-control"
                     :class="{ 'form-control-attention': item.product_slug && parseMoneyField(item.price) == null }"
-                    placeholder="Price"
-                    aria-label="Item price"
-                    @input="onLineItemAmountInput(i, $event.target.value)"
+                    placeholder="Unit price"
+                    aria-label="Unit price"
+                    @input="onLineItemUnitPriceInput(i, $event.target.value)"
                   />
+                </div>
+                <div class="line-item-total" aria-label="Line total">
+                  {{ formatLineMoney(lineItemLineTotal(item)) }}
                 </div>
                 <button type="button" class="btn btn-secondary btn-icon line-item-remove" @click="removeLineItem(i)" aria-label="Remove item">
                   <i class="fas fa-times"></i>
@@ -697,21 +701,24 @@ const clampLineItemQty = (i) => {
   syncQuotedPriceFromLineItems()
 }
 
-const lineItemDisplayPrice = (item) => {
+const lineItemLineTotal = (item) => {
   const unit = lineItemUnitPrice(item)
-  if (unit == null) return item.price ?? ''
+  if (unit == null) return null
   return lineItemAmount(unit, item.qty)
 }
 
-const onLineItemAmountInput = (i, raw) => {
+const formatLineMoney = (value) => {
+  if (value == null || value === '') return '—'
+  const amount = Number(value)
+  if (!Number.isFinite(amount)) return '—'
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+}
+
+const onLineItemUnitPriceInput = (i, raw) => {
   const item = editForm.value.line_items[i]
   item.price_manual = true
   const entered = parseMoneyField(raw)
-  if (entered == null) {
-    item.price = raw
-  } else {
-    item.price = Number((entered / parseLineQty(item.qty)).toFixed(2))
-  }
+  item.price = entered == null ? raw : Number(entered.toFixed(2))
   syncQuotedPriceFromLineItems()
 }
 
@@ -1485,6 +1492,12 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
   color: var(--text-mid);
 }
 
+.line-item-head .line-item-qty,
+.line-item-head .line-item-price,
+.line-item-head .line-item-total {
+  text-align: right;
+}
+
 .line-item-row {
   margin-bottom: 0.75rem;
   overflow: visible;
@@ -1495,9 +1508,12 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
   min-width: 0;
 }
 
-.line-item-detail {
-  flex: 1;
-  min-width: 5rem;
+.line-item-product .line-item-detail {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  flex: none;
+  min-width: 0;
 }
 
 .line-item-qty {
@@ -1505,7 +1521,18 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
 }
 
 .line-item-price {
+  flex: 0 0 7rem;
+}
+
+.line-item-total {
   flex: 0 0 6.5rem;
+  padding-top: 0.7rem;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-hi);
+  white-space: nowrap;
 }
 
 .line-item-remove {
@@ -1616,20 +1643,21 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
     flex-wrap: wrap;
   }
 
-  .line-item-product {
-    flex: 1 1 100%;
-  }
-
-  .line-item-detail {
-    flex: 1 1 calc(100% - 12.5rem);
-  }
-
   .line-item-qty {
     flex: 0 0 4.25rem;
   }
 
+  .line-item-product {
+    flex: 1 1 calc(100% - 5rem);
+  }
+
   .line-item-price {
+    flex: 0 0 7rem;
+  }
+
+  .line-item-total {
     flex: 0 0 6.5rem;
+    padding-top: 0.7rem;
   }
 
   .shipping-fields {
@@ -1646,20 +1674,21 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
     flex-wrap: wrap;
   }
 
-  .line-item-product {
-    flex: 1 1 100%;
-  }
-
-  .line-item-detail {
-    flex: 1 1 calc(100% - 12.5rem);
-  }
-
   .line-item-qty {
     flex: 0 0 4.25rem;
   }
 
+  .line-item-product {
+    flex: 1 1 calc(100% - 5rem);
+  }
+
   .line-item-price {
+    flex: 0 0 7rem;
+  }
+
+  .line-item-total {
     flex: 0 0 6.5rem;
+    padding-top: 0.7rem;
   }
 
   .shipping-fields {

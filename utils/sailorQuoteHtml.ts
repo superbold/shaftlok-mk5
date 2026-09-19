@@ -24,20 +24,44 @@ const card = (title: string, body: string) => `
         ${body}
       </div>`
 
-const itemsQuotedTableHtml = (rows: { itemHtml: string; qty: string | number; priceHtml: string }[]) =>
+const parseMoneyFromHtml = (html: string): number | null => {
+  const n = Number(html.replace(/<[^>]+>/g, '').replace(/[^0-9.-]/g, ''))
+  return Number.isFinite(n) ? n : null
+}
+
+const itemsQuotedTableHtml = (rows: {
+  itemHtml: string
+  qty: string | number
+  unitPriceHtml: string
+  totalHtml: string
+}[]) =>
   `<table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;color:#EFF6FF">
           <tr>
-            <td style="padding:0 12px 8px 0;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Item</td>
             <td style="padding:0 12px 8px 0;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Qty</td>
-            <td style="padding:0 0 8px;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Price</td>
+            <td style="padding:0 12px 8px 0;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Item</td>
+            <td style="padding:0 12px 8px 0;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Unit Price</td>
+            <td style="padding:0 0 8px;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Total</td>
           </tr>
           ${rows.map((row) => `
           <tr>
-            <td style="padding:0 12px 10px 0;vertical-align:top;color:#EFF6FF">${row.itemHtml}</td>
             <td style="padding:0 12px 10px 0;text-align:right;white-space:nowrap;vertical-align:top;color:#A8BEDC">${row.qty}</td>
-            <td style="padding:0 0 10px;text-align:right;white-space:nowrap;vertical-align:top">${row.priceHtml}</td>
+            <td style="padding:0 12px 10px 0;vertical-align:top;color:#EFF6FF">${row.itemHtml}</td>
+            <td style="padding:0 12px 10px 0;text-align:right;white-space:nowrap;vertical-align:top">${row.unitPriceHtml}</td>
+            <td style="padding:0 0 10px;text-align:right;white-space:nowrap;vertical-align:top">${row.totalHtml}</td>
           </tr>`).join('')}
         </table>`
+
+const itemsQuotedRow = (itemHtml: string, qtyRaw: string | number, totalHtml: string, unitPriceHtml?: string) => {
+  const qty = parseLineQty(String(qtyRaw).replace(/<[^>]+>/g, '').trim() || '1')
+  const total = parseMoneyFromHtml(totalHtml)
+  const unitFromTotal = total == null ? null : Number((total / qty).toFixed(2))
+  return {
+    itemHtml,
+    qty,
+    unitPriceHtml: unitPriceHtml ?? (unitFromTotal == null ? totalHtml : money(unitFromTotal)),
+    totalHtml: total == null ? totalHtml : money(total)
+  }
+}
 
 const field = (label: string, value: unknown) => {
   const text = String(value ?? '').trim()
@@ -135,11 +159,16 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
 
   const itemsHtml = card(
     'Items Quoted',
-    itemsQuotedTableHtml(input.line_items.map((item) => ({
-      itemHtml: `${escapeHtml(item.product_name)}${item.detail ? ` — ${escapeHtml(item.detail)}` : ''}`,
-      qty: parseLineQty(item.qty),
-      priceHtml: money(lineItemAmount(item.price, item.qty))
-    })))
+    itemsQuotedTableHtml(input.line_items.map((item) => {
+      const qty = parseLineQty(item.qty)
+      const unit = Number(item.price) || 0
+      return {
+        itemHtml: `${escapeHtml(item.product_name)}${item.detail ? ` — ${escapeHtml(item.detail)}` : ''}`,
+        qty,
+        unitPriceHtml: money(unit),
+        totalHtml: money(lineItemAmount(unit, qty))
+      }
+    }))
   )
 
   const warningsHtml = input.warnings.map((warning) =>
@@ -258,21 +287,19 @@ const withInquiryNameEmail = (
 }
 
 const restyleItemsQuotedBody = (body: string) => {
-  if (/>Item</.test(body) && />Qty</.test(body) && />Price</.test(body)) return body
+  if (/>Qty</.test(body) && />Unit Price</.test(body) && />Total</.test(body)) return body
 
-  const rows: { itemHtml: string; qty: string; priceHtml: string }[] = []
+  const rows: ReturnType<typeof itemsQuotedRow>[] = []
   for (const match of body.matchAll(/<tr>([\s\S]*?)<\/tr>/g)) {
     const cells = [...match[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((cell) => cell[1].trim())
     const labels = cells.map((html) => html.replace(/<[^>]+>/g, '').trim().toLowerCase())
-    if (labels.includes('item') || labels.includes('qty') || labels.includes('price')) continue
-    if (cells.length >= 3) {
-      rows.push({
-        itemHtml: cells[0],
-        qty: cells[1].replace(/<[^>]+>/g, '').trim() || '1',
-        priceHtml: cells[2]
-      })
+    if (labels.includes('item') || labels.includes('qty') || labels.includes('price') || labels.includes('unit price') || labels.includes('total')) continue
+    if (cells.length >= 4) {
+      rows.push(itemsQuotedRow(cells[1], cells[0], cells[3], cells[2]))
+    } else if (cells.length >= 3) {
+      rows.push(itemsQuotedRow(cells[0], cells[1], cells[2]))
     } else if (cells.length === 2) {
-      rows.push({ itemHtml: cells[0], qty: '1', priceHtml: cells[1] })
+      rows.push(itemsQuotedRow(cells[0], '1', cells[1]))
     }
   }
 
