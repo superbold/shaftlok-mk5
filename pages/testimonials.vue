@@ -83,7 +83,7 @@ const testimonials = [
 useHead({
   title: 'Testimonials',
   meta: [
-    { name: 'description', content: 'Shaft Lok customer testimonials - real experiences from sailors who improved their sailing performance with our marine propeller control systems. Read reviews.' },
+    { name: 'description', content: 'Shaft Lok customer testimonials - real experiences from sailors who improved their sailing performance with our marine propeller locking systems. Read reviews.' },
     { property: 'og:title', content: 'Shaft Lok Testimonials - Customer Reviews & Experiences' },
     { property: 'og:description', content: 'Read testimonials from satisfied Shaft Lok customers. Real experiences from sailors who have improved their sailing with our marine shaft locking systems.' },
     { property: 'og:image', content: 'https://shaftlok.com/assets/images/Logo_propeller_only.png' },

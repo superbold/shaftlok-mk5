@@ -98,7 +98,7 @@ const toggleFaq = (index) => {
 useHead({
   title: 'FAQ',
   meta: [
-    { name: 'description', content: 'Shaft Lok FAQ - answers to common questions about marine propeller control systems. Installation tips, maintenance guides, and expert technical support.' },
+    { name: 'description', content: 'Shaft Lok FAQ - answers to common questions about marine propeller locking systems. Installation tips, maintenance guides, and expert technical support.' },
     { property: 'og:title', content: 'Shaft Lok FAQ - Marine Propeller Control Questions & Answers' },
     { property: 'og:description', content: 'Find answers to frequently asked questions about Shaft Lok marine shaft locking systems. Installation tips, maintenance guides, and technical support information.' },
     { property: 'og:image', content: 'https://shaftlok.com/assets/images/Logo_propeller_only.png' },

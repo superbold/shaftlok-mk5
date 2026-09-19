@@ -177,7 +177,7 @@ useHead({
         '@context': 'https://schema.org',
         '@type': 'Article',
         headline: 'Shaft Lok History - The Story of Marine Propeller Control Innovation',
-        description: 'The complete history of Shaft Lok Inc., from its founding in 1978 by Dick Badzinski and George Nigel to becoming the leading manufacturer of marine propeller control systems. Learn about the invention, early success, and continued innovation in marine technology.',
+        description: 'The complete history of Shaft Lok Inc., from its founding in 1978 by Dick Badzinski and George Nigel to becoming the leading manufacturer of marine propeller locking systems. Learn about the invention, early success, and continued innovation in marine technology.',
         author: {
           '@type': 'Person',
           name: 'Kenneth R. Nigel',
@@ -199,13 +199,13 @@ useHead({
         datePublished: '2023-07-28',
         dateModified: '2024-12-19',
         mainEntityOfPage: 'https://shaftlok.com/about',
-        articleBody: 'In 1978, Dick Badzinski and George Nigel, both sailboat owners, faced a common problem: their propellers would rotate freely while sailing without engine power. This freewheeling caused reduced boat speed, unwanted vibration and noise, and unnecessary drive train wear. Working at Rex Chain Belt in Milwaukee, Wisconsin as a Product Marketing Manager, Kenneth encouraged them to pursue the invention that could be marketed worldwide. After finalizing the concept design, they built a working model and secured three patents. The founders pooled their resources to establish Shaft Lok Inc. in 1979, focusing on manufacturing and marketing their innovative marine propeller control systems. Today, Shaft Lok continues to lead the industry with over 40 years of experience in marine technology innovation.',
+        articleBody: 'In 1978, Dick Badzinski and George Nigel, both sailboat owners, faced a common problem: their propellers would rotate freely while sailing without engine power. This freewheeling caused reduced boat speed, unwanted vibration and noise, and unnecessary drive train wear. Working at Rex Chain Belt in Milwaukee, Wisconsin as a Product Marketing Manager, Kenneth encouraged them to pursue the invention that could be marketed worldwide. After finalizing the concept design, they built a working model and secured three patents. The founders pooled their resources to establish Shaft Lok Inc. in 1979, focusing on manufacturing and marketing their innovative marine propeller locking systems. Today, Shaft Lok continues to lead the industry with over 40 years of experience in marine technology innovation.',
         wordCount: 1200,
         articleSection: 'Company History',
         keywords: ['Shaft Lok history', 'marine propeller control', 'sailboat innovation', 'marine technology', 'propeller locking system', 'Dick Badzinski', 'George Nigel', 'Kenneth Nigel', 'marine equipment', 'sailing technology'],
         about: {
           '@type': 'Thing',
-          name: 'Marine Propeller Control Systems',
+          name: 'Marine Propeller Locking Systems',
           description: 'Innovative systems for controlling marine propellers during sailing'
         },
         mentions: [

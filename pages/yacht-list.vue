@@ -270,15 +270,15 @@ watch(user, async () => {
 useHead({
   title: 'Yacht List',
   meta: [
-    { name: 'description', content: 'Shaft Lok yacht list - comprehensive database of vessels equipped with our marine propeller control systems. Find boats with proven Shaft Lok technology.' },
-    { property: 'og:title', content: 'Shaft Lok Yacht List - Vessels with Marine Propeller Control Systems' },
+    { name: 'description', content: 'Shaft Lok yacht list - comprehensive database of vessels equipped with our marine propeller locking systems. Find boats with proven Shaft Lok technology.' },
+    { property: 'og:title', content: 'Shaft Lok Yacht List - Vessels with Marine Propeller Locking Systems' },
     { property: 'og:description', content: 'Browse our comprehensive yacht list featuring vessels equipped with Shaft Lok marine shaft locking systems.' },
     { property: 'og:image', content: 'https://shaftlok.com/assets/images/Logo_propeller_only.png' },
     { property: 'og:url', content: 'https://shaftlok.com/yacht-list' },
     { property: 'og:type', content: 'website' },
     { property: 'og:site_name', content: 'Shaft Lok Inc.' },
     { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: 'Shaft Lok Yacht List - Vessels with Marine Propeller Control Systems' },
+    { name: 'twitter:title', content: 'Shaft Lok Yacht List - Vessels with Marine Propeller Locking Systems' },
     { name: 'twitter:description', content: 'Browse our comprehensive yacht list featuring vessels equipped with Shaft Lok marine shaft locking systems.' },
     { name: 'twitter:image', content: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png' }
   ],

@@ -46,7 +46,7 @@
           <div class="visual-card">
             <img
               src="/assets/images/Traditional-ShaftLok-Brochure.png"
-              alt="Shaft Lok marine propeller control system brochure showing traditional blue transmission housing design for sailboats"
+              alt="Shaft Lok marine propeller locking system brochure showing traditional blue transmission housing design for sailboats"
               loading="eager"
             >
           </div>
@@ -210,16 +210,16 @@ const brands = ['Borg Warner', 'Paragon', 'Hurth', 'Volvo Penta', 'Yanmar', 'Per
 useHead({
   title: 'Welcome',
   meta: [
-    { name: 'description', content: 'Shaft Lok marine propeller control systems - premium quality, easy installation, reliable locking for improved sailing performance. Trusted by sailors worldwide since 1979.' },
-    { property: 'og:title', content: 'Shaft Lok - Advanced Propeller Control Systems' },
-    { property: 'og:description', content: 'Discover ShaftLok\'s innovative marine propeller control systems. Premium quality, easy installation, and reliable propeller locking for improved sailing performance. Trusted by sailors worldwide.' },
+    { name: 'description', content: 'Shaft Lok marine propeller locking systems - premium quality, easy installation, reliable locking for improved sailing performance. Trusted by sailors worldwide since 1979.' },
+    { property: 'og:title', content: 'Shaft Lok - Advanced Propeller Locking Systems' },
+    { property: 'og:description', content: 'Discover ShaftLok\'s innovative marine propeller locking systems. Premium quality, easy installation, and reliable propeller locking for improved sailing performance. Trusted by sailors worldwide.' },
     { property: 'og:image', content: 'https://shaftlok.com/assets/images/Logo_propeller_only.png' },
     { property: 'og:url', content: 'https://shaftlok.com/' },
     { property: 'og:type', content: 'website' },
     { property: 'og:site_name', content: 'Shaft Lok Inc.' },
     { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: 'Shaft Lok - Advanced Propeller Control Systems' },
-    { name: 'twitter:description', content: 'Discover ShaftLok\'s innovative marine propeller control systems. Premium quality, easy installation, and reliable propeller locking for improved sailing performance.' },
+    { name: 'twitter:title', content: 'Shaft Lok - Advanced Propeller Locking Systems' },
+    { name: 'twitter:description', content: 'Discover ShaftLok\'s innovative marine propeller locking systems. Premium quality, easy installation, and reliable propeller locking for improved sailing performance.' },
     { name: 'twitter:image', content: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png' }
   ],
   link: [
@@ -277,7 +277,7 @@ useHead({
         url: 'https://shaftlok.com',
         logo: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png',
         foundingDate: '1979',
-        description: 'Leading manufacturer of innovative marine propeller control systems since 1979. Providing premium quality, easy installation, and reliable propeller locking solutions for improved sailing performance.',
+        description: 'Leading manufacturer of innovative marine propeller locking systems since 1979. Providing premium quality, easy installation, and reliable propeller locking solutions for improved sailing performance.',
         industry: 'Marine Equipment Manufacturing',
         address: {
           '@type': 'PostalAddress',
@@ -291,7 +291,7 @@ useHead({
         sameAs: [],
         hasOfferCatalog: {
           '@type': 'OfferCatalog',
-          name: 'Marine Propeller Control Systems',
+          name: 'Marine Propeller Locking Systems',
           itemListElement: [
             {
               '@type': 'Offer',

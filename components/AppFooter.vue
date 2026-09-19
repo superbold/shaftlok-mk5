@@ -9,8 +9,8 @@
             <span class="footer-wordmark">Shaft Lok</span>
           </div>
           <p>
-            Advanced propeller control systems for marine vessels since 1979.
-            Properly positions, locks and automatically unlocks the propeller —
+            Advanced propeller locking systems for marine vessels since 1979.
+            Properly positions, locks, and automatically unlocks the propeller —
             quickly and easily, without leaving the cockpit.
           </p>
           <div class="footer-badges">

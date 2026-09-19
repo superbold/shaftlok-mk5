@@ -129,7 +129,7 @@ const specs = computed(() => parseProductSpecs(productData.value.specs) ?? [])
 const detailBlocks = computed(() => buildProductDetailBlocks(productData.value))
 
 const metaDescription = computed(() =>
-  productData.value.description || productData.value.summary || `${productData.value.name} — Shaft Lok marine propeller control system.`
+  productData.value.description || productData.value.summary || `${productData.value.name} — Shaft Lok marine propeller locking system.`
 )
 
 const pageUrl = `https://shaftlok.com/products/${props.slug}`

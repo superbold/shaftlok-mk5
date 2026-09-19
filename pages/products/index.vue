@@ -96,16 +96,16 @@ const accessories = computed(() =>
 useHead({
   title: 'Shaft Lok - Products',
   meta: [
-    { name: 'description', content: 'Shaft Lok marine propeller control systems - complete range from Mod I to Mod VI EasyLok. Find the perfect propeller locking system for your vessel. Expert installation support.' },
-    { property: 'og:title', content: 'Shaft Lok Products - Marine Propeller Control Systems' },
-    { property: 'og:description', content: 'Explore ShaftLok\'s complete range of marine propeller control systems. From Mod I EasyLok to high-torque solutions, find the perfect propeller locking system for improved sailing performance.' },
+    { name: 'description', content: 'Shaft Lok marine propeller locking systems - complete range from Mod I to Mod VI EasyLok. Find the perfect propeller locking system for your vessel. Expert installation support.' },
+    { property: 'og:title', content: 'Shaft Lok Products - Marine Propeller Locking Systems' },
+    { property: 'og:description', content: 'Explore ShaftLok\'s complete range of marine propeller locking systems. From Mod I EasyLok to high-torque solutions, find the perfect propeller locking system for improved sailing performance.' },
     { property: 'og:image', content: 'https://shaftlok.com/assets/images/Logo_propeller_only.png' },
     { property: 'og:url', content: 'https://shaftlok.com/products' },
     { property: 'og:type', content: 'website' },
     { property: 'og:site_name', content: 'Shaft Lok Inc.' },
     { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: 'Shaft Lok Products - Marine Propeller Control Systems' },
-    { name: 'twitter:description', content: 'Explore ShaftLok\'s complete range of marine propeller control systems. From Mod I EasyLok to high-torque solutions.' },
+    { name: 'twitter:title', content: 'Shaft Lok Products - Marine Propeller Locking Systems' },
+    { name: 'twitter:description', content: 'Explore ShaftLok\'s complete range of marine propeller locking systems. From Mod I EasyLok to high-torque solutions.' },
     { name: 'twitter:image', content: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png' }
   ],
   link: [

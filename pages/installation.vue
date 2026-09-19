@@ -91,7 +91,7 @@
 useHead({
   title: 'Installation',
   meta: [
-    { name: 'description', content: 'Shaft Lok installation guide - step-by-step instructions for marine propeller control systems. Professional tips, safety procedures, and maintenance. Easy DIY installation.' },
+    { name: 'description', content: 'Shaft Lok installation guide - step-by-step instructions for marine propeller locking systems. Professional tips, safety procedures, and maintenance. Easy DIY installation.' },
     { property: 'og:title', content: 'Shaft Lok Installation - Marine Propeller Control Setup Guide' },
     { property: 'og:description', content: 'Step-by-step installation guides for Shaft Lok marine shaft locking systems. Professional installation tips, safety procedures, and maintenance instructions.' },
     { property: 'og:image', content: 'https://shaftlok.com/assets/images/Logo_propeller_only.png' },
@@ -278,7 +278,7 @@ useHead({
         mainEntityOfPage: 'https://shaftlok.com/installation',
         about: {
           '@type': 'Thing',
-          name: 'Marine Propeller Control Systems',
+          name: 'Marine Propeller Locking Systems',
           description: 'Shaft Lok marine shaft locking systems for boats and yachts'
         },
         category: 'Marine Equipment Installation',

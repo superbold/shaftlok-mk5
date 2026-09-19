@@ -112,7 +112,7 @@ useHead({
         '@id': 'https://shaftlok.com/#organization',
         name: 'Shaft Lok Inc.',
         legalName: 'Shaft Lok Inc.',
-        description: 'Leading manufacturer of innovative marine propeller control systems since 1979. Providing premium quality, easy installation, and reliable propeller locking solutions for improved sailing performance.',
+        description: 'Leading manufacturer of innovative marine propeller locking systems since 1979. Providing premium quality, easy installation, and reliable propeller locking solutions for improved sailing performance.',
         url: 'https://shaftlok.com',
         logo: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png',
         image: 'https://shaftlok.com/assets/images/Logo_ShaftLok_whiteBG-landscape.png',
@@ -167,7 +167,7 @@ useHead({
         sameAs: [],
         hasOfferCatalog: {
           '@type': 'OfferCatalog',
-          name: 'Marine Propeller Control Systems',
+          name: 'Marine Propeller Locking Systems',
           itemListElement: [
             {
               '@type': 'Offer',
