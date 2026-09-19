@@ -37,6 +37,7 @@
             <li><NuxtLink to="/products">All Products</NuxtLink></li>
             <li><NuxtLink to="/yacht-list">Yacht List</NuxtLink></li>
             <li><NuxtLink to="/installation">Installation</NuxtLink></li>
+            <li><NuxtLink to="/emergency-shaft-lok">Emergency Shaft Lok</NuxtLink></li>
             <li><NuxtLink to="/faq">FAQ</NuxtLink></li>
             <li><NuxtLink to="/testimonials">Testimonials</NuxtLink></li>
             <li><NuxtLink to="/about">About Us</NuxtLink></li>

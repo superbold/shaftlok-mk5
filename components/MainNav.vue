@@ -77,6 +77,7 @@
 const mainLinks = [
   { label: 'Products', icon: 'fas fa-cogs', expand: true },
   { to: '/installation', label: 'Installation', icon: 'fas fa-wrench' },
+  { to: '/emergency-shaft-lok', label: 'Emergency Lok', icon: 'fas fa-lock' },
   { to: '/yacht-list', label: 'Yacht List', icon: 'fas fa-ship' },
   { to: '/faq', label: 'FAQ', icon: 'fas fa-question-circle' },
   { to: '/testimonials', label: 'Testimonials', icon: 'fas fa-star' },

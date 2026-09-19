@@ -83,6 +83,11 @@ const faqs = ref([
     question: "How much does Shaft Lok improve sailing performance?",
     answer: "Users typically report improved sailing speed, reduced noise, and smoother sailing experience. The locked propeller reduces drag and prevents the annoying 'free-wheeling' sound during sailing.",
     isOpen: false
+  },
+  {
+    question: "Does Shaft Lok meet specs that require locking the shaft after a bent shaft or damaged reduction gear?",
+    answer: "Yes. Shaft Lok is a provision to lock and secure the propeller shaft from rotation, including in that emergency. If the specification also calls for locking at 5 knots, labeled stowage, or a local placard, see the <a href=\"/emergency-shaft-lok\">emergency Shaft Lok</a> page and include the spec text with your quote.",
+    isOpen: false
   }
 ])
 
@@ -175,6 +180,14 @@ useHead({
               '@type': 'Answer',
               text: 'Shaft Lok features maintenance-free ball bearings and marine-grade materials. Occasional inspection and cleaning are recommended, but no regular maintenance is required under normal operating conditions.'
             }
+          },
+          {
+            '@type': 'Question',
+            name: 'Does Shaft Lok meet specs that require locking the shaft after a bent shaft or damaged reduction gear?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes. Shaft Lok is a provision to lock and secure the propeller shaft from rotation, including in that emergency. If the specification also calls for locking at 5 knots, labeled stowage, or a local placard, see shaftlok.com/emergency-shaft-lok and include the spec text with your quote.'
+            }
           }
         ]
       })
@@ -266,6 +279,12 @@ definePageMeta({
 
 .faq-answer.open > p {
   padding: 0 1.6rem 1.45rem;
+}
+
+.faq-answer :deep(a) {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .faq-cta {
