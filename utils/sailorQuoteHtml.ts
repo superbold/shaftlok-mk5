@@ -98,6 +98,7 @@ export type SailorQuoteWarning = {
 export type SailorQuoteInput = {
   name: string
   email?: string | null
+  company?: string | null
   phone?: string | null
   phone_region?: string | null
   address?: string | null
@@ -135,6 +136,7 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
   const inquiryBody = [
     field('Name', input.name),
     field('Email', input.email),
+    field('Company', input.company),
     field('Phone', phoneLabel(input.phone, input.phone_region)),
     field('Address', input.address),
     field('Yacht Type & Length', input.yacht_type),

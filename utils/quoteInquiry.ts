@@ -1,6 +1,7 @@
 export const emptyQuoteInquiry = () => ({
   name: '',
   email: '',
+  company: '',
   phone: '',
   phone_region: 'us',
   address: '',
@@ -45,6 +46,7 @@ export const inquiryColumnsFromForm = (form: Record<string, unknown>) => {
   return {
     name: String(form.name || '').trim(),
     email: String(form.email || '').trim(),
+    company: blankToNull(form.company),
     phone: blankToNull(form.phone),
     phone_region: (form.phone_region as string) || 'us',
     address: blankToNull(form.address),

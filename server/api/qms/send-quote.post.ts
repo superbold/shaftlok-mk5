@@ -142,6 +142,7 @@ export default defineEventHandler(async (event) => {
   const html = buildSailorQuoteHtml({
     name: quote.name,
     email: quote.email,
+    company: quote.company,
     phone: quote.phone,
     phone_region: quote.phone_region,
     address: quote.address,

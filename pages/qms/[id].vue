@@ -753,6 +753,7 @@ const sailorPreviewHtml = computed(() =>
   buildSailorQuoteHtml({
     name: editForm.value.name || quote.value?.name || '',
     email: editForm.value.email || quote.value?.email || '',
+    company: editForm.value.company,
     phone: editForm.value.phone,
     phone_region: editForm.value.phone_region,
     address: editForm.value.address,

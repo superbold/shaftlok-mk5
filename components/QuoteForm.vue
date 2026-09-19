@@ -33,6 +33,19 @@
     </div>
     <div class="form-row">
       <div class="form-group">
+        <label :for="fid('company')">Company</label>
+        <input
+          :id="fid('company')"
+          :value="modelValue.company"
+          type="text"
+          class="form-control"
+          placeholder="Shipyard, architect, or contractor"
+          @input="updateField('company', $event.target.value)"
+        >
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
         <label :for="fid('phone')">Phone</label>
         <input
           :id="fid('phone')"
