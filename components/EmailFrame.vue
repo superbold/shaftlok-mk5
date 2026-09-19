@@ -12,12 +12,14 @@ const props = defineProps({
 })
 
 const frameEl = ref(null)
+let htmlTimer = null
 
 const FLUSH_CSS = `
 html, body {
   background: transparent !important;
   margin: 0 !important;
   padding: 0 !important;
+  height: auto !important;
 }
 body > div {
   max-width: none !important;
@@ -40,20 +42,38 @@ const flushPreview = () => {
 }
 
 const fitFrameHeight = () => {
-  if (!frameEl.value) return
+  const frame = frameEl.value
+  if (!frame) return
   flushPreview()
-  const doc = frameEl.value.contentDocument
+  const doc = frame.contentDocument
   if (!doc) return
-  frameEl.value.style.height = Math.max(doc.documentElement.scrollHeight + 20, 400) + 'px'
+  // Collapse first so scrollHeight is the content, not the previous iframe box.
+  // Otherwise each srcdoc reload ratchets height upward (scrollHeight ≈ old height + padding).
+  frame.style.height = '0px'
+  const contentHeight = Math.max(
+    doc.documentElement?.scrollHeight ?? 0,
+    doc.body?.scrollHeight ?? 0
+  )
+  frame.style.height = Math.max(contentHeight, 400) + 'px'
+}
+
+const writeHtml = (html) => {
+  if (frameEl.value) frameEl.value.srcdoc = html
 }
 
 onMounted(() => {
-  frameEl.value.srcdoc = props.html
   frameEl.value.addEventListener('load', fitFrameHeight)
+  writeHtml(props.html)
 })
 
 watch(() => props.html, (html) => {
-  if (frameEl.value) frameEl.value.srcdoc = html
+  clearTimeout(htmlTimer)
+  htmlTimer = setTimeout(() => writeHtml(html), 120)
+})
+
+onUnmounted(() => {
+  clearTimeout(htmlTimer)
+  frameEl.value?.removeEventListener('load', fitFrameHeight)
 })
 </script>
 

@@ -85,6 +85,7 @@
               This is the note at the top of the email, after the greeting.
             </p>
           </div>
+          <div class="owner-stack">
           <div class="glass-card action-card message-card">
             <div class="form-group">
               <div class="tabbed-field">
@@ -101,7 +102,6 @@
               <p v-if="needsMessage" class="field-hint">Required before send.</p>
             </div>
           </div>
-        </section>
 
         <section id="inquiry-section" class="detail-section">
           <div class="workspace-head inquiry-head">
@@ -355,6 +355,8 @@
                 <p class="preview-text">{{ PAYMENT_INFO.support }}</p>
               </div>
             </div>
+          </div>
+        </section>
           </div>
         </section>
           </div>
@@ -1113,6 +1115,13 @@ useHead({
   container-type: inline-size;
 }
 
+.owner-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
 .customer-col {
   display: flex;
   flex-direction: column;
@@ -1189,10 +1198,7 @@ useHead({
     grid-template-columns: minmax(0, 1.08fr) minmax(24rem, 0.92fr);
     grid-template-areas:
       "message-head customer-head"
-      "message-body customer-preview"
-      "inquiry-head customer-preview"
-      "inquiry-body customer-preview"
-      "quote customer-preview";
+      "owner-stack customer-preview";
     column-gap: 1.5rem;
     row-gap: 0.5rem;
     align-items: start;
@@ -1200,18 +1206,14 @@ useHead({
 
   .owner-pane,
   #message-section,
-  #inquiry-section,
   .customer-col {
     display: contents;
   }
 
   .message-head { grid-area: message-head; }
-  .message-card { grid-area: message-body; min-width: 0; }
-  .inquiry-head { grid-area: inquiry-head; }
-  .inquiry-card { grid-area: inquiry-body; min-width: 0; }
-  #quote-section { grid-area: quote; }
+  .owner-stack { grid-area: owner-stack; min-width: 0; gap: 0.5rem; }
   .customer-pane-head { grid-area: customer-head; }
-  .customer-preview { grid-area: customer-preview; min-width: 0; }
+  .customer-preview { grid-area: customer-preview; min-width: 0; align-self: start; }
 }
 
 .detail-head {
@@ -1464,7 +1466,7 @@ dl { margin: 0; }
   color: #5EEAD4;
 }
 
-textarea.form-control { resize: vertical; }
+textarea.form-control { resize: vertical; field-sizing: fixed; }
 
 .line-item-head,
 .line-item-row {
