@@ -112,15 +112,6 @@
           </div>
 
           <form class="glass-card action-card inquiry-card" @submit.prevent="saveQuote">
-            <div class="worksheet-toolbar">
-              <div v-if="saveMessage" class="save-message" :class="{ 'save-error': saveError }">{{ saveMessage }}</div>
-              <div class="action-buttons">
-                <button type="submit" class="btn btn-secondary" :disabled="saving">
-                  <i class="fas fa-spinner fa-spin" v-if="saving"></i>
-                  {{ saving ? 'Saving...' : 'Save' }}
-                </button>
-              </div>
-            </div>
             <p v-if="quote.custom_bore_requested" class="field-hint">
               This sailor checked Custom Bore on an older RFQ. Add it under Items Quoted if they still need it.
             </p>
@@ -129,12 +120,6 @@
               id-prefix="inquiry"
               notes-placeholder="Anything from the call or email…"
             />
-            <div class="action-buttons">
-              <button type="submit" class="btn btn-secondary" :disabled="saving">
-                <i class="fas fa-spinner fa-spin" v-if="saving"></i>
-                {{ saving ? 'Saving...' : 'Save' }}
-              </button>
-            </div>
           </form>
         </section>
 
@@ -1817,12 +1802,6 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
   font-size: 0.85rem;
   color: var(--text-low);
   margin: -0.3rem 0 0;
-}
-
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
 }
 
 .btn {
