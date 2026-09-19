@@ -50,9 +50,18 @@
                   QUOTE #
                   <i class="fas fa-sort" :class="getSortIcon('quote_number')"></i>
                 </th>
-                <th @click="sortBy('name')" class="sortable">
-                  SAILOR
-                  <i class="fas fa-sort" :class="getSortIcon('name')"></i>
+                <th class="sortable sailor-sort-th">
+                  <button
+                    type="button"
+                    class="sailor-sort-trigger"
+                    aria-haspopup="menu"
+                    :aria-expanded="sailorSortOpen"
+                    title="Sort by Sailor or Company"
+                    @click.stop="toggleSailorSortMenu"
+                  >
+                    SAILOR
+                    <i class="fas fa-sort" :class="sailorSortIcon"></i>
+                  </button>
                 </th>
                 <th>YACHT</th>
                 <th @click="sortBy('created_at')" class="sortable">
@@ -81,7 +90,12 @@
                 :title="quote.read_at ? undefined : 'Unread inquiry'"
               >
                 <td :data-cell="'quote #'">{{ quoteNumberOf(quote) || '—' }}</td>
-                <td :data-cell="'sailor'">{{ quote.name }}</td>
+                <td :data-cell="'sailor'">
+                  <span class="sailor-stack">
+                    <span class="sailor-name">{{ quote.name }}</span>
+                    <span v-if="companyOf(quote)" class="sailor-company">{{ companyOf(quote) }}</span>
+                  </span>
+                </td>
                 <td :data-cell="'yacht'">{{ [quote.yacht_type, quote.yacht_name].filter(Boolean).join(' — ') || '—' }}</td>
                 <td :data-cell="'submitted'">{{ formatDate(quote.created_at) }}</td>
                 <td :data-cell="'sent'">{{ formatDate(quote.sent_at) }}</td>
@@ -106,6 +120,40 @@
         </div>
       </template>
     </div>
+
+    <Teleport to="body">
+      <div v-if="sailorSortOpen" class="sort-bubble-backdrop" @click="sailorSortOpen = false">
+        <div
+          class="sort-bubble glass-card"
+          role="menu"
+          aria-label="Sort by Sailor or Company"
+          :style="sailorSortBubbleStyle"
+          @click.stop
+        >
+          <p class="sort-bubble-label">Sort by</p>
+          <button
+            type="button"
+            role="menuitem"
+            class="sort-bubble-option"
+            :class="{ 'is-active': sortColumn === 'name' }"
+            @click="sortBySailorField('name')"
+          >
+            Sailor
+            <i v-if="sortColumn === 'name'" class="fas" :class="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            class="sort-bubble-option"
+            :class="{ 'is-active': sortColumn === 'company' }"
+            @click="sortBySailorField('company')"
+          >
+            Company
+            <i v-if="sortColumn === 'company'" class="fas" :class="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+          </button>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -129,6 +177,15 @@ const error = ref(null)
 const statusFilter = ref('all')
 const sortColumn = ref('created_at')
 const sortDirection = ref('desc')
+const sailorSortOpen = ref(false)
+const sailorSortBubbleStyle = ref({})
+
+const companyOf = (quote) => String(quote?.company || '').trim()
+
+const sailorSortIcon = computed(() => {
+  if (sortColumn.value !== 'name' && sortColumn.value !== 'company') return ''
+  return sortDirection.value === 'asc' ? 'fa-sort-up' : 'fa-sort-down'
+})
 
 const statusLabel = quoteStatusLabel
 
@@ -188,11 +245,26 @@ const filteredQuotes = computed(() => {
       (q.email || '').toLowerCase().includes(search) ||
       (q.yacht_type || '').toLowerCase().includes(search) ||
       (q.yacht_name || '').toLowerCase().includes(search) ||
+      (q.company || '').toLowerCase().includes(search) ||
       quoteNumberOf(q).toLowerCase().includes(search)
     )
   }
 
   filtered = [...filtered].sort((a, b) => {
+    if (sortColumn.value === 'company') {
+      const aCo = companyOf(a)
+      const bCo = companyOf(b)
+      if (!aCo && !bCo) {
+        return (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' })
+      }
+      if (!aCo) return 1
+      if (!bCo) return -1
+      const byCompany = aCo.localeCompare(bCo, undefined, { numeric: true, sensitivity: 'base' })
+      const ordered = sortDirection.value === 'asc' ? byCompany : -byCompany
+      if (ordered !== 0) return ordered
+      return (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' })
+    }
+
     const aVal = sortColumn.value === 'quote_number' ? quoteNumberOf(a) : (a[sortColumn.value] || '')
     const bVal = sortColumn.value === 'quote_number' ? quoteNumberOf(b) : (b[sortColumn.value] || '')
     const result = aVal.toString().localeCompare(bVal.toString(), undefined, { numeric: true })
@@ -231,6 +303,21 @@ const sortBy = (column) => {
     sortColumn.value = column
     sortDirection.value = 'asc'
   }
+}
+
+const toggleSailorSortMenu = (event) => {
+  sailorSortOpen.value = !sailorSortOpen.value
+  if (!sailorSortOpen.value) return
+  const rect = event.currentTarget.getBoundingClientRect()
+  sailorSortBubbleStyle.value = {
+    top: `${Math.round(rect.bottom + 6)}px`,
+    left: `${Math.round(rect.left)}px`
+  }
+}
+
+const sortBySailorField = (column) => {
+  sortBy(column)
+  sailorSortOpen.value = false
 }
 
 const getSortIcon = (column) => {
@@ -372,6 +459,95 @@ useHead({
 }
 
 .delete-icon-btn:hover { background: rgba(248, 113, 113, 0.22); }
+
+.sailor-sort-th {
+  position: relative;
+}
+
+.sailor-sort-trigger {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.sailor-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.sailor-name {
+  color: var(--text-hi);
+  font-weight: 500;
+}
+
+.sailor-company {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--text-low);
+  line-height: 1.25;
+}
+
+.sort-bubble-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+}
+
+.sort-bubble {
+  position: fixed;
+  z-index: 1201;
+  min-width: 11.5rem;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sort-bubble-label {
+  margin: 0 0.55rem 0.2rem;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+
+.sort-bubble-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-hi);
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.5rem 0.65rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sort-bubble-option:hover,
+.sort-bubble-option.is-active {
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.sort-bubble-option.is-active {
+  color: var(--accent);
+}
 
 @media (max-width: 960px) {
   .pipeline-strip {
