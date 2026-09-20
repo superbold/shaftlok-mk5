@@ -100,7 +100,15 @@
                 <td :data-cell="'submitted'">{{ formatDate(quote.created_at) }}</td>
                 <td :data-cell="'sent'">{{ formatDate(quote.sent_at) }}</td>
                 <td :data-cell="'status'">
-                  <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
+                  <span class="status-cell">
+                    <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
+                    <span
+                      v-if="quote.payment_token || quote.sent_html"
+                      class="status-badge"
+                      :class="`payment-${quote.payment_status || 'unpaid'}`"
+                      :title="paymentStatusDescription(quote.payment_status || 'unpaid')"
+                    >{{ paymentStatusLabel(quote.payment_status || 'unpaid') }}</span>
+                  </span>
                 </td>
                 <td :data-cell="'price'">{{ formatQuoteTotal(quote) }}</td>
                 <td :data-cell="'actions'" class="actions-cell">
@@ -160,6 +168,7 @@
 <script setup>
 import { ref, computed, onMounted, inject } from 'vue'
 import { quoteNumberFor } from '~~/utils/quoteNumber'
+import { paymentStatusDescription, paymentStatusLabel } from '~~/utils/quotePayment'
 
 definePageMeta({
   layout: 'qms-layout',
@@ -441,6 +450,18 @@ useHead({
 .status-followed_up { background: var(--status-followed_up-bg); color: var(--status-followed_up-fg); }
 .status-won { background: var(--status-won-bg); color: var(--status-won-fg); }
 .status-dead { background: var(--status-dead-bg); color: var(--status-dead-fg); }
+
+.status-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.payment-unpaid { background: var(--payment-unpaid-bg); color: var(--payment-unpaid-fg); }
+.payment-pending { background: var(--payment-pending-bg); color: var(--payment-pending-fg); }
+.payment-paid { background: var(--payment-paid-bg); color: var(--payment-paid-fg); }
+.payment-failed { background: var(--payment-failed-bg); color: var(--payment-failed-fg); }
+.payment-expired { background: var(--payment-expired-bg); color: var(--payment-expired-fg); }
 
 .actions-cell { width: 1%; }
 

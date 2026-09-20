@@ -6,10 +6,6 @@ Prioritized open work for Shaft Lok MK5. Completed items live at the bottom unde
 
 ## Next up (P1 — owner workflow)
 
-### Update quote banking details
-
-Owner wants payment block on sailor quote emails to use the Shaft Lok bank account.
-
 ### Product/MOD price history
 
 Owner wants to track MOD and locking-system price changes over time (materials, machining, etc.) without losing history.
@@ -72,6 +68,10 @@ PWA features and further image optimization.
 ---
 
 ## Done
+
+### Stripe quote payments (Associated Bank OBE) ✓
+
+Sailor emails link to `/pay/:token`. Card = quoted total + 3% (added on Shaft Lok before Stripe). Bank transfer = quoted total. Webhook marks paid → Won. Migration: `20260921_add_quote_stripe_payment.sql`.
 
 ### Attach Shaft Lok Library docs to quote emails ✓
 

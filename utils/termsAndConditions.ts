@@ -4,6 +4,7 @@ export const TERMS_AND_CONDITIONS = [
   'No unit design changes will be accepted after order placement.',
   'Milwaukee, Wisconsin will be the location for any legal disputes.',
   'Full payment required to place an order.',
+  'Card payments include a 3% processing fee. Bank transfer is charged at the quoted total.',
   'Shaft Lok Incorporated retains confidential ownership of the design of the products. The design can only be disclosed to others with our explicit consent.',
   'Ownership goes to the customer upon shipment.',
   'Returns are not accepted due to the custom nature of the product.',

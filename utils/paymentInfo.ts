@@ -1,18 +1,22 @@
+import {
+  CARD_SURCHARGE_PERCENT_LABEL,
+  formatUsd,
+  quotePaymentTotals
+} from '~/utils/quotePayment'
+
 export const PAYMENT_INFO = {
-  intro: 'Orders are to be paid in advance. Credit cards are not accepted because of international security “hacking” issues and cost.',
-  method: 'Please pay by bank wire transfer:',
-  bank: {
-    name: 'Associated Bank N.A.',
-    phone: '1 800 236 8866',
-    swift: 'ABGBUS44',
-    routing: '075900575',
-    address: '2870 Holmgren Way, Green Bay, WI 54304'
-  },
-  beneficiary: {
-    accountNumber: '2176871586',
-    accountType: 'Savings Account',
-    name: 'Kenneth R. Nigel',
-    address: '13225 W. Foxwood Drive, New Berlin, WI 53151 USA'
-  },
-  support: 'If your bank requires further assistance, please have them contact Associated Bank Customer Care Department at 1-800-236-8866, 24 hours a day, 7 days a week.'
+  intro: 'Orders are to be paid in advance through Stripe. You can pay by bank transfer at the quoted total, or by card with a 3% processing fee.',
+  method: 'Click Pay this quote, then choose bank transfer or card. You will see both amounts again before you are sent to Stripe.',
+  support: 'Questions about paying? Reply to this email and we will help.'
+}
+
+export const paymentCopyForTotal = (productsPrice: number, shippingPrice = 0) => {
+  const totals = quotePaymentTotals(productsPrice, shippingPrice)
+  return {
+    intro: `Orders are to be paid in advance. Pay by bank transfer for ${formatUsd(totals.grandTotal)} (no extra fee), or by card for ${formatUsd(totals.cardTotal)}.`,
+    surchargeWarning: `Card payments include a ${CARD_SURCHARGE_PERCENT_LABEL} processing fee of ${formatUsd(totals.surcharge)}. That fee is added on our site before you go to Stripe — Stripe will not add another charge. Bank transfer is charged at the quoted total.`,
+    method: PAYMENT_INFO.method,
+    support: PAYMENT_INFO.support,
+    totals
+  }
 }

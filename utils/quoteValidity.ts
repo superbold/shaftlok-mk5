@@ -17,3 +17,10 @@ export const formatQuoteValidUntil = (
   if (!validUntil) return ''
   return validUntil.toLocaleDateString('en-US', options)
 }
+
+export const isQuoteStillValid = (sentAt?: string | Date | null) => {
+  if (!sentAt) return false
+  const validUntil = getQuoteValidUntilDate(sentAt)
+  if (!validUntil) return false
+  return Date.now() <= validUntil.getTime()
+}

@@ -20,9 +20,16 @@
               <div class="detail-identity-row">
                 <h1>{{ editForm.name || quote.name }}</h1>
                 <span class="status-badge" :class="`status-${quote.status}`" :title="quoteStatusDescription(quote.status)">{{ statusLabel(quote.status) }}</span>
+                <span
+                  v-if="quote.payment_token || quote.sent_html"
+                  class="status-badge"
+                  :class="`payment-${quote.payment_status || 'unpaid'}`"
+                  :title="paymentStatusDescription(quote.payment_status || 'unpaid')"
+                >{{ paymentStatusLabel(quote.payment_status || 'unpaid') }}</span>
               </div>
               <p class="detail-sub">
                 <span v-if="displayedQuoteNumber">{{ displayedQuoteNumber }} · </span>{{ editForm.email || quote.email }} · submitted {{ formatDate(quote.created_at) }}
+                <template v-if="quote.paid_at"> · paid {{ formatDate(quote.paid_at) }}<template v-if="quote.amount_charged != null"> {{ formatMoney(quote.amount_charged) }}</template></template>
               </p>
             </div>
 
@@ -43,6 +50,15 @@
                   <i class="fas fa-spinner fa-spin" v-if="sending"></i>
                   <i class="fas fa-paper-plane" v-else></i>
                   {{ sending ? 'Sending...' : 'Send Quote' }}
+                </button>
+                <button
+                  v-if="sailorPayUrl"
+                  type="button"
+                  class="btn btn-secondary"
+                  @click="copyPayLink"
+                >
+                  <i class="fas fa-link"></i>
+                  Copy pay link
                 </button>
                 <template v-if="postSendStatuses.includes(quote.status)">
                   <button type="button" class="btn btn-won" :disabled="deciding" @click="markDecision('won')">Mark Won</button>
@@ -382,12 +398,10 @@
             <div class="form-group">
               <label>Payment Info Sent With Every Quote</label>
               <div class="preview-block">
-                <p class="preview-text">{{ PAYMENT_INFO.intro }}</p>
-                <p class="preview-text">{{ PAYMENT_INFO.method }}</p>
-                <p class="preview-text">{{ PAYMENT_INFO.bank.name }}, {{ PAYMENT_INFO.bank.phone }} · Swift {{ PAYMENT_INFO.bank.swift }} · Routing {{ PAYMENT_INFO.bank.routing }}</p>
-                <p class="preview-text">{{ PAYMENT_INFO.bank.address }}</p>
-                <p class="preview-text">{{ PAYMENT_INFO.beneficiary.name }} — {{ PAYMENT_INFO.beneficiary.accountType }} #{{ PAYMENT_INFO.beneficiary.accountNumber }}</p>
-                <p class="preview-text">{{ PAYMENT_INFO.support }}</p>
+                <p class="preview-text">{{ paymentPreview.intro }}</p>
+                <p class="preview-text preview-warn">{{ paymentPreview.surchargeWarning }}</p>
+                <p class="preview-text">{{ paymentPreview.method }}</p>
+                <p class="preview-text">{{ paymentPreview.support }}</p>
               </div>
             </div>
           </div>
@@ -441,7 +455,7 @@
           <div class="modal-content" @click.stop>
             <h2 class="modal-title">Send Quote to Sailor</h2>
             <p class="modal-text">
-              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive your message, their inquiry details, items quoted, payment instructions, terms, and the quote total by email.
+              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive your message, their inquiry details, items quoted, a Stripe pay link (card includes a 3% fee), terms, and the quote total by email.
               <template v-if="selectedAttachmentCount"> {{ selectedAttachmentCount }} library document{{ selectedAttachmentCount === 1 ? '' : 's' }} will be attached.</template>
             </p>
             <div class="modal-actions">
@@ -520,6 +534,8 @@ import {
   quotedItemsNetTotal
 } from '~~/utils/quoteLineItem'
 import { buildSailorQuoteHtml, restyleSentSailorQuoteHtml } from '~~/utils/sailorQuoteHtml'
+import { paymentCopyForTotal } from '~~/utils/paymentInfo'
+import { paymentStatusDescription, paymentStatusLabel } from '~~/utils/quotePayment'
 
 definePageMeta({
   layout: 'qms-layout',
@@ -597,6 +613,14 @@ const toggleAttachment = (id, checked) => {
 const statusLabel = quoteStatusLabel
 const formatDate = (value) => value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
 const formatMoney = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value) || 0)
+const runtimeConfig = useRuntimeConfig()
+const siteUrl = computed(() => String(runtimeConfig.public.siteUrl || 'https://shaftlok.com').replace(/\/$/, ''))
+const sailorPayUrl = computed(() =>
+  quote.value?.payment_token ? `${siteUrl.value}/pay/${quote.value.payment_token}` : ''
+)
+const paymentPreview = computed(() =>
+  paymentCopyForTotal(productsSubtotal.value ?? 0, parseMoneyField(editForm.value.shipping_price) ?? 0)
+)
 const quoteValidUntilLabel = computed(() =>
   quote.value?.sent_at ? formatQuoteValidUntil(quote.value.sent_at, { month: 'short', day: 'numeric', year: 'numeric' }) : ''
 )
@@ -1004,7 +1028,8 @@ const sailorPreviewHtml = computed(() =>
           }
     )),
     warnings: applicableWarnings.value,
-    valid_until_label: formatQuoteValidUntil(new Date())
+    valid_until_label: formatQuoteValidUntil(new Date()),
+    pay_url: sailorPayUrl.value || null
   })
 )
 
@@ -1072,6 +1097,18 @@ const sendRequirementsHint = computed(() => {
   const rest = missing.slice(0, -1)
   return `Before sending, you still need ${rest.join(', ')} and ${last}.`
 })
+
+const copyPayLink = async () => {
+  if (!sailorPayUrl.value) return
+  try {
+    await navigator.clipboard.writeText(sailorPayUrl.value)
+    saveError.value = false
+    saveMessage.value = 'Payment link copied.'
+  } catch (err) {
+    saveError.value = true
+    saveMessage.value = 'Could not copy the payment link.'
+  }
+}
 
 const normalizeLineItems = (items) => serializeLineItems(items)
 
@@ -1988,6 +2025,8 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
   line-height: 1.55;
 }
 
+.preview-warn { color: var(--gold); }
+
 .preview-text:last-child { margin-bottom: 0; }
 
 .preview-terms {
@@ -2193,5 +2232,11 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
 .status-followed_up { background: var(--status-followed_up-bg); color: var(--status-followed_up-fg); }
 .status-won { background: var(--status-won-bg); color: var(--status-won-fg); }
 .status-dead { background: var(--status-dead-bg); color: var(--status-dead-fg); }
+
+.payment-unpaid { background: var(--payment-unpaid-bg); color: var(--payment-unpaid-fg); }
+.payment-pending { background: var(--payment-pending-bg); color: var(--payment-pending-fg); }
+.payment-paid { background: var(--payment-paid-bg); color: var(--payment-paid-fg); }
+.payment-failed { background: var(--payment-failed-bg); color: var(--payment-failed-fg); }
+.payment-expired { background: var(--payment-expired-bg); color: var(--payment-expired-fg); }
 
 </style>

@@ -5,7 +5,7 @@
     <div class="section-head" v-reveal>
       <span class="eyebrow"><i class="fas fa-shield-alt"></i> Legal</span>
       <h1>Privacy <span class="shaftlok-font grad-text">Policy</span></h1>
-      <p>Last updated: June 2026</p>
+      <p>Last updated: September 2026</p>
     </div>
 
     <div class="privacy-wrap">
@@ -20,18 +20,23 @@
         <h3>Quote request form</h3>
         <p>When you submit a quote request we collect your name, email address, and the vessel details you provide (yacht type, propeller specs, engine information, etc.). This information is used solely to prepare and send you a product quote. We do not add you to any mailing list.</p>
 
+        <h3>Payments</h3>
+        <p>If you pay a quote online, the payment is processed by <strong>Stripe</strong> (<a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe Privacy Policy</a>). We send Stripe your name, email, and the quote line items and amounts so they can collect the charge. Card details are entered on Stripe’s page — Shaft Lok does not see or store card numbers. Bank transfer instructions are issued by Stripe, not by our bank.</p>
+
         <h3>Analytics</h3>
         <p>We use Google Analytics 4 to understand how visitors use our site (pages visited, general location, device type). IP addresses are anonymized. This data is aggregated and not linked to any individual. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a> for details on how Google handles this data.</p>
 
         <h2>How we use your data</h2>
         <ul>
           <li>To respond to your quote request by email</li>
+          <li>To collect payment for an accepted quote</li>
           <li>To improve our website based on aggregated analytics</li>
         </ul>
         <p>We do not sell, rent, or share your personal data with third parties for marketing purposes.</p>
 
         <h2>Third-party processors</h2>
         <p>Your quote request is transmitted via <strong>Resend</strong> (resend.com), an email delivery service. Only the information you submit in the form is passed to Resend for the purpose of delivery. Resend is compliant with applicable data protection regulations.</p>
+        <p>Online payments are processed by <strong>Stripe</strong> (stripe.com). Stripe is a payment processor; we do not receive your full card number or bank login credentials.</p>
 
         <h2>Data retention</h2>
         <p>Quote request emails are retained in our email inbox for as long as needed to fulfill your request and for reasonable follow-up. We do not store your form data in any database beyond the email record itself.</p>

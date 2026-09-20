@@ -36,6 +36,17 @@
     --status-dead-bg: rgba(248, 113, 113, 0.16);
     --status-dead-fg: #FCA5A5;
 
+    --payment-unpaid-bg: rgba(148, 197, 255, 0.12);
+    --payment-unpaid-fg: #A8BEDC;
+    --payment-pending-bg: rgba(245, 198, 107, 0.16);
+    --payment-pending-fg: var(--gold);
+    --payment-paid-bg: rgba(74, 222, 128, 0.18);
+    --payment-paid-fg: #4ADE80;
+    --payment-failed-bg: rgba(248, 113, 113, 0.16);
+    --payment-failed-fg: #FCA5A5;
+    --payment-expired-bg: rgba(148, 197, 255, 0.12);
+    --payment-expired-fg: #A8BEDC;
+
     /* --- Glass surfaces --- */
     --glass: rgba(13, 27, 54, 0.62);
     --glass-hi: rgba(20, 40, 76, 0.72);

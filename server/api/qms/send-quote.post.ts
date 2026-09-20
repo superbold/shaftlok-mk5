@@ -5,6 +5,7 @@ import { formatQuoteValidUntil } from '~/utils/quoteValidity'
 import { formatQuoteNumber, quoteNumberFor } from '~/utils/quoteNumber'
 import { clampDiscountPercent, customLineNeedsName, isDiscountLine, parseLineQty, quotedItemsNetTotal } from '~/utils/quoteLineItem'
 import { buildSailorQuoteHtml } from '~/utils/sailorQuoteHtml'
+import { getStripe, newPaymentToken, quotePayUrl } from '~~/server/utils/stripePay'
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event)
@@ -77,6 +78,8 @@ export default defineEventHandler(async (event) => {
   if (!apiKey) {
     throw createError({ statusCode: 500, statusMessage: 'Email service is not configured.' })
   }
+
+  getStripe()
 
   const resend = new Resend(apiKey)
 
@@ -155,6 +158,15 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  const paymentToken = quote.payment_token || newPaymentToken()
+  if (quote.stripe_checkout_session_id && quote.payment_status !== 'paid' && quote.payment_status !== 'pending') {
+    try {
+      await getStripe().checkout.sessions.expire(quote.stripe_checkout_session_id)
+    } catch (error) {
+      console.warn('Could not expire previous Checkout session before re-send:', error)
+    }
+  }
+
   const html = buildSailorQuoteHtml({
     name: quote.name,
     email: quote.email,
@@ -184,7 +196,8 @@ export default defineEventHandler(async (event) => {
     products_price: productsPrice,
     line_items: normalizedLineItems,
     warnings: getApplicableWarnings(normalizedLineItems),
-    valid_until_label: validUntilLabel
+    valid_until_label: validUntilLabel,
+    pay_url: quotePayUrl(paymentToken)
   })
 
   await resend.emails.send({
@@ -213,6 +226,10 @@ export default defineEventHandler(async (event) => {
       sent_shipping_price: quote.shipping_price,
       sent_shipping_notes: quote.shipping_notes,
       sent_attachment_ids: attachmentIds,
+      payment_token: paymentToken,
+      ...(quote.payment_status === 'paid' || quote.payment_status === 'pending'
+        ? {}
+        : { stripe_checkout_session_id: null }),
       updated_at: sentAt
     })
     .eq('id', quoteId)

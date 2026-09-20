@@ -199,6 +199,10 @@ export type Database = {
           notes: string | null
           num_blades: string | null
           num_propellers: string | null
+          paid_at: string | null
+          payment_method: string | null
+          payment_status: string
+          payment_token: string | null
           phone: string | null
           phone_region: string | null
           prop_diameter: string | null
@@ -210,6 +214,11 @@ export type Database = {
           quoted_price: number | null
           read_at: string | null
           sent_at: string | null
+          amount_charged: number | null
+          surcharge_amount: number | null
+          stripe_checkout_session_id: string | null
+          stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
           sent_attachment_ids: string[] | null
           sent_html: string | null
           sent_line_items: Json | null
@@ -245,6 +254,10 @@ export type Database = {
           notes?: string | null
           num_blades?: string | null
           num_propellers?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          payment_token?: string | null
           phone?: string | null
           phone_region?: string | null
           prop_diameter?: string | null
@@ -256,6 +269,11 @@ export type Database = {
           quoted_price?: number | null
           read_at?: string | null
           sent_at?: string | null
+          amount_charged?: number | null
+          surcharge_amount?: number | null
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
           sent_attachment_ids?: string[] | null
           sent_html?: string | null
           sent_line_items?: Json | null
@@ -291,6 +309,10 @@ export type Database = {
           notes?: string | null
           num_blades?: string | null
           num_propellers?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          payment_token?: string | null
           phone?: string | null
           phone_region?: string | null
           prop_diameter?: string | null
@@ -302,6 +324,11 @@ export type Database = {
           quoted_price?: number | null
           read_at?: string | null
           sent_at?: string | null
+          amount_charged?: number | null
+          surcharge_amount?: number | null
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
           sent_attachment_ids?: string[] | null
           sent_html?: string | null
           sent_line_items?: Json | null

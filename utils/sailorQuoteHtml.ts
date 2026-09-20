@@ -1,4 +1,4 @@
-import { PAYMENT_INFO } from '~/utils/paymentInfo'
+import { paymentCopyForTotal } from '~/utils/paymentInfo'
 import {
   clampDiscountPercent,
   CUSTOM_ITEM_LINE_NAME,
@@ -134,6 +134,7 @@ export type SailorQuoteInput = {
   line_items: SailorQuoteLineItem[]
   warnings: SailorQuoteWarning[]
   valid_until_label: string
+  pay_url?: string | null
 }
 
 export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
@@ -220,21 +221,26 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
     ).join('')
   )
 
+  const paymentCopy = paymentCopyForTotal(input.products_price, input.shipping_price)
+  const payHref = String(input.pay_url || '').trim()
+  const payButton = payHref
+    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:16px 0 4px">
+          <tr>
+            <td style="border-radius:8px;background:#38BDF8">
+              <a href="${escapeHtml(payHref)}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:sans-serif;font-size:15px;font-weight:700;color:#04101C;text-decoration:none">Pay this quote</a>
+            </td>
+          </tr>
+        </table>
+        <p style="margin:8px 0 0;font-family:sans-serif;font-size:12px;color:#6B7FA8;line-height:1.6">You will choose bank transfer or card on the next page. Card total ${money(paymentCopy.totals.cardTotal)} includes the 3% fee.</p>`
+    : ''
+
   const paymentHtml = card(
     'Payment',
-    `<p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6">${PAYMENT_INFO.intro}</p>
-        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6">${PAYMENT_INFO.method}</p>
-        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.7">
-          Bank: ${PAYMENT_INFO.bank.name}, Phone ${PAYMENT_INFO.bank.phone.replace(/ /g, '&nbsp;')}<br>
-          Swift ${PAYMENT_INFO.bank.swift} &nbsp;&nbsp; ABA Routing No: ${PAYMENT_INFO.bank.routing}<br>
-          ${PAYMENT_INFO.bank.address}
-        </p>
-        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.7">
-          Beneficiary:<br>
-          Account Number: ${PAYMENT_INFO.beneficiary.accountNumber}, ${PAYMENT_INFO.beneficiary.accountType}<br>
-          Name: ${PAYMENT_INFO.beneficiary.name}, ${PAYMENT_INFO.beneficiary.address}
-        </p>
-        <p style="margin:0;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6">${PAYMENT_INFO.support}</p>`
+    `<p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6">${escapeHtml(paymentCopy.intro)}</p>
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#F5C66B;line-height:1.6">${escapeHtml(paymentCopy.surchargeWarning)}</p>
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6">${escapeHtml(paymentCopy.method)}</p>
+        ${payButton}
+        <p style="margin:${payButton ? '12px' : '0'} 0 0;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6">${escapeHtml(paymentCopy.support)}</p>`
   )
 
   const totalHtml = `
@@ -256,6 +262,9 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
         </table>
         <p style="margin:14px 0 0;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6">
           This quote is valid until <strong style="color:#EFF6FF">${escapeHtml(input.valid_until_label)}</strong>. After that date, prices and terms may change.
+        </p>
+        <p style="margin:10px 0 0;font-family:sans-serif;font-size:13px;color:#F5C66B;line-height:1.6">
+          Bank transfer ${money(grandTotal)}. Card ${money(paymentCopy.totals.cardTotal)} (includes a 3% processing fee of ${money(paymentCopy.totals.surcharge)}).
         </p>
       </div>`
 

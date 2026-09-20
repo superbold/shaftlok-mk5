@@ -13,12 +13,19 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/adminaccess',
       callback: '/yacht-list',
-      exclude: ['/', '/adminaccess', '/reset-password', '/products/manage', '/products', '/installation', '/emergency-shaft-lok', '/contact', '/quote', '/privacy', '/terms', '/faq', '/testimonials', '/about']
+      exclude: ['/', '/adminaccess', '/reset-password', '/products/manage', '/products', '/installation', '/emergency-shaft-lok', '/contact', '/quote', '/privacy', '/terms', '/faq', '/testimonials', '/about', '/pay']
     },
     clientOptions: {
       auth: {
         flowType: 'implicit'
       }
+    }
+  },
+  runtimeConfig: {
+    stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://shaftlok.com'
     }
   },
   css: [
