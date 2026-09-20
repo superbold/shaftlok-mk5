@@ -28,6 +28,7 @@
             <li><NuxtLink to="/products/mod-vi">Mod VI - Custom</NuxtLink></li>
             <li><NuxtLink to="/products/marine-control-cable">Marine Control Cable</NuxtLink></li>
             <li><NuxtLink to="/products/simple-spring-locking-system">Spring Locking System</NuxtLink></li>
+            <li><NuxtLink to="/products/replacement-pins">Replacement Pins</NuxtLink></li>
           </ul>
         </div>
 

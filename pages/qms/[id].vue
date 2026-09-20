@@ -946,6 +946,7 @@ const detailPlaceholder = (slug) => {
   if (slug === CUSTOM_ITEM_SLUG) return 'optional note'
   if (slug === 'marine-control-cable') return 'e.g. 15 ft'
   if (slug === 'custom-bore') return 'e.g. Mod III / port shaft'
+  if (slug === 'replacement-pins') return 'e.g. Mod II'
   return 'optional note'
 }
 

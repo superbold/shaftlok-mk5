@@ -5,7 +5,7 @@
     <div class="section-head" v-reveal>
       <span class="eyebrow"><i class="fas fa-fan"></i> Product catalog</span>
       <h1><span class="shaftlok-font grad-text">Shaft Lok</span> Products</h1>
-      <p>Eight locking systems and control accessories — covering every shaft from 45&nbsp;mm sailboats to 200&nbsp;mm mega-yachts, plus custom bore machining when you need a non-stock fit.</p>
+      <p>Locking units, controls, and spare parts — covering every shaft from 45&nbsp;mm sailboats to 200&nbsp;mm mega-yachts.</p>
     </div>
 
     <div v-if="productsError" class="fetch-error">
@@ -22,7 +22,7 @@
         class="product-card glass-card hoverable"
         v-reveal="(i % 3) * 100"
       >
-        <div class="card-media">
+        <div class="card-media" :class="{ 'card-media-contain': product.containImage }">
           <img :src="product.image" :alt="product.alt" loading="lazy">
           <span v-if="product.badge" class="card-badge">{{ product.badge }}</span>
         </div>
@@ -46,7 +46,7 @@
         class="product-card glass-card hoverable"
         v-reveal="(i % 3) * 100"
       >
-        <div class="card-media">
+        <div class="card-media" :class="{ 'card-media-contain': product.containImage }">
           <img :src="product.image" :alt="product.alt" loading="lazy">
         </div>
         <div class="card-body">
@@ -79,6 +79,7 @@ const mapProduct = (product) => ({
   ...product,
   to: `/products/${product.slug}`,
   image: product.image_url,
+  containImage: product.slug === 'replacement-pins',
   bore: product.max_bore_size_mm
     ? `${Math.round(product.max_bore_size_mm)}mm`
     : (product.category === 'Locking Units' ? 'Custom' : null),
@@ -193,6 +194,10 @@ definePageMeta({
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.card-media-contain img {
+  object-fit: contain;
 }
 
 .card-badge {
