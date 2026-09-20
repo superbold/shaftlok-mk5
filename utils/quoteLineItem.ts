@@ -7,19 +7,36 @@ export const parseLineQty = (value: unknown): number => {
 export const lineItemAmount = (unitPrice: number, qty?: unknown): number =>
   Number((Number(unitPrice) * parseLineQty(qty)).toFixed(2))
 
-/** Reserved line-item slug — not a catalog product. */
+/** Reserved line-item slugs — not catalog products. */
 export const DISCOUNT_SLUG = 'quote-discount'
 export const DISCOUNT_LINE_NAME = 'Discount'
 export const DISCOUNT_WARN_PERCENT = 30
 
+export const CUSTOM_ITEM_SLUG = 'quote-custom'
+export const CUSTOM_ITEM_LINE_NAME = 'Custom Item'
+
 export type QuoteLineLike = {
   product_slug?: string | null
+  product_name?: string | null
   qty?: unknown
   price?: unknown
 }
 
 export const isDiscountLine = (item: QuoteLineLike | null | undefined) =>
   item?.product_slug === DISCOUNT_SLUG
+
+export const isCustomLine = (item: QuoteLineLike | null | undefined) =>
+  item?.product_slug === CUSTOM_ITEM_SLUG
+
+export const isReservedLineSlug = (slug: string | null | undefined) =>
+  slug === DISCOUNT_SLUG || slug === CUSTOM_ITEM_SLUG
+
+export const customLineNeedsName = (item: QuoteLineLike | null | undefined) => {
+  if (!isCustomLine(item)) return false
+  const name = String(item?.product_name ?? '').trim()
+  if (!name) return true
+  return name.toLowerCase() === CUSTOM_ITEM_LINE_NAME.toLowerCase()
+}
 
 export const parseDiscountPercent = (value: unknown): number | null => {
   if (value === '' || value == null) return null

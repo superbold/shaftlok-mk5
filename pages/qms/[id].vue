@@ -169,10 +169,22 @@
                         :value="DISCOUNT_SLUG"
                         :disabled="discountAlreadyUsed && !isDiscountLine(item)"
                       >DISCOUNT</option>
+                      <option :value="CUSTOM_ITEM_SLUG">Custom Item</option>
                       <option v-for="p in pickableProducts" :key="p.slug" :value="p.slug">
                         {{ productOptionLabel(p) }}
                       </option>
                     </select>
+                  </div>
+                  <div v-if="isCustomLine(item)" class="tabbed-field">
+                    <span v-if="customLineNeedsName(item)" class="attention-tab">Item</span>
+                    <input
+                      v-model="item.product_name"
+                      type="text"
+                      class="form-control line-item-custom-name"
+                      :class="{ 'form-control-attention': customLineNeedsName(item) }"
+                      :placeholder="CUSTOM_ITEM_LINE_NAME"
+                      aria-label="Custom item name"
+                    />
                   </div>
                   <input
                     v-model="item.detail"
@@ -249,6 +261,7 @@
                 </button>
               </div>
               <p v-if="needsPrice" class="field-hint">Each item needs a price before send. Discount needs a percent.</p>
+              <p v-else-if="needsCustomName" class="field-hint">Name each custom item before send.</p>
               <p v-else-if="discountAlreadyUsed" class="field-hint field-hint-ready">
                 Discount is {{ formatDiscountPercent(discountPercent) }} off products (not shipping).
               </p>
@@ -491,11 +504,16 @@ import { quoteNumberFor } from '~~/utils/quoteNumber'
 import { emptyQuoteInquiry, inquiryFromQuote, inquiryColumnsFromForm } from '~~/utils/quoteInquiry'
 import {
   clampDiscountPercent,
+  CUSTOM_ITEM_LINE_NAME,
+  CUSTOM_ITEM_SLUG,
+  customLineNeedsName,
   DISCOUNT_LINE_NAME,
   DISCOUNT_SLUG,
   DISCOUNT_WARN_PERCENT,
   discountLineAmount,
+  isCustomLine,
   isDiscountLine,
+  isReservedLineSlug,
   lineItemAmount,
   parseDiscountPercent,
   parseLineQty,
@@ -594,7 +612,7 @@ const getProductBySlug = (slug) =>
 
 /** Catalog list/tier price for a line (not the editable stored price). */
 const getCatalogLinePrice = (item) => {
-  if (!item?.product_slug || isDiscountLine(item)) return null
+  if (!item?.product_slug || isReservedLineSlug(item.product_slug)) return null
   return getProductLineItemPrice(
     getProductBySlug(item.product_slug),
     item.detail,
@@ -654,7 +672,7 @@ const syncQuotedPriceFromLineItems = () => {
 
 const seedLineItemPrice = (i, { force = false } = {}) => {
   const item = editForm.value.line_items[i]
-  if (!item?.product_slug || isDiscountLine(item)) return
+  if (!item?.product_slug || isReservedLineSlug(item.product_slug)) return
   if (item.price_manual && !force) return
   const catalog = getCatalogLinePrice(item)
   if (catalog != null) {
@@ -674,6 +692,14 @@ const hydrateLineItemPrices = (items) => {
       item.qty = 1
       const percent = clampDiscountPercent(item.price)
       item.price = percent ?? (item.price === 0 || item.price === '0' ? 0 : '')
+      item.price_manual = true
+      continue
+    }
+    if (isCustomLine(item)) {
+      item.product_name = item.product_name ?? ''
+      item.qty = parseLineQty(item.qty)
+      const stored = parseMoneyField(item.price)
+      item.price = stored != null ? Number(stored.toFixed(2)) : ''
       item.price_manual = true
       continue
     }
@@ -701,6 +727,9 @@ const lineItemPriceHint = (item) => {
   if (!item.product_slug) return ''
   if (isDiscountLine(item)) {
     return 'Percent off the quoted products, not shipping.'
+  }
+  if (isCustomLine(item)) {
+    return customLineNeedsName(item) ? 'Name this item as it should appear on the quote.' : ''
   }
   const product = getProductBySlug(item.product_slug)
   const catalog = getCatalogLinePrice(item)
@@ -757,6 +786,16 @@ const onLineItemProductChange = (i, slug) => {
     item.price_manual = true
     item.detail = ''
     delete lastConfirmedDiscount.value[i]
+    syncQuotedPriceFromLineItems()
+    return
+  }
+  if (slug === CUSTOM_ITEM_SLUG) {
+    item.product_slug = CUSTOM_ITEM_SLUG
+    item.product_name = ''
+    item.qty = item.qty ? parseLineQty(item.qty) : 1
+    item.price = ''
+    item.price_manual = true
+    item.detail = ''
     syncQuotedPriceFromLineItems()
     return
   }
@@ -885,17 +924,26 @@ const serializeLineItems = (items) => (Array.isArray(items) ? items : [])
           qty: 1,
           price: clampDiscountPercent(li.price)
         }
-      : {
-          product_slug: li.product_slug,
-          product_name: li.product_name ?? '',
-          detail: li.detail?.trim() ? li.detail.trim() : null,
-          qty: parseLineQty(li.qty),
-          price: lineItemUnitPrice(li)
-        }
+      : isCustomLine(li)
+        ? {
+            product_slug: CUSTOM_ITEM_SLUG,
+            product_name: String(li.product_name ?? '').trim(),
+            detail: li.detail?.trim() ? li.detail.trim() : null,
+            qty: parseLineQty(li.qty),
+            price: lineItemUnitPrice(li)
+          }
+        : {
+            product_slug: li.product_slug,
+            product_name: li.product_name ?? '',
+            detail: li.detail?.trim() ? li.detail.trim() : null,
+            qty: parseLineQty(li.qty),
+            price: lineItemUnitPrice(li)
+          }
   ))
 
 const detailPlaceholder = (slug) => {
   if (slug === DISCOUNT_SLUG) return 'optional reason'
+  if (slug === CUSTOM_ITEM_SLUG) return 'optional note'
   if (slug === 'marine-control-cable') return 'e.g. 15 ft'
   if (slug === 'custom-bore') return 'e.g. Mod III / port shaft'
   return 'optional note'
@@ -946,7 +994,9 @@ const sailorPreviewHtml = computed(() =>
           }
         : {
             product_slug: item.product_slug,
-            product_name: item.product_name ?? '',
+            product_name: isCustomLine(item)
+              ? (String(item.product_name ?? '').trim() || CUSTOM_ITEM_LINE_NAME)
+              : (item.product_name ?? ''),
             detail: item.detail || null,
             qty: parseLineQty(item.qty),
             price: lineItemUnitPrice(item) ?? 0
@@ -977,6 +1027,9 @@ const productsSubtotal = computed(() =>
 )
 
 const needsPrice = computed(() => productsSubtotal.value == null)
+const needsCustomName = computed(() =>
+  editForm.value.line_items.some((item) => customLineNeedsName(item))
+)
 const needsShippingPrice = computed(() => editForm.value.shipping_price === '' || editForm.value.shipping_price == null)
 const needsShippingNotes = computed(() => !editForm.value.shipping_notes?.trim())
 const needsMessage = computed(() => !editForm.value.quote_notes?.trim())
@@ -1003,6 +1056,7 @@ const missingSendRequirements = computed(() => {
     else if (discountAlreadyUsed.value && discountPercent.value == null) missing.push('a discount percent')
     else missing.push('a price on each quoted item')
   }
+  if (needsCustomName.value) missing.push('a name on each custom item')
   if (needsShippingNotes.value) missing.push('shipping details')
   if (needsShippingPrice.value) missing.push('a shipping price')
   if (needsMessage.value) missing.push('a message to the sailor')
@@ -1248,7 +1302,7 @@ const loadPickableProducts = async () => {
     .order('id', { ascending: true })
 
   pickableProducts.value = (data || [])
-    .filter((p) => p.slug && p.slug !== DISCOUNT_SLUG)
+    .filter((p) => p.slug && !isReservedLineSlug(p.slug))
     .slice()
     .sort((a, b) => {
     const vis = (b.display !== false ? 1 : 0) - (a.display !== false ? 1 : 0)
@@ -1685,7 +1739,8 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
   min-width: 0;
 }
 
-.line-item-product .line-item-detail {
+.line-item-product .line-item-detail,
+.line-item-product .line-item-custom-name {
   display: block;
   width: 100%;
   margin-top: 0.4rem;

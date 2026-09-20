@@ -1,7 +1,9 @@
 import { PAYMENT_INFO } from '~/utils/paymentInfo'
 import {
   clampDiscountPercent,
+  CUSTOM_ITEM_LINE_NAME,
   discountLineAmount,
+  isCustomLine,
   isDiscountLine,
   lineItemAmount,
   parseLineQty
@@ -190,8 +192,11 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
       }
       const qty = parseLineQty(item.qty)
       const unit = Number(item.price) || 0
+      const name = isCustomLine(item)
+        ? (String(item.product_name || '').trim() || CUSTOM_ITEM_LINE_NAME)
+        : item.product_name
       return {
-        itemHtml: `${escapeHtml(item.product_name)}${item.detail ? ` — ${escapeHtml(item.detail)}` : ''}`,
+        itemHtml: `${escapeHtml(name)}${item.detail ? ` — ${escapeHtml(item.detail)}` : ''}`,
         qty,
         unitPriceHtml: money(unit),
         totalHtml: money(lineItemAmount(unit, qty))

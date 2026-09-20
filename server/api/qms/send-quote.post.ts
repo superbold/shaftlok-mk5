@@ -3,7 +3,7 @@ import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import { getApplicableWarnings } from '~/utils/quoteItemWarnings'
 import { formatQuoteValidUntil } from '~/utils/quoteValidity'
 import { formatQuoteNumber, quoteNumberFor } from '~/utils/quoteNumber'
-import { clampDiscountPercent, isDiscountLine, parseLineQty, quotedItemsNetTotal } from '~/utils/quoteLineItem'
+import { clampDiscountPercent, customLineNeedsName, isDiscountLine, parseLineQty, quotedItemsNetTotal } from '~/utils/quoteLineItem'
 import { buildSailorQuoteHtml } from '~/utils/sailorQuoteHtml'
 
 export default defineEventHandler(async (event) => {
@@ -53,6 +53,13 @@ export default defineEventHandler(async (event) => {
 
   const productsPrice = quotedItemsNetTotal(lineItems, productUnitPrice)
 
+  if (lineItems.some((item) => customLineNeedsName(item))) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Name each custom item before sending.'
+    })
+  }
+
   if (
     !productItems.length
     || productsPrice == null
@@ -95,7 +102,7 @@ export default defineEventHandler(async (event) => {
         }
       : {
           product_slug: item.product_slug,
-          product_name: item.product_name ?? '',
+          product_name: String(item.product_name ?? '').trim(),
           detail: item.detail || null,
           qty: parseLineQty(item.qty),
           price: productUnitPrice(item) as number
