@@ -332,7 +332,7 @@ export const createQuoteCheckoutSession = async (
     mode: 'payment',
     customer: customerId,
     client_reference_id: quote.id,
-    success_url: `${payPath}?checkout=success`,
+    success_url: `${payPath}/confirmed`,
     cancel_url: `${payPath}?checkout=cancel`,
     line_items: stripeLineItems,
     metadata,

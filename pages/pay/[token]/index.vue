@@ -75,17 +75,29 @@
         </div>
 
         <div v-if="pay.can_pay" class="pay-actions">
-          <button type="button" class="btn btn-bank" :disabled="starting" @click="startCheckout('bank')">
+          <button
+            type="button"
+            class="btn btn-bank"
+            :class="{ 'is-preferred': preferredMethod === 'bank' }"
+            :disabled="starting"
+            @click="startCheckout('bank')"
+          >
             <i class="fas fa-spinner fa-spin" v-if="starting === 'bank'"></i>
             <i class="fas fa-building-columns" v-else></i>
-            Pay by bank transfer · {{ formatUsd(pay.grand_total) }}
+            Pay by Bank Transfer · {{ formatUsd(pay.grand_total) }}
           </button>
-          <button type="button" class="btn btn-card" :disabled="starting" @click="startCheckout('card')">
+          <button
+            type="button"
+            class="btn btn-card"
+            :class="{ 'is-preferred': preferredMethod === 'card' }"
+            :disabled="starting"
+            @click="startCheckout('card')"
+          >
             <i class="fas fa-spinner fa-spin" v-if="starting === 'card'"></i>
             <i class="fas fa-credit-card" v-else></i>
-            Pay by card · {{ formatUsd(pay.card_total) }}
+            Pay by Credit Card · {{ formatUsd(pay.card_total) }}
           </button>
-          <p class="pay-card-hint">Includes the 3% card processing fee of {{ formatUsd(pay.surcharge) }}.</p>
+          <p class="pay-card-hint">Credit card includes the 3% processing fee of {{ formatUsd(pay.surcharge) }}.</p>
         </div>
         <p v-if="startError" class="pay-status error">{{ startError }}</p>
       </div>
@@ -109,10 +121,18 @@ useHead({
   ]
 })
 
-const { data: pay, pending, error, refresh } = await useFetch(
+if (String(route.query.checkout || '') === 'success') {
+  await navigateTo(`/pay/${token.value}/confirmed`, { replace: true })
+}
+
+const { data: pay, pending, error } = await useFetch(
   () => `/api/pay/${encodeURIComponent(token.value)}`,
   { watch: [token] }
 )
+
+if (pay.value?.payment_status === 'paid' || pay.value?.payment_status === 'pending') {
+  await navigateTo(`/pay/${token.value}/confirmed`, { replace: true })
+}
 
 const loadError = computed(() => {
   if (!error.value) return ''
@@ -121,23 +141,18 @@ const loadError = computed(() => {
 
 const starting = ref(null)
 const startError = ref('')
+const preferredMethod = computed(() => {
+  const method = String(route.query.method || '')
+  return method === 'card' || method === 'bank' ? method : ''
+})
 
 const banner = computed(() => {
   const checkout = route.query.checkout
-  if (pay.value?.payment_status === 'paid') {
-    return { kind: 'ok', icon: 'fas fa-circle-check', text: 'Thank you — this quote is paid.' }
-  }
-  if (pay.value?.payment_status === 'pending') {
-    return { kind: 'pending', icon: 'fas fa-clock', text: 'Bank transfer received as pending. We will mark this quote paid when the funds clear.' }
-  }
   if (pay.value?.block_reason === 'expired') {
     return { kind: 'warn', icon: 'fas fa-hourglass-end', text: 'This quote is no longer valid. Reply to your quote email for an updated total.' }
   }
-  if (checkout === 'success' && pay.value?.payment_status !== 'paid') {
-    return { kind: 'pending', icon: 'fas fa-clock', text: 'Thanks — Stripe is confirming your payment. This page will update when it is complete.' }
-  }
   if (checkout === 'cancel') {
-    return { kind: 'warn', icon: 'fas fa-arrow-rotate-left', text: 'Checkout was canceled. You can choose bank transfer or card below.' }
+    return { kind: 'warn', icon: 'fas fa-arrow-rotate-left', text: 'Checkout was canceled. You can Pay by Bank Transfer or Pay by Credit Card below.' }
   }
   if (pay.value?.payment_status === 'failed') {
     return { kind: 'warn', icon: 'fas fa-circle-exclamation', text: 'The last payment attempt did not go through. You can try again below.' }
@@ -160,24 +175,6 @@ const startCheckout = async (method) => {
     starting.value = null
   }
 }
-
-let confirmTimer = null
-let confirmStop = null
-
-onMounted(() => {
-  if (route.query.checkout === 'success') {
-    confirmTimer = setInterval(() => refresh(), 2500)
-    confirmStop = setTimeout(() => {
-      if (confirmTimer) clearInterval(confirmTimer)
-      confirmTimer = null
-    }, 20000)
-  }
-})
-
-onUnmounted(() => {
-  if (confirmTimer) clearInterval(confirmTimer)
-  if (confirmStop) clearTimeout(confirmStop)
-})
 </script>
 
 <style scoped>
@@ -309,6 +306,14 @@ onUnmounted(() => {
 }
 
 .btn-card:hover:not(:disabled) { background: rgba(245, 198, 107, 0.26); }
+
+.pay-actions .btn.is-preferred {
+  box-shadow: 0 0 0 2px rgba(245, 198, 107, 0.85);
+}
+
+.pay-actions .btn-bank.is-preferred {
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.85);
+}
 
 .pay-card-hint {
   margin: 0;

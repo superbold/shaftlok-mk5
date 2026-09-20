@@ -455,7 +455,7 @@
           <div class="modal-content" @click.stop>
             <h2 class="modal-title">Send Quote to Sailor</h2>
             <p class="modal-text">
-              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive your message, their inquiry details, items quoted, a Stripe pay link (card includes a 3% fee), terms, and the quote total by email.
+              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive your message, their inquiry details, items quoted, Pay by Bank Transfer and Pay by Credit Card buttons (card includes a 3% fee), terms, and the quote total by email.
               <template v-if="selectedAttachmentCount"> {{ selectedAttachmentCount }} library document{{ selectedAttachmentCount === 1 ? '' : 's' }} will be attached.</template>
             </p>
             <div class="modal-actions">

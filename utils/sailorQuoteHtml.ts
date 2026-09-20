@@ -223,15 +223,26 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
 
   const paymentCopy = paymentCopyForTotal(input.products_price, input.shipping_price)
   const payHref = String(input.pay_url || '').trim()
+  const paySep = payHref.includes('?') ? '&' : '?'
+  const bankHref = payHref ? `${payHref}${paySep}method=bank` : ''
+  const cardHref = payHref ? `${payHref}${paySep}method=card` : ''
   const payButton = payHref
     ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:16px 0 4px">
           <tr>
             <td style="border-radius:8px;background:#38BDF8">
-              <a href="${escapeHtml(payHref)}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:sans-serif;font-size:15px;font-weight:700;color:#04101C;text-decoration:none">Pay this quote</a>
+              <a href="${escapeHtml(bankHref)}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:sans-serif;font-size:15px;font-weight:700;color:#04101C;text-decoration:none">Pay by Bank Transfer · ${money(paymentCopy.totals.grandTotal)}</a>
+            </td>
+          </tr>
+          <tr>
+            <td height="12" style="font-size:12px;line-height:12px">&nbsp;</td>
+          </tr>
+          <tr>
+            <td style="border-radius:8px;background:#F5C66B">
+              <a href="${escapeHtml(cardHref)}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:sans-serif;font-size:15px;font-weight:700;color:#04101C;text-decoration:none">Pay by Credit Card · ${money(paymentCopy.totals.cardTotal)}</a>
             </td>
           </tr>
         </table>
-        <p style="margin:8px 0 0;font-family:sans-serif;font-size:12px;color:#6B7FA8;line-height:1.6">You will choose bank transfer or card on the next page. Card total ${money(paymentCopy.totals.cardTotal)} includes the 3% fee.</p>`
+        <p style="margin:8px 0 0;font-family:sans-serif;font-size:12px;color:#6B7FA8;line-height:1.6">Credit card includes a 3% processing fee of ${money(paymentCopy.totals.surcharge)}. Bank transfer has no extra fee. You will see these amounts again before Stripe.</p>`
     : ''
 
   const paymentHtml = card(
@@ -264,7 +275,7 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
           This quote is valid until <strong style="color:#EFF6FF">${escapeHtml(input.valid_until_label)}</strong>. After that date, prices and terms may change.
         </p>
         <p style="margin:10px 0 0;font-family:sans-serif;font-size:13px;color:#F5C66B;line-height:1.6">
-          Bank transfer ${money(grandTotal)}. Card ${money(paymentCopy.totals.cardTotal)} (includes a 3% processing fee of ${money(paymentCopy.totals.surcharge)}).
+          Bank transfer ${money(grandTotal)}. Credit card ${money(paymentCopy.totals.cardTotal)} (includes a 3% processing fee of ${money(paymentCopy.totals.surcharge)}).
         </p>
       </div>`
 
