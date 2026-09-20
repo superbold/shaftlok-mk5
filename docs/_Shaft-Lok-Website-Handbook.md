@@ -66,20 +66,20 @@ In `pages/qms/[id].vue`, the Send button is disabled unless **every quoted item 
 
 **Catalog prices on quotes**: The Items Quoted picker loads `products.price` and `products.price_tiers`. Selecting a product seeds that row's **Price ($)** from the catalog (length tiers use line detail or the sailor's `cable_length`). The admin can edit the line price afterward; **Reset from catalog** appears when overridden. **Products** is a read-only sum of line prices. Shipping is a separate required line (details + price); Total is products + shipping. Products without a list price (e.g. Mod VI) leave the price blank for manual entry.
 
-**Quote email**: Quote Total (Products / Shipping / Total), a **Valid until** line (exactly one calendar month from send), then Items Quoted with each line's name, detail, and price, then message, warnings, payment, and terms. Payment is Stripe only (Associated Bank wire copy is OBE). The email states the quoted total for bank transfer and the card total (quoted total + 3% processing fee), then **Pay by Bank Transfer** and **Pay by Credit Card** buttons to `/pay/:token`. Validity is display-only — status stays manual (Followed up / Dead) unless Stripe marks the quote paid. Re-send refreshes `sent_at` and the validity window. QMS “Sent to Sailor” shows the same valid-until date.
+**Quote email**: Quote Total (Products / Shipping / Total), a **Valid until** line (exactly one calendar month from send), then Items Quoted with each line's name, detail, and price, then message, warnings, payment, and terms. Payment is Stripe only (Associated Bank wire copy is OBE). **Hide Payment** on the QMS quote (default **On**) omits the Payment card and pay buttons from the Email to Sailor until Sean turns it off. When payment is included, the email states the quoted total for bank transfer and the card total (quoted total + 3% processing fee), then **Pay by Bank Transfer** and **Pay by Credit Card** buttons to `/pay/:token`. Validity is display-only — status stays manual (Followed up / Dead) unless Stripe marks the quote paid. Re-send refreshes `sent_at` and the validity window. QMS “Sent to Sailor” shows the same valid-until date.
 
 ### Stripe payments
 
 Sailors pay on Shaft Lok first, then Stripe. Associated Bank account numbers are not included in quotes.
 
-1. **Send Quote** creates (or reuses) `quotes.payment_token` and puts `/pay/:token` in the email. Requires `STRIPE_SECRET_KEY` (and Resend).
+1. **Send Quote** includes Stripe pay buttons only when **Hide Payment** is off. Then it creates (or reuses) `quotes.payment_token` and puts `/pay/:token` in the email. That send requires `STRIPE_SECRET_KEY` (and Resend). Hidden-payment sends still go out with Resend and omit the Payment section.
 2. The public pay page shows quoted total vs card total (3% added **here**, not by Stripe) and two buttons: **Pay by Bank Transfer** / **Pay by Credit Card**.
 3. Each button creates a Stripe Checkout Session with that amount already in it — card sessions accept cards only; bank sessions accept ACH / US bank transfer. Checkout Sessions expire in 24 hours; the quote pay page stays valid for the quote window (~1 month).
 4. Webhook `POST /api/stripe/webhook` sets `payment_status` (`unpaid` / `pending` / `paid` / `failed` / `expired`). **Paid** also sets status to **Won**. Bank transfers can sit on **Pending** until funds clear.
 5. After Stripe, sailors land on `/pay/:token/confirmed` (**Order Confirmed**: quote number + “Thank you for your order. Happy sailing!”). That page asks Stripe for the Checkout Session (it does not wait on the webhook) and will not send them back to pay. Cancel returns to the pay page. Paid quotes that reopen `/pay/:token` are sent to the confirmed page.
 6. Env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, optional `NUXT_PUBLIC_SITE_URL` (defaults to `https://shaftlok.com`). Dashboard: enable Cards, Bank transfers, and ACH; add the live webhook URL; turn on Radar.
 
-Migration: `supabase/migrations/20260921_add_quote_stripe_payment.sql`.
+Migration: `supabase/migrations/20260921_add_quote_stripe_payment.sql`. Hide Payment: `supabase/migrations/20260922_add_quote_hide_payment.sql`.
 
 ### Custom Bore
 

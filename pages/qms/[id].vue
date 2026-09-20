@@ -396,8 +396,30 @@
             </div>
 
             <div class="form-group">
+              <div class="customer-pane-tabs" role="radiogroup" aria-label="Payment on quote email">
+                <button
+                  type="button"
+                  :class="{ 'is-active': editForm.hide_payment }"
+                  :aria-pressed="editForm.hide_payment"
+                  @click="editForm.hide_payment = true"
+                >
+                  Hide Payment
+                </button>
+                <button
+                  type="button"
+                  :class="{ 'is-active': !editForm.hide_payment }"
+                  :aria-pressed="!editForm.hide_payment"
+                  @click="editForm.hide_payment = false"
+                >
+                  Include Payment
+                </button>
+              </div>
+              <p class="field-hint">Hide Payment leaves the Payment section off the Email to Sailor. Include Payment adds the Stripe pay buttons.</p>
+            </div>
+
+            <div class="form-group">
               <label>Payment Info Sent With Every Quote</label>
-              <div class="preview-block">
+              <div class="preview-block" :class="{ 'is-omitted': editForm.hide_payment }">
                 <p class="preview-text">{{ paymentPreview.intro }}</p>
                 <p class="preview-text preview-warn">{{ paymentPreview.surchargeWarning }}</p>
                 <p class="preview-text">{{ paymentPreview.method }}</p>
@@ -455,7 +477,7 @@
           <div class="modal-content" @click.stop>
             <h2 class="modal-title">Send Quote to Sailor</h2>
             <p class="modal-text">
-              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive your message, their inquiry details, items quoted, Pay by Bank Transfer and Pay by Credit Card buttons (card includes a 3% fee), terms, and the quote total by email.
+              Send this quote to {{ quote.name }} at {{ quote.email }}? The sailor will receive your message, their inquiry details, items quoted,<template v-if="editForm.hide_payment"> terms, and the quote total by email. Payment is hidden on this send.</template><template v-else> Pay by Bank Transfer and Pay by Credit Card buttons (card includes a 3% fee), terms, and the quote total by email.</template>
               <template v-if="selectedAttachmentCount"> {{ selectedAttachmentCount }} library document{{ selectedAttachmentCount === 1 ? '' : 's' }} will be attached.</template>
             </p>
             <div class="modal-actions">
@@ -535,7 +557,7 @@ import {
 } from '~~/utils/quoteLineItem'
 import { buildSailorQuoteHtml, restyleSentSailorQuoteHtml } from '~~/utils/sailorQuoteHtml'
 import { paymentCopyForTotal } from '~~/utils/paymentInfo'
-import { paymentStatusDescription, paymentStatusLabel } from '~~/utils/quotePayment'
+import { paymentStatusDescription, paymentStatusLabel, quoteHidesPayment } from '~~/utils/quotePayment'
 
 definePageMeta({
   layout: 'qms-layout',
@@ -565,6 +587,7 @@ const editForm = ref({
   shipping_price: '',
   shipping_notes: '',
   quote_notes: '',
+  hide_payment: true,
   line_items: [],
   attachment_ids: [],
   ...emptyQuoteInquiry()
@@ -1029,7 +1052,8 @@ const sailorPreviewHtml = computed(() =>
     )),
     warnings: applicableWarnings.value,
     valid_until_label: formatQuoteValidUntil(new Date()),
-    pay_url: sailorPayUrl.value || null
+    pay_url: editForm.value.hide_payment ? null : (sailorPayUrl.value || null),
+    include_payment: !editForm.value.hide_payment
   })
 )
 
@@ -1130,6 +1154,8 @@ const quoteContentUnchanged = computed(() => {
   if ((editForm.value.shipping_notes || null) !== (q.sent_shipping_notes || null)) return false
   if ((editForm.value.quote_notes || null) !== (q.sent_quote_notes || null)) return false
   if (!sameAttachmentIds(editForm.value.attachment_ids, q.sent_attachment_ids)) return false
+  const sentHadPayment = /text-transform:uppercase;color:#38BDF8">Payment<\/p>/.test(q.sent_html || '')
+  if ((!editForm.value.hide_payment) !== sentHadPayment) return false
   if (JSON.stringify(inquiryColumnsFromForm(editForm.value)) !== JSON.stringify(inquiryColumnsFromForm(inquiryFromQuote(q)))) {
     return false
   }
@@ -1193,6 +1219,7 @@ const loadQuote = async () => {
       shipping_price: data.shipping_price ?? '',
       shipping_notes: data.shipping_notes ?? '',
       quote_notes: data.quote_notes ?? '',
+      hide_payment: quoteHidesPayment(data.hide_payment),
       line_items: lineItems,
       attachment_ids: Array.isArray(data.attachment_ids) ? [...data.attachment_ids] : [],
       ...inquiryFromQuote(data)
@@ -1230,6 +1257,7 @@ const saveQuote = async () => {
         shipping_price: editForm.value.shipping_price === '' ? null : editForm.value.shipping_price,
         shipping_notes: editForm.value.shipping_notes?.trim() || null,
         quote_notes: editForm.value.quote_notes || null,
+        hide_payment: Boolean(editForm.value.hide_payment),
         quote_number: quote.value.quote_number || quoteNumberFor(quote.value, inquiry.name) || null,
         line_items: serializeLineItems(editForm.value.line_items),
         attachment_ids: editForm.value.attachment_ids,
@@ -1275,6 +1303,7 @@ const sendQuote = async () => {
         shipping_price: editForm.value.shipping_price === '' ? null : editForm.value.shipping_price,
         shipping_notes: editForm.value.shipping_notes?.trim() || null,
         quote_notes: editForm.value.quote_notes || null,
+        hide_payment: Boolean(editForm.value.hide_payment),
         quote_number: quote.value.quote_number || quoteNumberFor(quote.value, inquiry.name) || null,
         line_items: serializeLineItems(editForm.value.line_items),
         attachment_ids: editForm.value.attachment_ids,
@@ -1672,6 +1701,14 @@ dl { margin: 0; }
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-mid);
+}
+
+.form-group .customer-pane-tabs {
+  margin-bottom: 0.55rem;
+}
+
+.preview-block.is-omitted {
+  opacity: 0.45;
 }
 
 .form-control {

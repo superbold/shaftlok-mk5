@@ -203,6 +203,7 @@ export type Database = {
           payment_method: string | null
           payment_status: string
           payment_token: string | null
+          hide_payment: boolean
           phone: string | null
           phone_region: string | null
           prop_diameter: string | null
@@ -258,6 +259,7 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string
           payment_token?: string | null
+          hide_payment?: boolean
           phone?: string | null
           phone_region?: string | null
           prop_diameter?: string | null
@@ -313,6 +315,7 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string
           payment_token?: string | null
+          hide_payment?: boolean
           phone?: string | null
           phone_region?: string | null
           prop_diameter?: string | null

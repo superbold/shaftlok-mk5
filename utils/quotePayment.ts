@@ -69,3 +69,6 @@ export const canStartQuoteCheckout = (status?: string | null) => {
   const value = status || 'unpaid'
   return value === 'unpaid' || value === 'failed' || value === 'expired'
 }
+
+/** Hide Payment defaults on. Null/undefined is treated as hidden. */
+export const quoteHidesPayment = (value?: boolean | null) => value !== false
