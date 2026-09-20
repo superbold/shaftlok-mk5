@@ -1,5 +1,11 @@
 import { PAYMENT_INFO } from '~/utils/paymentInfo'
-import { lineItemAmount, parseLineQty } from '~/utils/quoteLineItem'
+import {
+  clampDiscountPercent,
+  discountLineAmount,
+  isDiscountLine,
+  lineItemAmount,
+  parseLineQty
+} from '~/utils/quoteLineItem'
 import { TERMS_AND_CONDITIONS } from '~/utils/termsAndConditions'
 
 const HTML_ESCAPES: Record<string, string> = {
@@ -84,6 +90,7 @@ const phoneLabel = (phone?: string | null, region?: string | null) => {
 }
 
 export type SailorQuoteLineItem = {
+  product_slug?: string | null
   product_name: string
   detail?: string | null
   qty?: number
@@ -159,9 +166,28 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
 
   const inquiryHtml = inquiryBody ? card('Inquiry', inquiryBody) : ''
 
+  const productItems = input.line_items.filter((item) => !isDiscountLine(item))
+  const productsGross = Number(
+    productItems.reduce((sum, item) => {
+      const qty = parseLineQty(item.qty)
+      const unit = Number(item.price) || 0
+      return sum + lineItemAmount(unit, qty)
+    }, 0).toFixed(2)
+  )
+
   const itemsHtml = card(
     'Items Quoted',
     itemsQuotedTableHtml(input.line_items.map((item) => {
+      if (isDiscountLine(item)) {
+        const percent = clampDiscountPercent(item.price)
+        const amount = percent == null ? null : discountLineAmount(productsGross, percent)
+        return {
+          itemHtml: `${escapeHtml(item.product_name || 'Discount')}${item.detail ? ` — ${escapeHtml(item.detail)}` : ''}`,
+          qty: '—',
+          unitPriceHtml: percent == null ? '—' : `${percent}%`,
+          totalHtml: amount == null ? '—' : money(-amount)
+        }
+      }
       const qty = parseLineQty(item.qty)
       const unit = Number(item.price) || 0
       return {

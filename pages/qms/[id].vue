@@ -142,6 +142,7 @@
               <div v-for="(item, i) in editForm.line_items" :key="i" class="line-item-row">
                 <div class="line-item-qty">
                   <input
+                    v-if="!isDiscountLine(item)"
                     v-model="item.qty"
                     type="number"
                     min="1"
@@ -152,6 +153,7 @@
                     @input="onLineItemQtyInput(i)"
                     @blur="clampLineItemQty(i)"
                   />
+                  <span v-else class="line-item-qty-placeholder" aria-label="Quantity">—</span>
                 </div>
                 <div class="line-item-product">
                   <div class="tabbed-field">
@@ -163,6 +165,10 @@
                       @change="onLineItemProductChange(i, $event.target.value)"
                     >
                       <option value="" disabled>Select a product…</option>
+                      <option
+                        :value="DISCOUNT_SLUG"
+                        :disabled="discountAlreadyUsed && !isDiscountLine(item)"
+                      >DISCOUNT</option>
                       <option v-for="p in pickableProducts" :key="p.slug" :value="p.slug">
                         {{ productOptionLabel(p) }}
                       </option>
@@ -176,7 +182,7 @@
                     aria-label="Item detail"
                     @input="onLineItemDetailInput(i)"
                   />
-                  <p v-if="lineItemPriceHint(item)" class="line-item-hint" :class="{ 'line-item-hint-ready': getCatalogLinePrice(item) != null && !item.price_manual }">
+                  <p v-if="lineItemPriceHint(item)" class="line-item-hint" :class="{ 'line-item-hint-ready': isDiscountLine(item) || (getCatalogLinePrice(item) != null && !item.price_manual) }">
                     {{ lineItemPriceHint(item) }}
                   </p>
                   <button
@@ -189,21 +195,45 @@
                   </button>
                 </div>
                 <div class="line-item-price tabbed-field">
-                  <span
-                    v-if="item.product_slug && parseMoneyField(item.price) == null"
-                    class="attention-tab"
-                  >Price</span>
-                  <input
-                    :value="lineItemUnitPrice(item) ?? item.price ?? ''"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    class="form-control"
-                    :class="{ 'form-control-attention': item.product_slug && parseMoneyField(item.price) == null }"
-                    placeholder="Unit price"
-                    aria-label="Unit price"
-                    @input="onLineItemUnitPriceInput(i, $event.target.value)"
-                  />
+                  <template v-if="isDiscountLine(item)">
+                    <span
+                      v-if="parseDiscountPercent(item.price) == null"
+                      class="attention-tab"
+                    >Percent</span>
+                    <div class="percent-input">
+                      <input
+                        :value="item.price ?? ''"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        class="form-control"
+                        :class="{ 'form-control-attention': parseDiscountPercent(item.price) == null }"
+                        placeholder="e.g. 10"
+                        aria-label="Discount percent"
+                        @input="onDiscountPercentInput(i, $event.target.value)"
+                        @blur="onDiscountPercentBlur(i)"
+                      />
+                      <span class="percent-suffix">%</span>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <span
+                      v-if="item.product_slug && parseMoneyField(item.price) == null"
+                      class="attention-tab"
+                    >Price</span>
+                    <input
+                      :value="lineItemUnitPrice(item) ?? item.price ?? ''"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      class="form-control"
+                      :class="{ 'form-control-attention': item.product_slug && parseMoneyField(item.price) == null }"
+                      placeholder="Unit price"
+                      aria-label="Unit price"
+                      @input="onLineItemUnitPriceInput(i, $event.target.value)"
+                    />
+                  </template>
                 </div>
                 <div class="line-item-total" aria-label="Line total">
                   {{ formatLineMoney(lineItemLineTotal(item)) }}
@@ -218,7 +248,10 @@
                   <i class="fas fa-plus"></i> Add Item
                 </button>
               </div>
-              <p v-if="needsPrice" class="field-hint">Each item needs a price before send.</p>
+              <p v-if="needsPrice" class="field-hint">Each item needs a price before send. Discount needs a percent.</p>
+              <p v-else-if="discountAlreadyUsed" class="field-hint field-hint-ready">
+                Discount is {{ formatDiscountPercent(discountPercent) }} off products (not shipping).
+              </p>
             </div>
 
             <div class="form-group">
@@ -227,7 +260,7 @@
                 <strong>{{ needsPrice ? '—' : formatMoney(productsSubtotal) }}</strong>
               </div>
               <p v-if="!needsPrice" class="field-hint field-hint-ready">
-                Sum of item prices (qty × each).
+                {{ discountAlreadyUsed ? 'Quoted items after discount.' : 'Sum of item prices (qty × each).' }}
               </p>
             </div>
 
@@ -275,7 +308,7 @@
                 <span>Total</span>
                 <strong>{{ formatMoney(quoteGrandTotal) }}</strong>
               </div>
-              <p class="field-hint field-hint-ready">Products + shipping</p>
+              <p class="field-hint field-hint-ready">{{ discountAlreadyUsed ? 'Products after discount + shipping' : 'Products + shipping' }}</p>
             </div>
 
             <div class="form-group">
@@ -424,6 +457,19 @@
             </div>
           </div>
         </div>
+
+        <div v-if="discountWarn" class="modal" @click="cancelDiscountWarn">
+          <div class="modal-content" @click.stop>
+            <h2 class="modal-title">Large discount</h2>
+            <p class="modal-text">
+              This discount is {{ formatDiscountPercent(discountWarn.percent) }}. Percentages of {{ DISCOUNT_WARN_PERCENT }}% or more should be double-checked before quoting.
+            </p>
+            <div class="modal-actions">
+              <button type="button" class="btn btn-secondary" @click="cancelDiscountWarn">Cancel</button>
+              <button type="button" class="btn btn-primary" @click="confirmDiscountWarn">Use this discount</button>
+            </div>
+          </div>
+        </div>
       </template>
     </div>
   </div>
@@ -443,7 +489,18 @@ import {
 import { formatQuoteValidUntil } from '~~/utils/quoteValidity'
 import { quoteNumberFor } from '~~/utils/quoteNumber'
 import { emptyQuoteInquiry, inquiryFromQuote, inquiryColumnsFromForm } from '~~/utils/quoteInquiry'
-import { lineItemAmount, parseLineQty } from '~~/utils/quoteLineItem'
+import {
+  clampDiscountPercent,
+  DISCOUNT_LINE_NAME,
+  DISCOUNT_SLUG,
+  DISCOUNT_WARN_PERCENT,
+  discountLineAmount,
+  isDiscountLine,
+  lineItemAmount,
+  parseDiscountPercent,
+  parseLineQty,
+  quotedItemsNetTotal
+} from '~~/utils/quoteLineItem'
 import { buildSailorQuoteHtml, restyleSentSailorQuoteHtml } from '~~/utils/sailorQuoteHtml'
 
 definePageMeta({
@@ -464,6 +521,8 @@ const saveMessage = ref('')
 const saveError = ref(false)
 const showAlreadySentModal = ref(false)
 const showFirstSendModal = ref(false)
+const discountWarn = ref(null)
+const lastConfirmedDiscount = ref({})
 const customerPaneTab = ref('preview')
 
 const editForm = ref({
@@ -535,7 +594,7 @@ const getProductBySlug = (slug) =>
 
 /** Catalog list/tier price for a line (not the editable stored price). */
 const getCatalogLinePrice = (item) => {
-  if (!item?.product_slug) return null
+  if (!item?.product_slug || isDiscountLine(item)) return null
   return getProductLineItemPrice(
     getProductBySlug(item.product_slug),
     item.detail,
@@ -546,6 +605,7 @@ const getCatalogLinePrice = (item) => {
 const isUnpricedAmount = (stored) => stored == null || stored === 0
 
 const lineItemUnitPrice = (item) => {
+  if (isDiscountLine(item)) return null
   const stored = parseMoneyField(item.price)
   if (!isUnpricedAmount(stored)) return stored
   return getCatalogLinePrice(item) ?? stored
@@ -566,19 +626,35 @@ const productOptionLabel = (product) => {
 const selectedLineItems = () =>
   editForm.value.line_items.filter((item) => item.product_slug)
 
+const discountAlreadyUsed = computed(() =>
+  editForm.value.line_items.some((item) => isDiscountLine(item))
+)
+
+const discountPercent = computed(() => {
+  const item = editForm.value.line_items.find((line) => isDiscountLine(line))
+  return item ? clampDiscountPercent(item.price) : null
+})
+
+const formatDiscountPercent = (value) => {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return '—'
+  return `${Number(n.toFixed(2))}%`.replace(/\.00%$/, '%')
+}
+
+const productsGrossSubtotal = () => {
+  const products = selectedLineItems().filter((item) => !isDiscountLine(item))
+  if (!products.length || products.some((item) => lineItemUnitPrice(item) == null)) return null
+  return Number(products.reduce((sum, item) => sum + lineItemAmount(lineItemUnitPrice(item), item.qty), 0).toFixed(2))
+}
+
 const syncQuotedPriceFromLineItems = () => {
-  const selected = selectedLineItems()
-  if (!selected.length || selected.some((item) => lineItemUnitPrice(item) == null)) {
-    editForm.value.quoted_price = ''
-    return
-  }
-  const total = selected.reduce((sum, item) => sum + lineItemAmount(lineItemUnitPrice(item), item.qty), 0)
-  editForm.value.quoted_price = Number(total.toFixed(2))
+  const total = quotedItemsNetTotal(editForm.value.line_items, lineItemUnitPrice)
+  editForm.value.quoted_price = total == null ? '' : total
 }
 
 const seedLineItemPrice = (i, { force = false } = {}) => {
   const item = editForm.value.line_items[i]
-  if (!item?.product_slug) return
+  if (!item?.product_slug || isDiscountLine(item)) return
   if (item.price_manual && !force) return
   const catalog = getCatalogLinePrice(item)
   if (catalog != null) {
@@ -593,6 +669,14 @@ const seedLineItemPrice = (i, { force = false } = {}) => {
 
 const hydrateLineItemPrices = (items) => {
   for (const item of items) {
+    if (isDiscountLine(item)) {
+      item.product_name = item.product_name || DISCOUNT_LINE_NAME
+      item.qty = 1
+      const percent = clampDiscountPercent(item.price)
+      item.price = percent ?? (item.price === 0 || item.price === '0' ? 0 : '')
+      item.price_manual = true
+      continue
+    }
     if (!item.product_slug) {
       item.price = item.price ?? ''
       item.price_manual = false
@@ -615,6 +699,9 @@ const hydrateLineItemPrices = (items) => {
 
 const lineItemPriceHint = (item) => {
   if (!item.product_slug) return ''
+  if (isDiscountLine(item)) {
+    return 'Percent off the quoted products, not shipping.'
+  }
   const product = getProductBySlug(item.product_slug)
   const catalog = getCatalogLinePrice(item)
   if (item.price_manual && catalog != null) {
@@ -661,8 +748,19 @@ const removeLineItem = (i) => {
   syncQuotedPriceFromLineItems()
 }
 const onLineItemProductChange = (i, slug) => {
-  const product = pickableProducts.value.find((p) => p.slug === slug)
   const item = editForm.value.line_items[i]
+  if (slug === DISCOUNT_SLUG) {
+    item.product_slug = DISCOUNT_SLUG
+    item.product_name = DISCOUNT_LINE_NAME
+    item.qty = 1
+    item.price = ''
+    item.price_manual = true
+    item.detail = ''
+    delete lastConfirmedDiscount.value[i]
+    syncQuotedPriceFromLineItems()
+    return
+  }
+  const product = pickableProducts.value.find((p) => p.slug === slug)
   item.product_slug = slug
   item.product_name = product?.name ?? ''
   item.price_manual = false
@@ -687,6 +785,12 @@ const clampLineItemQty = (i) => {
 }
 
 const lineItemLineTotal = (item) => {
+  if (isDiscountLine(item)) {
+    const percent = clampDiscountPercent(item.price)
+    const gross = productsGrossSubtotal()
+    if (percent == null || gross == null) return null
+    return -discountLineAmount(gross, percent)
+  }
   const unit = lineItemUnitPrice(item)
   if (unit == null) return null
   return lineItemAmount(unit, item.qty)
@@ -707,6 +811,64 @@ const onLineItemUnitPriceInput = (i, raw) => {
   syncQuotedPriceFromLineItems()
 }
 
+const onDiscountPercentInput = (i, raw) => {
+  const item = editForm.value.line_items[i]
+  item.price = raw === '' ? '' : raw
+  syncQuotedPriceFromLineItems()
+  maybeWarnDiscount(i)
+}
+
+const maybeWarnDiscount = (i) => {
+  const item = editForm.value.line_items[i]
+  if (!item || !isDiscountLine(item)) return
+  const percent = clampDiscountPercent(item.price)
+  if (percent == null) return
+  if (percent >= DISCOUNT_WARN_PERCENT && lastConfirmedDiscount.value[i] !== percent) {
+    discountWarn.value = {
+      index: i,
+      percent,
+      previous: lastConfirmedDiscount.value[i] ?? ''
+    }
+  }
+}
+
+const onDiscountPercentBlur = (i) => {
+  const item = editForm.value.line_items[i]
+  if (!isDiscountLine(item)) return
+  if (item.price === '' || item.price == null) {
+    lastConfirmedDiscount.value[i] = ''
+    syncQuotedPriceFromLineItems()
+    return
+  }
+  const percent = clampDiscountPercent(item.price)
+  if (percent == null) {
+    item.price = lastConfirmedDiscount.value[i] ?? ''
+    syncQuotedPriceFromLineItems()
+    return
+  }
+  item.price = percent
+  syncQuotedPriceFromLineItems()
+  maybeWarnDiscount(i)
+  if (!discountWarn.value) lastConfirmedDiscount.value[i] = percent
+}
+
+const confirmDiscountWarn = () => {
+  const warn = discountWarn.value
+  if (warn) lastConfirmedDiscount.value[warn.index] = warn.percent
+  discountWarn.value = null
+}
+
+const cancelDiscountWarn = () => {
+  const warn = discountWarn.value
+  if (warn) {
+    const item = editForm.value.line_items[warn.index]
+    if (item && isDiscountLine(item)) item.price = warn.previous
+    lastConfirmedDiscount.value[warn.index] = warn.previous
+    syncQuotedPriceFromLineItems()
+  }
+  discountWarn.value = null
+}
+
 const resetLineItemPrice = (i) => {
   editForm.value.line_items[i].price_manual = false
   seedLineItemPrice(i, { force: true })
@@ -714,15 +876,26 @@ const resetLineItemPrice = (i) => {
 
 const serializeLineItems = (items) => (Array.isArray(items) ? items : [])
   .filter((li) => li?.product_slug)
-  .map((li) => ({
-    product_slug: li.product_slug,
-    product_name: li.product_name ?? '',
-    detail: li.detail?.trim() ? li.detail.trim() : null,
-    qty: parseLineQty(li.qty),
-    price: lineItemUnitPrice(li)
-  }))
+  .map((li) => (
+    isDiscountLine(li)
+      ? {
+          product_slug: DISCOUNT_SLUG,
+          product_name: DISCOUNT_LINE_NAME,
+          detail: li.detail?.trim() ? li.detail.trim() : null,
+          qty: 1,
+          price: clampDiscountPercent(li.price)
+        }
+      : {
+          product_slug: li.product_slug,
+          product_name: li.product_name ?? '',
+          detail: li.detail?.trim() ? li.detail.trim() : null,
+          qty: parseLineQty(li.qty),
+          price: lineItemUnitPrice(li)
+        }
+  ))
 
 const detailPlaceholder = (slug) => {
+  if (slug === DISCOUNT_SLUG) return 'optional reason'
   if (slug === 'marine-control-cable') return 'e.g. 15 ft'
   if (slug === 'custom-bore') return 'e.g. Mod III / port shaft'
   return 'optional note'
@@ -762,12 +935,23 @@ const sailorPreviewHtml = computed(() =>
     shipping_notes: String(editForm.value.shipping_notes || '').trim(),
     shipping_price: parseMoneyField(editForm.value.shipping_price) ?? 0,
     products_price: productsSubtotal.value ?? 0,
-    line_items: selectedLineItems().map((item) => ({
-      product_name: item.product_name ?? '',
-      detail: item.detail || null,
-      qty: parseLineQty(item.qty),
-      price: lineItemUnitPrice(item) ?? 0
-    })),
+    line_items: selectedLineItems().map((item) => (
+      isDiscountLine(item)
+        ? {
+            product_slug: DISCOUNT_SLUG,
+            product_name: DISCOUNT_LINE_NAME,
+            detail: item.detail || null,
+            qty: 1,
+            price: clampDiscountPercent(item.price) ?? 0
+          }
+        : {
+            product_slug: item.product_slug,
+            product_name: item.product_name ?? '',
+            detail: item.detail || null,
+            qty: parseLineQty(item.qty),
+            price: lineItemUnitPrice(item) ?? 0
+          }
+    )),
     warnings: applicableWarnings.value,
     valid_until_label: formatQuoteValidUntil(new Date())
   })
@@ -788,17 +972,11 @@ const customerPaneHtml = computed(() =>
   showingLastSent.value ? lastSentHtml.value : sailorPreviewHtml.value
 )
 
-const productsSubtotal = computed(() => {
-  const selected = selectedLineItems()
-  if (!selected.length || selected.some((item) => lineItemUnitPrice(item) == null)) return null
-  return Number(selected.reduce((sum, item) => sum + lineItemAmount(lineItemUnitPrice(item), item.qty), 0).toFixed(2))
-})
+const productsSubtotal = computed(() =>
+  quotedItemsNetTotal(editForm.value.line_items, lineItemUnitPrice)
+)
 
-const needsPrice = computed(() => {
-  const selected = selectedLineItems()
-  if (!selected.length) return true
-  return selected.some((item) => lineItemUnitPrice(item) == null)
-})
+const needsPrice = computed(() => productsSubtotal.value == null)
 const needsShippingPrice = computed(() => editForm.value.shipping_price === '' || editForm.value.shipping_price == null)
 const needsShippingNotes = computed(() => !editForm.value.shipping_notes?.trim())
 const needsMessage = computed(() => !editForm.value.quote_notes?.trim())
@@ -820,7 +998,10 @@ const onStatusChange = (event) => {
 const missingSendRequirements = computed(() => {
   const missing = []
   if (needsPrice.value) {
-    missing.push(selectedLineItems().length ? 'a price on each quoted item' : 'at least one quoted item with a price')
+    const products = selectedLineItems().filter((item) => !isDiscountLine(item))
+    if (!products.length) missing.push('at least one quoted product with a price')
+    else if (discountAlreadyUsed.value && discountPercent.value == null) missing.push('a discount percent')
+    else missing.push('a price on each quoted item')
   }
   if (needsShippingNotes.value) missing.push('shipping details')
   if (needsShippingPrice.value) missing.push('a shipping price')
@@ -907,6 +1088,13 @@ const loadQuote = async () => {
       }
     }
     hydrateLineItemPrices(lineItems)
+    lastConfirmedDiscount.value = {}
+    lineItems.forEach((item, i) => {
+      if (isDiscountLine(item)) {
+        const percent = clampDiscountPercent(item.price)
+        if (percent != null) lastConfirmedDiscount.value[i] = percent
+      }
+    })
     editForm.value = {
       status: data.status,
       quoted_price: data.quoted_price ?? '',
@@ -1059,7 +1247,10 @@ const loadPickableProducts = async () => {
     .select('id, name, slug, price, price_tiers, display')
     .order('id', { ascending: true })
 
-  pickableProducts.value = (data || []).slice().sort((a, b) => {
+  pickableProducts.value = (data || [])
+    .filter((p) => p.slug && p.slug !== DISCOUNT_SLUG)
+    .slice()
+    .sort((a, b) => {
     const vis = (b.display !== false ? 1 : 0) - (a.display !== false ? 1 : 0)
     if (vis) return vis
     return a.id - b.id
@@ -1506,8 +1697,32 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
   flex: 0 0 4.25rem;
 }
 
+.line-item-qty-placeholder {
+  display: block;
+  padding: 0.7rem 0.4rem;
+  text-align: right;
+  color: var(--text-low);
+}
+
 .line-item-price {
-  flex: 0 0 7rem;
+  flex: 0 0 7.5rem;
+}
+
+.percent-input {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.percent-input .form-control {
+  min-width: 0;
+}
+
+.percent-suffix {
+  flex: 0 0 auto;
+  color: var(--text-mid);
+  font-family: var(--font-display);
+  font-weight: 600;
 }
 
 .line-item-total {

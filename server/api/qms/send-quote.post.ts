@@ -3,7 +3,7 @@ import { serverSupabaseServiceRole, serverSupabaseUser } from '#supabase/server'
 import { getApplicableWarnings } from '~/utils/quoteItemWarnings'
 import { formatQuoteValidUntil } from '~/utils/quoteValidity'
 import { formatQuoteNumber, quoteNumberFor } from '~/utils/quoteNumber'
-import { lineItemAmount, parseLineQty } from '~/utils/quoteLineItem'
+import { clampDiscountPercent, isDiscountLine, parseLineQty, quotedItemsNetTotal } from '~/utils/quoteLineItem'
 import { buildSailorQuoteHtml } from '~/utils/sailorQuoteHtml'
 
 export default defineEventHandler(async (event) => {
@@ -44,15 +44,18 @@ export default defineEventHandler(async (event) => {
         .filter((item) => item?.product_slug)
     : []
 
-  const linePrices = lineItems.map((item) => {
+  const productItems = lineItems.filter((item) => !isDiscountLine(item))
+  const productUnitPrice = (item: { price?: number | null }) => {
     if (item.price === null || item.price === undefined || item.price === '') return null
     const n = Number(item.price)
     return Number.isFinite(n) ? n : null
-  })
+  }
+
+  const productsPrice = quotedItemsNetTotal(lineItems, productUnitPrice)
 
   if (
-    !lineItems.length
-    || linePrices.some((price) => price == null)
+    !productItems.length
+    || productsPrice == null
     || quote.shipping_price == null
     || !String(quote.shipping_notes || '').trim()
     || !quote.quote_notes
@@ -62,10 +65,6 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Set a price on each quoted item, shipping (details and price), and quote message before sending.'
     })
   }
-
-  const productsPrice = Number(
-    lineItems.reduce((sum, item, index) => sum + lineItemAmount(linePrices[index] as number, item.qty), 0).toFixed(2)
-  )
 
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
@@ -85,13 +84,23 @@ export default defineEventHandler(async (event) => {
   const validUntilLabel = formatQuoteValidUntil(sentAt)
   const quoteNumber = quoteNumberFor(quote, quote.name) || formatQuoteNumber(sentAt, quote.name)
 
-  const normalizedLineItems = lineItems.map((item, index) => ({
-    product_slug: item.product_slug,
-    product_name: item.product_name ?? '',
-    detail: item.detail || null,
-    qty: parseLineQty(item.qty),
-    price: linePrices[index] as number
-  }))
+  const normalizedLineItems = lineItems.map((item) => (
+    isDiscountLine(item)
+      ? {
+          product_slug: item.product_slug,
+          product_name: item.product_name || 'Discount',
+          detail: item.detail || null,
+          qty: 1,
+          price: clampDiscountPercent(item.price) as number
+        }
+      : {
+          product_slug: item.product_slug,
+          product_name: item.product_name ?? '',
+          detail: item.detail || null,
+          qty: parseLineQty(item.qty),
+          price: productUnitPrice(item) as number
+        }
+  ))
 
   const attachmentIds = Array.isArray(quote.attachment_ids)
     ? (quote.attachment_ids as string[]).filter(Boolean)
