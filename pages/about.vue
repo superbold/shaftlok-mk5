@@ -95,12 +95,7 @@
         <li>The propeller shaft Hub, Anti-Torque Bracket and all fasteners are made of Stainless Steel.</li>
         <li>The single deep groove double shielded ball bearing does not need any maintenance.</li>
         <li>The long locking pin that contacts the rotating disc's 45 degree locking ramp and the short pin that holds
-          the long pin in the locked or unlocked position are key unit components. These pins are made of Acetron AF
-          POM-H acetal is a unique thermoplastic material for use in moving parts in which low friction and long wear
-          life are important. It is a combination of Teflon fibers uniformly dispersed in Delrin acetal resin. A
-          material that has strength, toughness, dimensional stability and good machinability with excellent
-          sliding/friction properties. The natural color is dark brown. Data provided by Quadrant Engineering Plastic
-          Products from tests on stock shapes and parts produced by Quadrant EPP.</li>
+          the long pin in the locked or unlocked position are key unit components.</li>
       </ul>
     </div>
   </div>

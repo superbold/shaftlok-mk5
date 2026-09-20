@@ -96,6 +96,14 @@ export const getProductTagline = (
   return product.summary?.trim() || ''
 }
 
+export type ShaftLokTextPart = { text: string; brand: boolean }
+
+export const splitShaftLokBrandText = (value: string): ShaftLokTextPart[] =>
+  value.split(/(Shaft Lok)/g).filter(Boolean).map(text => ({
+    text,
+    brand: text === 'Shaft Lok'
+  }))
+
 const getProductDetailsText = (
   product: Pick<ProductRow, 'details' | 'description'>
 ): string | null | undefined => {

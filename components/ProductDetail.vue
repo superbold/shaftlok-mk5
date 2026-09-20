@@ -5,7 +5,12 @@
     <div class="product-hero" v-reveal>
       <span class="eyebrow"><i class="fas fa-fan"></i> {{ categoryLabel }}</span>
       <h1>{{ product.name }}</h1>
-      <p v-if="tagline" class="tagline">{{ tagline }}</p>
+      <p v-if="tagline" class="tagline">
+        <template v-for="(part, i) in taglineParts" :key="i">
+          <span v-if="part.brand" class="shaftlok-font">{{ part.text }}</span>
+          <template v-else>{{ part.text }}</template>
+        </template>
+      </p>
     </div>
 
     <div class="product-layout">
@@ -76,6 +81,7 @@ import {
   getProductPriceRangeLabel,
   getResolvedProductPriceTiers
 } from '~~/utils/productPricing'
+import { splitShaftLokBrandText } from '~~/utils/productDisplay'
 
 type ProductRow = Database['public']['Tables']['products']['Row']
 
@@ -116,6 +122,7 @@ const productData = computed(() => product.value as ProductRow)
 const image = computed(() => productData.value.image_url ?? undefined)
 const imageAlt = computed(() => productData.value.alt ?? productData.value.name)
 const tagline = computed(() => getProductTagline(productData.value))
+const taglineParts = computed(() => splitShaftLokBrandText(tagline.value))
 const priceTiers = computed(() => getResolvedProductPriceTiers(productData.value) ?? [])
 const formattedPrice = computed(() => {
   if (priceTiers.value.length) {

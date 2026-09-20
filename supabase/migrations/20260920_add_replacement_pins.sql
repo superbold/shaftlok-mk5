@@ -24,7 +24,7 @@ SELECT
   true,
   NULL,
   'A spare pair for your Shaft Lok',
-  'A replacement pair of long and short locking pins for the Shaft Lok mechanism — the same Acetron AF parts used in the unit.',
+  'A replacement pair of long and short locking pins for the Shaft Lok mechanism.',
   'Replacement locking pins for Shaft Lok marine propeller locking systems. Sold as a pair (long locking pin and short holding pin), quoted to your Mod.',
   'The locking mechanism uses a long pin that engages the rotating disc and a short pin that holds it locked or unlocked. Those pins can wear over time. Replacement Pins come as a pair so you can service the unit without replacing the whole housing. Tell us which Mod you have so we send the correct pair.',
   NULL,
@@ -38,7 +38,6 @@ SELECT
   '[
     {"name": "Used with", "value": "Existing Shaft Lok Mods as spare parts"},
     {"name": "Includes", "value": "Long locking pin and short holding pin (sold as a pair)"},
-    {"name": "Material", "value": "Acetron AF (Delrin acetal with Teflon fibers)"},
     {"name": "Pricing", "value": "Quoted as a pair after we confirm your Mod"}
   ]'::jsonb
 WHERE NOT EXISTS (
@@ -52,7 +51,7 @@ SET
   display = true,
   badge = NULL,
   tagline = 'A spare pair for your Shaft Lok',
-  summary = 'A replacement pair of long and short locking pins for the Shaft Lok mechanism — the same Acetron AF parts used in the unit.',
+  summary = 'A replacement pair of long and short locking pins for the Shaft Lok mechanism.',
   description = 'Replacement locking pins for Shaft Lok marine propeller locking systems. Sold as a pair (long locking pin and short holding pin), quoted to your Mod.',
   details = 'The locking mechanism uses a long pin that engages the rotating disc and a short pin that holds it locked or unlocked. Those pins can wear over time. Replacement Pins come as a pair so you can service the unit without replacing the whole housing. Tell us which Mod you have so we send the correct pair.',
   image_url = '/assets/images/replacement-pins.png',
@@ -65,7 +64,6 @@ SET
   specs = '[
     {"name": "Used with", "value": "Existing Shaft Lok Mods as spare parts"},
     {"name": "Includes", "value": "Long locking pin and short holding pin (sold as a pair)"},
-    {"name": "Material", "value": "Acetron AF (Delrin acetal with Teflon fibers)"},
     {"name": "Pricing", "value": "Quoted as a pair after we confirm your Mod"}
   ]'::jsonb
 WHERE slug = 'replacement-pins';
