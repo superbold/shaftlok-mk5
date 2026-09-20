@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import {
   canStartQuoteCheckout,
+  centsToDollars,
   dollarsToCents,
   quotePaymentTotals,
   type QuotePaymentMethod
@@ -111,6 +112,171 @@ export const loadQuoteByPaymentToken = async (event: H3Event, token: string) => 
   }
 
   return (data as PayableQuote | null) || null
+}
+
+export const toQuotePaymentMethod = (value: unknown): QuotePaymentMethod | null =>
+  value === 'card' || value === 'bank' ? value : null
+
+export const checkoutPaymentIntentId = (value: Stripe.Checkout.Session['payment_intent']) => {
+  if (!value) return null
+  return typeof value === 'string' ? value : value.id
+}
+
+export const quoteIdFromStripeObject = (
+  obj?: { metadata?: Stripe.Metadata | null; client_reference_id?: string | null } | null
+) => obj?.metadata?.quote_id || obj?.client_reference_id || null
+
+type QuotePaymentRow = {
+  id: string
+  status: string
+  payment_status: string
+  decided_at: string | null
+}
+
+export const loadQuoteForPaymentUpdate = async (
+  event: H3Event,
+  params: { quoteId?: string | null; sessionId?: string | null; paymentIntentId?: string | null }
+) => {
+  const supabase = serverSupabaseServiceRole(event)
+  if (params.quoteId) {
+    const { data } = await supabase.from('quotes').select('id, status, payment_status, decided_at').eq('id', params.quoteId).maybeSingle()
+    if (data) return data as QuotePaymentRow
+  }
+  if (params.sessionId) {
+    const { data } = await supabase
+      .from('quotes')
+      .select('id, status, payment_status, decided_at')
+      .eq('stripe_checkout_session_id', params.sessionId)
+      .maybeSingle()
+    if (data) return data as QuotePaymentRow
+  }
+  if (params.paymentIntentId) {
+    const { data } = await supabase
+      .from('quotes')
+      .select('id, status, payment_status, decided_at')
+      .eq('stripe_payment_intent_id', params.paymentIntentId)
+      .maybeSingle()
+    if (data) return data as QuotePaymentRow
+  }
+  return null
+}
+
+export const markQuotePaid = async (
+  event: H3Event,
+  params: {
+    quoteId?: string | null
+    sessionId?: string | null
+    paymentIntentId?: string | null
+    method?: string | null
+    amountCents?: number | null
+    surchargeCents?: number | null
+  }
+) => {
+  const quote = await loadQuoteForPaymentUpdate(event, params)
+  if (!quote) {
+    console.error('Stripe paid event with no matching quote', params)
+    return
+  }
+  if (quote.payment_status === 'paid') return
+
+  const now = new Date().toISOString()
+  const method = toQuotePaymentMethod(params.method)
+  const supabase = serverSupabaseServiceRole(event)
+  await supabase
+    .from('quotes')
+    .update({
+      payment_status: 'paid',
+      paid_at: now,
+      status: 'won',
+      decided_at: quote.decided_at || now,
+      ...(method ? { payment_method: method } : {}),
+      ...(params.amountCents == null ? {} : { amount_charged: centsToDollars(params.amountCents) }),
+      ...(params.surchargeCents == null ? {} : { surcharge_amount: centsToDollars(params.surchargeCents) }),
+      ...(params.sessionId ? { stripe_checkout_session_id: params.sessionId } : {}),
+      ...(params.paymentIntentId ? { stripe_payment_intent_id: params.paymentIntentId } : {}),
+      updated_at: now
+    })
+    .eq('id', quote.id)
+}
+
+export const markQuotePaymentStatus = async (
+  event: H3Event,
+  status: 'pending' | 'failed' | 'expired',
+  params: { quoteId?: string | null; sessionId?: string | null; paymentIntentId?: string | null; method?: string | null }
+) => {
+  const quote = await loadQuoteForPaymentUpdate(event, params)
+  if (!quote || quote.payment_status === 'paid') return
+  if (status === 'expired' && quote.payment_status === 'pending') return
+
+  const method = toQuotePaymentMethod(params.method)
+  const supabase = serverSupabaseServiceRole(event)
+  await supabase
+    .from('quotes')
+    .update({
+      payment_status: status,
+      ...(method ? { payment_method: method } : {}),
+      ...(params.sessionId ? { stripe_checkout_session_id: params.sessionId } : {}),
+      ...(params.paymentIntentId ? { stripe_payment_intent_id: params.paymentIntentId } : {}),
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', quote.id)
+}
+
+export const checkoutSessionMatchesQuote = (
+  session: Stripe.Checkout.Session,
+  quote: PayableQuote,
+  token: string
+) => {
+  if (quote.stripe_checkout_session_id && session.id === quote.stripe_checkout_session_id) return true
+  return session.metadata?.payment_token === token || quoteIdFromStripeObject(session) === quote.id
+}
+
+export const applyCompleteCheckoutSession = async (event: H3Event, session: Stripe.Checkout.Session) => {
+  if (session.status !== 'complete') return
+  const method = toQuotePaymentMethod(session.metadata?.payment_method)
+  const surchargeCents = Number(session.metadata?.surcharge_cents || 0)
+  const common = {
+    quoteId: quoteIdFromStripeObject(session),
+    sessionId: session.id,
+    paymentIntentId: checkoutPaymentIntentId(session.payment_intent),
+    method
+  }
+  if (session.payment_status === 'paid') {
+    await markQuotePaid(event, {
+      ...common,
+      amountCents: session.amount_total,
+      surchargeCents: method === 'card' ? surchargeCents : 0
+    })
+  } else {
+    await markQuotePaymentStatus(event, 'pending', common)
+  }
+}
+
+export const syncQuoteFromCheckoutSession = async (
+  event: H3Event,
+  quote: PayableQuote,
+  token: string,
+  sessionId?: string | null
+) => {
+  if (quote.payment_status === 'paid' || quote.payment_status === 'pending') return quote
+  const id = String(sessionId || quote.stripe_checkout_session_id || '').trim()
+  if (!id) return quote
+
+  const stripe = getStripe()
+  let session: Stripe.Checkout.Session
+  try {
+    session = await stripe.checkout.sessions.retrieve(id)
+  } catch (error) {
+    console.error('Could not retrieve Stripe checkout session', id, error)
+    return quote
+  }
+
+  if (!checkoutSessionMatchesQuote(session, quote, token)) {
+    throw createError({ statusCode: 403, statusMessage: 'This checkout does not match this quote.' })
+  }
+
+  await applyCompleteCheckoutSession(event, session)
+  return (await loadQuoteByPaymentToken(event, token)) || quote
 }
 
 export const publicPayPayload = (quote: PayableQuote) => {
@@ -332,7 +498,7 @@ export const createQuoteCheckoutSession = async (
     mode: 'payment',
     customer: customerId,
     client_reference_id: quote.id,
-    success_url: `${payPath}/confirmed`,
+    success_url: `${payPath}/confirmed?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${payPath}?checkout=cancel`,
     line_items: stripeLineItems,
     metadata,

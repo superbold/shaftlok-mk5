@@ -76,7 +76,7 @@ Sailors pay on Shaft Lok first, then Stripe. Associated Bank account numbers are
 2. The public pay page shows quoted total vs card total (3% added **here**, not by Stripe) and two buttons: **Pay by Bank Transfer** / **Pay by Credit Card**.
 3. Each button creates a Stripe Checkout Session with that amount already in it — card sessions accept cards only; bank sessions accept ACH / US bank transfer. Checkout Sessions expire in 24 hours; the quote pay page stays valid for the quote window (~1 month).
 4. Webhook `POST /api/stripe/webhook` sets `payment_status` (`unpaid` / `pending` / `paid` / `failed` / `expired`). **Paid** also sets status to **Won**. Bank transfers can sit on **Pending** until funds clear.
-5. After Stripe, sailors land on `/pay/:token/confirmed` (**Order Confirmed**: quote number + “Thank you for your order. Happy sailing!”). Cancel returns to the pay page. Paid quotes that reopen `/pay/:token` are sent to the confirmed page.
+5. After Stripe, sailors land on `/pay/:token/confirmed` (**Order Confirmed**: quote number + “Thank you for your order. Happy sailing!”). That page asks Stripe for the Checkout Session (it does not wait on the webhook) and will not send them back to pay. Cancel returns to the pay page. Paid quotes that reopen `/pay/:token` are sent to the confirmed page.
 6. Env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, optional `NUXT_PUBLIC_SITE_URL` (defaults to `https://shaftlok.com`). Dashboard: enable Cards, Bank transfers, and ACH; add the live webhook URL; turn on Radar.
 
 Migration: `supabase/migrations/20260921_add_quote_stripe_payment.sql`.

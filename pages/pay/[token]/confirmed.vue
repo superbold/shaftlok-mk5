@@ -25,12 +25,8 @@
         <p v-else-if="isPending" class="confirm-meta pending">
           Bank transfer received. We will mark this quote paid when the funds clear.
         </p>
-        <p v-else-if="waiting" class="confirm-meta confirming">
+        <p v-else class="confirm-meta confirming">
           Confirming your payment with Stripe…
-        </p>
-        <p v-else class="confirm-meta">
-          We have not confirmed this payment yet.
-          <NuxtLink :to="`/pay/${token}`">Return to pay this quote</NuxtLink>
         </p>
       </div>
     </div>
@@ -44,6 +40,7 @@ definePageMeta({ layout: 'default' })
 
 const route = useRoute()
 const token = computed(() => String(route.params.token || ''))
+const sessionId = computed(() => String(route.query.session_id || ''))
 
 useHead({
   title: 'Order Confirmed',
@@ -55,7 +52,6 @@ useHead({
 
 const pay = ref(null)
 const loadError = ref('')
-const waiting = ref(true)
 const isPaid = computed(() => pay.value?.payment_status === 'paid')
 const isPending = computed(() => pay.value?.payment_status === 'pending')
 
@@ -73,7 +69,10 @@ const amountLabel = computed(() => {
 
 const loadPay = async () => {
   try {
-    pay.value = await $fetch(`/api/pay/${encodeURIComponent(token.value)}`)
+    pay.value = await $fetch(`/api/pay/${encodeURIComponent(token.value)}/confirm`, {
+      method: 'POST',
+      body: sessionId.value ? { session_id: sessionId.value } : {}
+    })
     loadError.value = ''
   } catch (err) {
     loadError.value = err.data?.statusMessage || err.message || 'This payment link is not valid.'
@@ -92,23 +91,14 @@ const stopPoll = () => {
 }
 
 onMounted(() => {
-  if (isPaid.value || isPending.value || loadError.value) {
-    waiting.value = false
-    return
-  }
+  if (isPaid.value || isPending.value || loadError.value) return
 
   pollTimer = setInterval(async () => {
     await loadPay()
-    if (isPaid.value || isPending.value) {
-      waiting.value = false
-      stopPoll()
-    }
+    if (isPaid.value || isPending.value || loadError.value) stopPoll()
   }, 2000)
 
-  setTimeout(() => {
-    waiting.value = false
-    stopPoll()
-  }, 16000)
+  setTimeout(stopPoll, 45000)
 })
 
 onUnmounted(stopPoll)
@@ -151,11 +141,6 @@ onUnmounted(stopPoll)
 }
 
 .confirm-status.error { color: #FCA5A5; }
-
-.confirm-meta a {
-  color: var(--gold);
-  text-decoration: underline;
-}
 
 @media (max-width: 600px) {
   .confirm-card { padding: 1.5rem 1.3rem; }
