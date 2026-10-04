@@ -157,6 +157,7 @@
               </div>
               <div v-for="(item, i) in editForm.line_items" :key="i" class="line-item-row">
                 <div class="line-item-qty">
+                  <span class="line-item-label">Qty</span>
                   <input
                     v-if="!isDiscountLine(item)"
                     v-model="item.qty"
@@ -222,7 +223,9 @@
                     Reset from catalog
                   </button>
                 </div>
-                <div class="line-item-price tabbed-field">
+                <div class="line-item-price">
+                  <span class="line-item-label">{{ isDiscountLine(item) ? 'Percent' : 'Unit price' }}</span>
+                  <div class="tabbed-field">
                   <template v-if="isDiscountLine(item)">
                     <span
                       v-if="parseDiscountPercent(item.price) == null"
@@ -262,9 +265,11 @@
                       @input="onLineItemUnitPriceInput(i, $event.target.value)"
                     />
                   </template>
+                  </div>
                 </div>
                 <div class="line-item-total" aria-label="Line total">
-                  {{ formatLineMoney(lineItemLineTotal(item)) }}
+                  <span class="line-item-label">Total</span>
+                  <span class="line-item-total-value">{{ formatLineMoney(lineItemLineTotal(item)) }}</span>
                 </div>
                 <button type="button" class="btn btn-secondary btn-icon line-item-remove" @click="removeLineItem(i)" aria-label="Remove item">
                   <i class="fas fa-times"></i>
@@ -1823,8 +1828,13 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
   min-width: 0;
 }
 
+.line-item-label {
+  display: none;
+}
+
 .line-item-qty {
   flex: 0 0 4.25rem;
+  min-width: 0;
 }
 
 .line-item-qty-placeholder {
@@ -1836,6 +1846,7 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
 
 .line-item-price {
   flex: 0 0 7.5rem;
+  min-width: 0;
 }
 
 .percent-input {
@@ -1857,6 +1868,7 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
 
 .line-item-total {
   flex: 0 0 6.5rem;
+  min-width: 0;
   padding-top: 0.7rem;
   text-align: right;
   font-family: var(--font-display);
@@ -1866,8 +1878,13 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
   white-space: nowrap;
 }
 
+.line-item-total-value {
+  white-space: nowrap;
+}
+
 .line-item-remove {
   flex: 0 0 2.75rem;
+  min-width: 0;
 }
 
 .line-item-hint {
@@ -1881,7 +1898,10 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
   color: #5EEAD4;
 }
 
-.line-item-row select.form-control { width: 100%; }
+.line-item-row .form-control {
+  min-width: 0;
+  max-width: 100%;
+}
 
 .quote-subtotal-row {
   display: flex;
@@ -1966,66 +1986,92 @@ textarea.form-control { resize: vertical; field-sizing: fixed; }
 }
 
 @media (max-width: 640px) {
-  .line-item-head {
-    display: none;
-  }
-
+  .line-item-head { display: none; }
+  .line-item-label { display: block; }
   .line-item-row {
-    flex-wrap: wrap;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    grid-template-areas:
+      "product product"
+      "qty price"
+      "total total";
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--line);
   }
-
-  .line-item-qty {
-    flex: 0 0 4.25rem;
+  .line-item-row .form-control { font-size: 16px; }
+  .line-item-product > .tabbed-field:first-child { margin-right: 3.35rem; }
+  .line-item-remove {
+    position: absolute;
+    top: 0.15rem;
+    right: 0;
+    z-index: 1;
   }
-
-  .line-item-product {
-    flex: 1 1 calc(100% - 5rem);
-  }
-
-  .line-item-price {
-    flex: 0 0 7rem;
-  }
-
+  .line-item-qty-placeholder { text-align: left; padding: 0.65rem 0; }
   .line-item-total {
-    flex: 0 0 6.5rem;
-    padding-top: 0.7rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0;
+    text-align: left;
+    white-space: normal;
   }
-
-  .shipping-fields {
-    grid-template-columns: 1fr;
-  }
+  .shipping-fields { grid-template-columns: 1fr; }
 }
 
 @container (max-width: 700px) {
-  .line-item-head {
-    display: none;
-  }
-
+  .line-item-head { display: none; }
+  .line-item-label { display: block; }
   .line-item-row {
-    flex-wrap: wrap;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    grid-template-areas:
+      "product product"
+      "qty price"
+      "total total";
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--line);
   }
-
-  .line-item-qty {
-    flex: 0 0 4.25rem;
+  .line-item-row .form-control { font-size: 16px; }
+  .line-item-product > .tabbed-field:first-child { margin-right: 3.35rem; }
+  .line-item-remove {
+    position: absolute;
+    top: 0.15rem;
+    right: 0;
+    z-index: 1;
   }
-
-  .line-item-product {
-    flex: 1 1 calc(100% - 5rem);
-  }
-
-  .line-item-price {
-    flex: 0 0 7rem;
-  }
-
+  .line-item-qty-placeholder { text-align: left; padding: 0.65rem 0; }
   .line-item-total {
-    flex: 0 0 6.5rem;
-    padding-top: 0.7rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0;
+    text-align: left;
+    white-space: normal;
   }
-
-  .shipping-fields {
-    grid-template-columns: 1fr;
-  }
+  .shipping-fields { grid-template-columns: 1fr; }
 }
+
+.line-item-label {
+  margin-bottom: 0.25rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  line-height: 1.2;
+}
+
+.line-item-product { grid-area: product; }
+.line-item-qty { grid-area: qty; }
+.line-item-price { grid-area: price; }
+.line-item-total { grid-area: total; }
 
 .btn-icon {
   flex: none;
