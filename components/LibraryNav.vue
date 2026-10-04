@@ -45,6 +45,9 @@
         <NuxtLink to="/yacht-list" class="mobile-link" @click="menuOpen = false">
           <i class="fas fa-ship"></i> Yacht List
         </NuxtLink>
+        <NuxtLink to="/users-manual" class="mobile-link" @click="menuOpen = false">
+          <i class="fas fa-book-open"></i> Users Manual
+        </NuxtLink>
         <button type="button" class="mobile-link mobile-signout" @click="emit('sign-out')">
           <i class="fas fa-sign-out-alt"></i> Sign Out
         </button>

@@ -1,6 +1,6 @@
 # Shaft Lok MK4 - Nuxt Migration & Enhancements
 
-> **Historical note (August 2026):** This document captures the MK3 → MK4 migration. Several sections are outdated — notably **static product pages** under `pages/products/*.vue`, which were replaced by Supabase-driven `/products/[slug]` and admin editing at `/products/manage`. For current product behavior, see `docs/_Shaft-Lok-Website-Handbook.md` (Product Management section).
+> **Historical note (August 2026):** This document captures the MK3 → MK4 migration. Several sections are outdated — notably **static product pages** under `pages/products/*.vue`, which were replaced by Supabase-driven `/products/[slug]` and admin editing at `/products/manage`. For current product behavior, see `docs/_Shaft-Lok-Developers-Guide.md` (Product Management section).
 
 ## Overview
 

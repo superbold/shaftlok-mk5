@@ -187,7 +187,7 @@ A Privacy Policy page (`/privacy`) was added to satisfy **GDPR** obligations tha
 
 ## 📊 Analytics
 
-The site uses Google Analytics 4 (GA4), Measurement ID `G-XDWZW2TCLR`. See the [Google Analytics section](./docs/_Shaft-Lok-WebSite-Handbook.md#google-analytics-ga4) of the Handbook for how it's wired up, how to update the ID, and known data-quality caveats.
+The site uses Google Analytics 4 (GA4), Measurement ID `G-XDWZW2TCLR`. See the [Google Analytics section](./docs/_Shaft-Lok-Developers-Guide.md#google-analytics-ga4) of the Developers Guide for how it's wired up, how to update the ID, and known data-quality caveats.
 
 ## 📝 License
 

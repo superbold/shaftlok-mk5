@@ -198,6 +198,20 @@
                 <span>Shaft Lok Library</span>
               </div>
             </label>
+
+            <label class="radio-option">
+              <input
+                type="radio"
+                v-model="adminChoice"
+                value="users-manual"
+                name="admin-choice"
+              >
+              <span class="radio-custom"></span>
+              <div class="option-content">
+                <i class="fas fa-book-open"></i>
+                <span>Users Manual</span>
+              </div>
+            </label>
           </div>
         </div>
 
@@ -384,6 +398,8 @@ const proceedToAdminArea = async () => {
     await router.push('/products/manage')
   } else if (adminChoice.value === 'library') {
     await router.push('/library')
+  } else if (adminChoice.value === 'users-manual') {
+    await router.push('/users-manual')
   }
   showAdminModal.value = false
 }

@@ -1,6 +1,6 @@
 # Backlog
 
-Prioritized open work for Shaft Lok MK5. Completed items live at the bottom under **Done**. For how shipped features work today, see `docs/_Shaft-Lok-Website-Handbook.md`.
+Prioritized open work for Shaft Lok MK5. Completed items live at the bottom under **Done**. For how shipped features work today, see `docs/_Shaft-Lok-Developers-Guide.md`. Owner-facing steps are in `docs/_Shaft-Lok-Users-Manual.md`.
 
 ---
 
@@ -115,11 +115,11 @@ Send button spells out which requirements are still missing (price, message) via
 
 ### Supabase-backed product pages & admin editing ✓
 
-Dynamic `/products/[slug]` from the `products` table; admin CRUD at `/products/manage` with structured fields (`details` intro, `features` highlight cards, `specs` detail bullets, tagline, price, visibility). Handbook: Product Management section.
+Dynamic `/products/[slug]` from the `products` table; admin CRUD at `/products/manage` with structured fields (`details` intro, `features` highlight cards, `specs` detail bullets, tagline, price, visibility). Developers Guide: Product Management section.
 
 ### QMS proactive send validation ✓
 
-Item prices, Shipping (details + price), and Message fields highlight with inline hints while empty. Send requires priced line items plus shipping and message (status stays New until send). Handbook: "Send Quote to Sailor" button gating.
+Item prices, Shipping (details + price), and Message fields highlight with inline hints while empty. Send requires priced line items plus shipping and message (status stays New until send). Developers Guide: "Send Quote to Sailor" button gating.
 
 ### Simplified quote statuses ✓
 

@@ -27,6 +27,7 @@ Disallow: /private/
 Disallow: /temp/
 Disallow: /tmp/
 Disallow: /pay
+Disallow: /users-manual
 
 # Block access to development and build files
 User-agent: *

@@ -60,6 +60,7 @@
         <NuxtLink to="/library" class="mobile-link" @click="menuOpen = false"><i class="fas fa-book"></i> Shaft Lok Library</NuxtLink>
         <NuxtLink to="/yacht-list" class="mobile-link" @click="menuOpen = false"><i class="fas fa-ship"></i> Yacht List</NuxtLink>
         <NuxtLink to="/products/manage" class="mobile-link" @click="menuOpen = false"><i class="fas fa-cogs"></i> Product Management</NuxtLink>
+        <NuxtLink to="/users-manual" class="mobile-link" @click="menuOpen = false"><i class="fas fa-book-open"></i> Users Manual</NuxtLink>
         <button @click="emit('sign-out')" class="mobile-link mobile-signout">
           <i class="fas fa-sign-out-alt"></i> Sign Out
         </button>

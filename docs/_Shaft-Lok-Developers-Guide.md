@@ -1,6 +1,6 @@
-# Shaft Lok Handbook
+# Shaft Lok Developers Guide
 
-Reference notes on how parts of the site work, for whoever's picking this up later (including future-us). Unlike `docs/*.md`, which capture the reasoning behind a specific change, this is meant to describe current behavior — update it in place as things change rather than leaving stale entries.
+Technical notes on how the site works, for whoever is maintaining it. The owner-facing companion is `docs/_Shaft-Lok-Users-Manual.md`. Unlike other `docs/*.md` files, which capture the reasoning behind a specific change, this guide describes current behavior — update it in place as things change, and update the Users Manual in the same change when the owner’s steps change.
 
 ## Quote Management System (QMS)
 
@@ -89,7 +89,7 @@ On `/quote`, an always-on optional checkbox **“I may need a custom bore”** s
 
 ## Admin chrome
 
-Admin pages (QMS, Library, Product Management, and Yacht List while Sean is signed in) use a **red** house breadcrumb and hamburger so they are visually distinct from the public site. The house goes to `/adminaccess` (the area picker) — not the public homepage. The Shaft Lok logo in those headers goes to `/` (the public landing page).
+Admin pages (QMS, Library, Product Management, Users Manual, and Yacht List while Sean is signed in) use a **red** house breadcrumb and hamburger so they are visually distinct from the public site. The house goes to `/adminaccess` (the area picker) — not the public homepage. The Shaft Lok logo in those headers goes to `/` (the public landing page). **Users Manual** (`/users-manual`) renders `docs/_Shaft-Lok-Users-Manual.md` for the signed-in owner.
 
 `/adminaccess` shows the sign-in form to visitors. If Sean is already signed in, it skips the form and opens the same “which area?” picker. Overlay click does not dismiss it; **Public site** goes to `/`.
 
