@@ -52,6 +52,17 @@
                   {{ sending ? 'Sending...' : 'Send Quote' }}
                 </button>
                 <button
+                  v-if="quote.sent_html"
+                  type="button"
+                  class="btn btn-secondary"
+                  :disabled="copyingQuoteLink"
+                  @click="copyQuoteLink"
+                >
+                  <i class="fas fa-spinner fa-spin" v-if="copyingQuoteLink"></i>
+                  <i class="fas fa-link" v-else></i>
+                  Copy quote link
+                </button>
+                <button
                   v-if="sailorPayUrl"
                   type="button"
                   class="btn btn-secondary"
@@ -89,6 +100,9 @@
           <p v-if="missingSendRequirements.length" class="send-hint">{{ sendRequirementsHint }}</p>
           <p v-else-if="editForm.status === 'new'" class="field-hint field-hint-ready">
             Ready to send — items, shipping, and message are filled in.
+          </p>
+          <p v-if="quote.sent_html" class="field-hint">
+            If the sailor does not see the email, it may be in junk. Copy quote link and paste it into the email thread you already have with them.
           </p>
         </div>
 
@@ -577,6 +591,7 @@ const loading = ref(true)
 const error = ref(null)
 const saving = ref(false)
 const sending = ref(false)
+const copyingQuoteLink = ref(false)
 const deciding = ref(false)
 const saveMessage = ref('')
 const saveError = ref(false)
@@ -1127,6 +1142,25 @@ const sendRequirementsHint = computed(() => {
   return `Before sending, you still need ${rest.join(', ')} and ${last}.`
 })
 
+const copyQuoteLink = async () => {
+  if (!quote.value?.sent_html || copyingQuoteLink.value) return
+  try {
+    copyingQuoteLink.value = true
+    const { url } = await $fetch('/api/qms/quote-link', {
+      method: 'POST',
+      body: { quoteId: quote.value.id }
+    })
+    await navigator.clipboard.writeText(url)
+    saveError.value = false
+    saveMessage.value = 'Quote link copied. Paste it into the email thread you already have with the sailor.'
+  } catch (err) {
+    saveError.value = true
+    saveMessage.value = err.data?.statusMessage || 'Could not copy the quote link.'
+  } finally {
+    copyingQuoteLink.value = false
+  }
+}
+
 const copyPayLink = async () => {
   if (!sailorPayUrl.value) return
   try {
@@ -1321,7 +1355,7 @@ const sendQuote = async () => {
     await $fetch('/api/qms/send-quote', { method: 'POST', body: { quoteId: quote.value.id } })
 
     await loadQuote()
-    saveMessage.value = 'Quote sent to sailor.'
+    saveMessage.value = 'Quote sent to sailor. If they do not see it, it may be in junk — use Copy quote link in the email thread you already have with them.'
   } catch (err) {
     console.error('Error sending quote:', err)
     saveError.value = true

@@ -46,6 +46,10 @@ Each emailed quote is valid for one calendar month from the day you send it. The
 
 You can attach files from the Shaft Lok Library before you send. The sailor receives those files with the email.
 
+You are copied on that email at sean.nigel@shaftlok.com. The copy matches what the sailor receives. A reply comes back to that mailbox, in the same thread.
+
+The quote email sometimes lands in the sailor’s junk folder. After a quote has been sent, **Copy quote link** copies a web address for that same quote. Paste it into the email thread you already have with the sailor. They open the quote in a browser. You do not need to send a screenshot.
+
 ## Payments
 
 Payment is through Stripe. Old bank-wire instructions are no longer included in quotes.

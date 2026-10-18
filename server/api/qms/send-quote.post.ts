@@ -5,8 +5,8 @@ import { formatQuoteValidUntil } from '~/utils/quoteValidity'
 import { formatQuoteNumber, quoteNumberFor } from '~/utils/quoteNumber'
 import { clampDiscountPercent, customLineNeedsName, isDiscountLine, parseLineQty, quotedItemsNetTotal } from '~/utils/quoteLineItem'
 import { quoteHidesPayment } from '~/utils/quotePayment'
-import { buildSailorQuoteHtml } from '~/utils/sailorQuoteHtml'
-import { getStripe, newPaymentToken, quotePayUrl } from '~~/server/utils/stripePay'
+import { buildSailorQuoteHtml, buildSailorQuoteText } from '~/utils/sailorQuoteHtml'
+import { getSiteUrl, getStripe, newPaymentToken, quotePayUrl } from '~~/server/utils/stripePay'
 
 export default defineEventHandler(async (event) => {
   const user = await serverSupabaseUser(event)
@@ -87,11 +87,12 @@ export default defineEventHandler(async (event) => {
 
   const resend = new Resend(apiKey)
 
-  // Whichever admin sends the quote becomes the reply-to (so sailor replies
-  // land with whoever actually handled it); the other admin is cc'd.
-  const ADMIN_EMAILS = ['sean.nigel@shaftlok.com', 'shaftlok@att.net']
-  const senderEmail = ADMIN_EMAILS.includes(user.email ?? '') ? user.email! : ADMIN_EMAILS[0]
-  const ccEmails = ADMIN_EMAILS.filter((adminEmail) => adminEmail !== senderEmail)
+  // The owner is Reply-To and Cc, so he sees the quote the sailor sees and a
+  // reply comes back to that same inbox. Skip Cc when the sailor address is
+  // already the owner (a test send).
+  const OWNER_EMAIL = 'sean.nigel@shaftlok.com'
+  const sailorEmail = String(quote.email || '').trim().toLowerCase()
+  const ccEmails = sailorEmail === OWNER_EMAIL ? [] : [OWNER_EMAIL]
 
   const shippingPrice = Number(quote.shipping_price)
   const sentAt = new Date().toISOString()
@@ -173,7 +174,10 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const html = buildSailorQuoteHtml({
+  const viewToken = quote.view_token || newPaymentToken()
+  const viewUrl = `${getSiteUrl()}/q/${encodeURIComponent(viewToken)}`
+
+  const sailorQuote = {
     name: quote.name,
     email: quote.email,
     company: quote.company,
@@ -204,16 +208,21 @@ export default defineEventHandler(async (event) => {
     warnings: getApplicableWarnings(normalizedLineItems),
     valid_until_label: validUntilLabel,
     pay_url: includePayment && paymentToken ? quotePayUrl(paymentToken) : null,
-    include_payment: includePayment
-  })
+    include_payment: includePayment,
+    view_url: viewUrl
+  }
+
+  const html = buildSailorQuoteHtml(sailorQuote)
+  const text = buildSailorQuoteText(sailorQuote)
 
   await resend.emails.send({
     from: 'Shaft Lok Quotes <quote@contact.shaftlok.com>',
     to: quote.email,
-    replyTo: senderEmail,
-    cc: ccEmails,
+    replyTo: OWNER_EMAIL,
+    ...(ccEmails.length ? { cc: ccEmails } : {}),
     subject: quoteNumber ? `Your Shaft Lok Quote ${quoteNumber}` : 'Your Shaft Lok Quote',
     html,
+    text,
     ...(emailAttachments.length ? { attachments: emailAttachments } : {})
   })
 
@@ -226,6 +235,7 @@ export default defineEventHandler(async (event) => {
       attachment_ids: attachmentIds,
       sent_at: sentAt,
       sent_html: html,
+      view_token: viewToken,
       quote_number: quoteNumber,
       sent_quoted_price: productsPrice,
       sent_quote_notes: quote.quote_notes,

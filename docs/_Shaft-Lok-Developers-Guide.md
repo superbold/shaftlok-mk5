@@ -68,6 +68,19 @@ In `pages/qms/[id].vue`, the Send button is disabled unless **every quoted item 
 
 **Quote email**: Quote Total (Products / Shipping / Total), a **Valid until** line (exactly one calendar month from send), then Items Quoted with each line's name, detail, and price, then message, warnings, payment, and terms. Payment is Stripe only (Associated Bank wire copy is OBE). **Hide Payment** on the QMS quote (default **On**) omits the Payment card and pay buttons from the Email to Sailor until Sean turns it off. When payment is included, the email states the quoted total for bank transfer and the card total (quoted total + 3% processing fee), then **Pay by Bank Transfer** and **Pay by Credit Card** buttons to `/pay/:token`. Validity is display-only — status stays manual (Followed up / Dead) unless Stripe marks the quote paid. Re-send refreshes `sent_at` and the validity window. QMS “Sent to Sailor” shows the same valid-until date.
 
+Send Cc's `sean.nigel@shaftlok.com` and sets Reply-To to that address, so the sailor's reply returns to the inbox that already has the quote. Cc is omitted when the quote is addressed to the owner.
+
+The sailor email is multipart: HTML plus a plain-text copy (`buildSailorQuoteText`), which is less likely to be filed as junk. Send also stores `quotes.view_token` and puts `https://shaftlok.com/q/:token` in the message. `q` is short for quote, so the link Sean pastes into an existing email thread stays short. It is not `/quote` (the public inquiry form) or `/qms` (admin). The page is noindex and renders `sent_html` only — the copy that was emailed, not the live draft.
+
+**Copy quote link** on the quote calls `POST /api/qms/quote-link` and copies that same URL. For a quote sent before the column existed, that call creates the token. Use it when the email landed in junk and Sean already has a thread with the sailor.
+
+Each of these is required for that link:
+
+- `supabase/migrations/20261018_add_quote_view_token.sql` adds `quotes.view_token` and a unique index. Without the column, Send and **Copy quote link** have nowhere to store the secret in the URL. Run it once in the Supabase project the live site uses (`ADD COLUMN IF NOT EXISTS`, so running it again is safe).
+- `server/api/qms/quote-link.post.ts` is what **Copy quote link** calls. It returns the address to paste, and creates a token when the sent quote does not have one yet.
+- `pages/q/` is the page at `shaftlok.com/q/…`. That is what the sailor opens from the pasted link. A token that is not 64 hex characters never calls the API; the page says the link is not available. That avoids the dev server hanging on a server render that fetches itself.
+- `server/api/q/` loads the emailed quote for that page (`GET /api/q/:token`). It looks up `view_token` and returns `sent_html` only.
+
 ### Stripe payments
 
 Sailors pay on Shaft Lok first, then Stripe. Associated Bank account numbers are not included in quotes.

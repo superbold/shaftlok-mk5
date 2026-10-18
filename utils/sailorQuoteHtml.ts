@@ -136,6 +136,19 @@ export type SailorQuoteInput = {
   valid_until_label: string
   pay_url?: string | null
   include_payment?: boolean
+  view_url?: string | null
+}
+
+const payHrefs = (input: SailorQuoteInput) => {
+  const includePayment = input.include_payment !== false
+  const payHref = includePayment ? String(input.pay_url || '').trim() : ''
+  if (!payHref) return { includePayment, bankHref: '', cardHref: '' }
+  const paySep = payHref.includes('?') ? '&' : '?'
+  return {
+    includePayment,
+    bankHref: `${payHref}${paySep}method=bank`,
+    cardHref: `${payHref}${paySep}method=card`
+  }
 }
 
 export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
@@ -222,13 +235,9 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
     ).join('')
   )
 
-  const includePayment = input.include_payment !== false
+  const { includePayment, bankHref, cardHref } = payHrefs(input)
   const paymentCopy = paymentCopyForTotal(input.products_price, input.shipping_price)
-  const payHref = includePayment ? String(input.pay_url || '').trim() : ''
-  const paySep = payHref.includes('?') ? '&' : '?'
-  const bankHref = payHref ? `${payHref}${paySep}method=bank` : ''
-  const cardHref = payHref ? `${payHref}${paySep}method=card` : ''
-  const payButton = payHref
+  const payButton = bankHref
     ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:16px 0 4px">
           <tr>
             <td style="border-radius:8px;background:#0369A1">
@@ -283,6 +292,11 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
         </p>` : ''}
       </div>`
 
+  const viewUrl = String(input.view_url || '').trim()
+  const viewHtml = viewUrl
+    ? `<p style="margin:0 0 20px;font-family:sans-serif;font-size:14px;color:#334155;line-height:1.6">You can also open this quote in your browser:<br><a href="${escapeHtml(viewUrl)}" style="color:#0369A1;word-break:break-all">${escapeHtml(viewUrl)}</a></p>`
+    : ''
+
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
@@ -306,6 +320,7 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
       ${termsHtml}
       ${paymentHtml}
       ${totalHtml}
+      ${viewHtml}
 
       <p style="margin:0;font-family:sans-serif;font-size:14px;color:#334155">
         Questions? Just reply to this email and we'll help you out.
@@ -318,6 +333,128 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
   </div>
 </body>
 </html>`
+}
+
+const textLine = (label: string, value: unknown) => {
+  const text = String(value ?? '').trim()
+  return text ? `${label}: ${text}` : ''
+}
+
+export const buildSailorQuoteText = (input: SailorQuoteInput) => {
+  const vessel = [input.yacht_type, input.yacht_name].filter(Boolean).join(' — ')
+  const grandTotal = Number(input.products_price || 0) + Number(input.shipping_price || 0)
+  const shippingNotes = String(input.shipping_notes || '').trim()
+  const { includePayment, bankHref, cardHref } = payHrefs(input)
+  const paymentCopy = includePayment ? paymentCopyForTotal(input.products_price, input.shipping_price) : null
+  const productItems = input.line_items.filter((item) => !isDiscountLine(item))
+  const productsGross = Number(
+    productItems.reduce((sum, item) => {
+      const qty = parseLineQty(item.qty)
+      const unit = Number(item.price) || 0
+      return sum + lineItemAmount(unit, qty)
+    }, 0).toFixed(2)
+  )
+
+  const lines: string[] = [
+    `Hi ${String(input.name || '').trim() || 'there'},`,
+    '',
+    `Thanks for your interest${vessel ? ` in outfitting ${vessel}` : ''}. Here is your Shaft Lok quote${input.quote_number ? ` ${input.quote_number}` : ''}.`,
+    '',
+    String(input.quote_notes || '').trim(),
+    '',
+    'Items quoted'
+  ]
+
+  for (const item of input.line_items) {
+    if (isDiscountLine(item)) {
+      const percent = clampDiscountPercent(item.price)
+      const amount = percent == null ? null : discountLineAmount(productsGross, percent)
+      const name = item.product_name || 'Discount'
+      lines.push(`- ${name}${item.detail ? ` — ${item.detail}` : ''}: ${percent == null ? '—' : `${percent}%`}${amount == null ? '' : ` (${money(-amount)})`}`)
+      continue
+    }
+    const qty = parseLineQty(item.qty)
+    const unit = Number(item.price) || 0
+    const name = isCustomLine(item)
+      ? (String(item.product_name || '').trim() || CUSTOM_ITEM_LINE_NAME)
+      : item.product_name
+    lines.push(`- ${name}${item.detail ? ` — ${item.detail}` : ''}: ${qty} x ${money(unit)} = ${money(lineItemAmount(unit, qty))}`)
+  }
+
+  lines.push(
+    '',
+    `Products: ${money(input.products_price)}`,
+    `Shipping${shippingNotes ? ` — ${shippingNotes}` : ''}: ${money(input.shipping_price)}`,
+    `Total: ${money(grandTotal)}`,
+    `This quote is valid until ${input.valid_until_label}. After that date, prices and terms may change.`
+  )
+
+  if (includePayment && paymentCopy) {
+    lines.push(`Bank transfer ${money(grandTotal)}. Credit card ${money(paymentCopy.totals.cardTotal)} (includes a 3% processing fee of ${money(paymentCopy.totals.surcharge)}).`)
+  }
+
+  const inquiry = [
+    textLine('Name', input.name),
+    textLine('Email', input.email),
+    textLine('Company', input.company),
+    textLine('Phone', phoneLabel(input.phone, input.phone_region)),
+    textLine('Address', input.address),
+    textLine('Yacht Type & Length', input.yacht_type),
+    textLine('Yacht Name', input.yacht_name),
+    textLine('Displacement', input.displacement),
+    textLine('Max Hull Speed', input.max_hull_speed),
+    textLine('Shaft Diameter', input.shaft_diameter),
+    textLine('Propeller Diameter', input.prop_diameter),
+    textLine('Propeller Pitch', input.prop_pitch),
+    textLine('Number of Blades', input.num_blades),
+    textLine('Number of Propellers / Shafts', input.num_propellers),
+    textLine('Fixed / Folding / Feathering', input.prop_type),
+    textLine('Engine Make & HP', input.engine),
+    textLine('Transmission Make & Ratio', input.transmission),
+    textLine('Interested In', lockingLabel(input.locking_system, input.cable_length))
+  ].filter(Boolean)
+
+  if (inquiry.length || input.notes?.trim()) {
+    lines.push('', 'Inquiry', ...inquiry)
+    if (input.notes?.trim()) lines.push(input.notes.trim())
+  }
+
+  for (const warning of input.warnings) {
+    lines.push('', warning.title, ...warning.paragraphs)
+  }
+
+  lines.push('', 'Terms and conditions')
+  TERMS_AND_CONDITIONS.forEach((term, index) => {
+    lines.push(`${index + 1}. ${term}`)
+  })
+
+  if (includePayment && paymentCopy) {
+    lines.push(
+      '',
+      'Payment',
+      paymentCopy.intro,
+      paymentCopy.surchargeWarning,
+      paymentCopy.method
+    )
+    if (bankHref) lines.push(`Pay by Bank Transfer: ${bankHref}`)
+    if (cardHref) lines.push(`Pay by Credit Card: ${cardHref}`)
+    lines.push(paymentCopy.support)
+  }
+
+  const viewUrl = String(input.view_url || '').trim()
+  if (viewUrl) {
+    lines.push('', `Open this quote in your browser: ${viewUrl}`)
+  }
+
+  lines.push(
+    '',
+    "Questions? Just reply to this email and we'll help you out.",
+    '',
+    'Shaft Lok Inc.',
+    'https://shaftlok.com'
+  )
+
+  return lines.join('\n')
 }
 
 const SENT_CARD_RE = /<div style="background:rgba\(148,197,255,0\.06\);border:1px solid rgba\(148,197,255,0\.18\);border-radius:10px;padding:18px 20px;margin-bottom:24px">[\s\S]*?<\/div>/g
