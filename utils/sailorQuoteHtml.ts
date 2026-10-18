@@ -27,8 +27,8 @@ const money = (value: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value) || 0)
 
 const card = (title: string, body: string) => `
-      <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
-        <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">${escapeHtml(title)}</p>
+      <div style="background:#FFFFFF;border:1px solid #D3DEE9;border-radius:10px;padding:18px 20px;margin-bottom:24px">
+        <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#075985">${escapeHtml(title)}</p>
         ${body}
       </div>`
 
@@ -43,17 +43,17 @@ const itemsQuotedTableHtml = (rows: {
   unitPriceHtml: string
   totalHtml: string
 }[]) =>
-  `<table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;color:#EFF6FF">
+  `<table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;color:#0A2540">
           <tr>
-            <td style="padding:0 12px 8px 0;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Qty</td>
-            <td style="padding:0 12px 8px 0;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Item</td>
-            <td style="padding:0 12px 8px 0;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Unit Price</td>
-            <td style="padding:0 0 8px;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Total</td>
+            <td style="padding:0 12px 8px 0;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#075985;white-space:nowrap">Qty</td>
+            <td style="padding:0 12px 8px 0;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#075985">Item</td>
+            <td style="padding:0 12px 8px 0;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#075985;white-space:nowrap">Unit Price</td>
+            <td style="padding:0 0 8px;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#075985;white-space:nowrap">Total</td>
           </tr>
           ${rows.map((row) => `
           <tr>
-            <td style="padding:0 12px 10px 0;text-align:right;white-space:nowrap;vertical-align:top;color:#A8BEDC">${row.qty}</td>
-            <td style="padding:0 12px 10px 0;vertical-align:top;color:#EFF6FF">${row.itemHtml}</td>
+            <td style="padding:0 12px 10px 0;text-align:right;white-space:nowrap;vertical-align:top;color:#475569">${row.qty}</td>
+            <td style="padding:0 12px 10px 0;vertical-align:top;color:#0A2540">${row.itemHtml}</td>
             <td style="padding:0 12px 10px 0;text-align:right;white-space:nowrap;vertical-align:top">${row.unitPriceHtml}</td>
             <td style="padding:0 0 10px;text-align:right;white-space:nowrap;vertical-align:top">${row.totalHtml}</td>
           </tr>`).join('')}
@@ -74,7 +74,7 @@ const itemsQuotedRow = (itemHtml: string, qtyRaw: string | number, totalHtml: st
 const field = (label: string, value: unknown) => {
   const text = String(value ?? '').trim()
   if (!text) return ''
-  return `<p style="margin:0 0 8px;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6"><span style="color:#6B7FA8">${escapeHtml(label)}: </span><span style="color:#EFF6FF">${escapeHtml(text)}</span></p>`
+  return `<p style="margin:0 0 8px;font-family:sans-serif;font-size:13px;color:#334155;line-height:1.6"><span style="color:#475569">${escapeHtml(label)}: </span><span style="color:#0A2540">${escapeHtml(text)}</span></p>`
 }
 
 const lockingLabel = (lockingSystem?: string | null, cableLength?: string | null) => {
@@ -164,7 +164,7 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
     field('Transmission Make & Ratio', input.transmission),
     field('Interested In', lockingLabel(input.locking_system, input.cable_length)),
     input.notes?.trim()
-      ? `<p style="margin:8px 0 0;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6;white-space:pre-wrap">${escapeHtml(input.notes)}</p>`
+      ? `<p style="margin:8px 0 0;font-family:sans-serif;font-size:13px;color:#0A2540;line-height:1.6;white-space:pre-wrap">${escapeHtml(input.notes)}</p>`
       : ''
   ].join('')
 
@@ -210,7 +210,7 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
     card(
       warning.title,
       warning.paragraphs
-        .map((p) => `<p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.7">${p}</p>`)
+        .map((p) => `<p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#334155;line-height:1.7">${p}</p>`)
         .join('')
     )
   ).join('')
@@ -218,7 +218,7 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
   const termsHtml = card(
     'Terms and Conditions',
     TERMS_AND_CONDITIONS.map((term, index) =>
-      `<p style="margin:0 0 ${index === TERMS_AND_CONDITIONS.length - 1 ? '0' : '10px'};font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.7">${index + 1}. ${escapeHtml(term)}</p>`
+      `<p style="margin:0 0 ${index === TERMS_AND_CONDITIONS.length - 1 ? '0' : '10px'};font-family:sans-serif;font-size:13px;color:#334155;line-height:1.7">${index + 1}. ${escapeHtml(term)}</p>`
     ).join('')
   )
 
@@ -231,54 +231,54 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
   const payButton = payHref
     ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:16px 0 4px">
           <tr>
-            <td style="border-radius:8px;background:#38BDF8">
-              <a href="${escapeHtml(bankHref)}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:sans-serif;font-size:15px;font-weight:700;color:#04101C;text-decoration:none">Pay by Bank Transfer · ${money(paymentCopy.totals.grandTotal)}</a>
+            <td style="border-radius:8px;background:#0369A1">
+              <a href="${escapeHtml(bankHref)}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:sans-serif;font-size:15px;font-weight:700;color:#FFFFFF;text-decoration:none">Pay by Bank Transfer · ${money(paymentCopy.totals.grandTotal)}</a>
             </td>
           </tr>
           <tr>
             <td height="12" style="font-size:12px;line-height:12px">&nbsp;</td>
           </tr>
           <tr>
-            <td style="border-radius:8px;background:#F5C66B">
-              <a href="${escapeHtml(cardHref)}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:sans-serif;font-size:15px;font-weight:700;color:#04101C;text-decoration:none">Pay by Credit Card · ${money(paymentCopy.totals.cardTotal)}</a>
+            <td style="border-radius:8px;background:#FFFFFF;border:1px solid #0369A1">
+              <a href="${escapeHtml(cardHref)}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:sans-serif;font-size:15px;font-weight:700;color:#0369A1;text-decoration:none">Pay by Credit Card · ${money(paymentCopy.totals.cardTotal)}</a>
             </td>
           </tr>
         </table>
-        <p style="margin:8px 0 0;font-family:sans-serif;font-size:12px;color:#6B7FA8;line-height:1.6">Credit card includes a 3% processing fee of ${money(paymentCopy.totals.surcharge)}. Bank transfer has no extra fee. You will see these amounts again before Stripe.</p>`
+        <p style="margin:8px 0 0;font-family:sans-serif;font-size:12px;color:#475569;line-height:1.6">Credit card includes a 3% processing fee of ${money(paymentCopy.totals.surcharge)}. Bank transfer has no extra fee. You will see these amounts again before Stripe.</p>`
     : ''
 
   const paymentHtml = includePayment
     ? card(
       'Payment',
-      `<p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6">${escapeHtml(paymentCopy.intro)}</p>
-        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#F5C66B;line-height:1.6">${escapeHtml(paymentCopy.surchargeWarning)}</p>
-        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#EFF6FF;line-height:1.6">${escapeHtml(paymentCopy.method)}</p>
+      `<p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#0A2540;line-height:1.6">${escapeHtml(paymentCopy.intro)}</p>
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#92400E;line-height:1.6">${escapeHtml(paymentCopy.surchargeWarning)}</p>
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;color:#0A2540;line-height:1.6">${escapeHtml(paymentCopy.method)}</p>
         ${payButton}
-        <p style="margin:${payButton ? '12px' : '0'} 0 0;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6">${escapeHtml(paymentCopy.support)}</p>`
+        <p style="margin:${payButton ? '12px' : '0'} 0 0;font-family:sans-serif;font-size:13px;color:#334155;line-height:1.6">${escapeHtml(paymentCopy.support)}</p>`
     )
     : ''
 
   const totalHtml = `
-      <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.25);border-radius:10px;padding:18px 20px;margin-bottom:24px">
-        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Quote Total</p>
-        <table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;color:#EFF6FF">
+      <div style="background:#F0F7FC;border:1px solid #BAE6FD;border-radius:10px;padding:18px 20px;margin-bottom:24px">
+        <p style="margin:0 0 12px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#075985">Quote Total</p>
+        <table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;color:#0A2540">
           <tr>
-            <td style="padding:0 0 8px;color:#A8BEDC">Products</td>
+            <td style="padding:0 0 8px;color:#475569">Products</td>
             <td style="padding:0 0 8px;text-align:right">${money(input.products_price)}</td>
           </tr>
           <tr>
-            <td style="padding:0 0 8px;color:#A8BEDC">Shipping${shippingNotes ? ` — ${shippingNotes}` : ''}</td>
+            <td style="padding:0 0 8px;color:#475569">Shipping${shippingNotes ? ` — ${shippingNotes}` : ''}</td>
             <td style="padding:0 0 8px;text-align:right">${money(input.shipping_price)}</td>
           </tr>
           <tr>
-            <td style="padding:10px 0 0;border-top:1px solid rgba(56,189,248,0.25);font-weight:700">Total</td>
-            <td style="padding:10px 0 0;border-top:1px solid rgba(56,189,248,0.25);text-align:right;font-size:22px;font-weight:700">${money(grandTotal)}</td>
+            <td style="padding:10px 0 0;border-top:1px solid #BAE6FD;font-weight:700">Total</td>
+            <td style="padding:10px 0 0;border-top:1px solid #BAE6FD;text-align:right;font-size:22px;font-weight:700">${money(grandTotal)}</td>
           </tr>
         </table>
-        <p style="margin:14px 0 0;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6">
-          This quote is valid until <strong style="color:#EFF6FF">${escapeHtml(input.valid_until_label)}</strong>. After that date, prices and terms may change.
+        <p style="margin:14px 0 0;font-family:sans-serif;font-size:13px;color:#334155;line-height:1.6">
+          This quote is valid until <strong style="color:#0A2540">${escapeHtml(input.valid_until_label)}</strong>. After that date, prices and terms may change.
         </p>
-        ${includePayment ? `<p style="margin:10px 0 0;font-family:sans-serif;font-size:13px;color:#F5C66B;line-height:1.6">
+        ${includePayment ? `<p style="margin:10px 0 0;font-family:sans-serif;font-size:13px;color:#92400E;line-height:1.6">
           Bank transfer ${money(grandTotal)}. Credit card ${money(paymentCopy.totals.cardTotal)} (includes a 3% processing fee of ${money(paymentCopy.totals.surcharge)}).
         </p>` : ''}
       </div>`
@@ -286,20 +286,20 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
-<body style="background:#040A18;margin:0;padding:32px 16px">
-  <div style="max-width:600px;margin:0 auto;background:#081226;border:1px solid rgba(56,189,248,0.2);border-radius:16px;overflow:hidden">
-    <div style="background:linear-gradient(135deg,#0D1B36,#071020);padding:28px 32px;border-bottom:1px solid rgba(56,189,248,0.15)">
-      <p style="margin:0 0 4px;font-family:sans-serif;font-size:12px;letter-spacing:0.12em;color:#38BDF8;text-transform:uppercase">Shaft Lok Inc.</p>
-      <h1 style="margin:0;font-family:sans-serif;font-size:22px;color:#EFF6FF">Your Shaft Lok Quote</h1>
-      ${input.quote_number ? `<p style="margin:8px 0 0;font-family:sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#38BDF8">Quote ${escapeHtml(input.quote_number)}</p>` : ''}
+<body style="background:#FFFFFF;margin:0;padding:32px 16px">
+  <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #D3DEE9;border-top:3px solid #0369A1;border-radius:16px;overflow:hidden">
+    <div style="background:#FFFFFF;padding:28px 32px;border-bottom:1px solid #D3DEE9">
+      <p style="margin:0 0 4px;font-family:sans-serif;font-size:12px;letter-spacing:0.12em;color:#075985;text-transform:uppercase">Shaft Lok Inc.</p>
+      <h1 style="margin:0;font-family:sans-serif;font-size:22px;color:#0A2540">Your Shaft Lok Quote</h1>
+      ${input.quote_number ? `<p style="margin:8px 0 0;font-family:sans-serif;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#075985">Quote ${escapeHtml(input.quote_number)}</p>` : ''}
     </div>
 
     <div style="padding:28px 32px">
-      <p style="margin:0 0 20px;font-family:sans-serif;font-size:14px;color:#A8BEDC">
-        Hi ${safeName}, thanks for your interest${vesselLine ? ` in outfitting <strong style="color:#EFF6FF">${vesselLine}</strong>` : ''}. Here's your quote:
+      <p style="margin:0 0 20px;font-family:sans-serif;font-size:14px;color:#334155">
+        Hi ${safeName}, thanks for your interest${vesselLine ? ` in outfitting <strong style="color:#0A2540">${vesselLine}</strong>` : ''}. Here's your quote:
       </p>
 
-      <p style="font-family:sans-serif;font-size:14px;color:#EFF6FF;line-height:1.6;margin:0 0 24px;white-space:pre-wrap">${escapeHtml(input.quote_notes)}</p>
+      <p style="font-family:sans-serif;font-size:14px;color:#0A2540;line-height:1.6;margin:0 0 24px;white-space:pre-wrap">${escapeHtml(input.quote_notes)}</p>
       ${inquiryHtml}
       ${itemsHtml}
       ${warningsHtml}
@@ -307,13 +307,13 @@ export const buildSailorQuoteHtml = (input: SailorQuoteInput) => {
       ${paymentHtml}
       ${totalHtml}
 
-      <p style="margin:0;font-family:sans-serif;font-size:14px;color:#A8BEDC">
+      <p style="margin:0;font-family:sans-serif;font-size:14px;color:#334155">
         Questions? Just reply to this email and we'll help you out.
       </p>
     </div>
 
-    <div style="padding:16px 32px;border-top:1px solid rgba(56,189,248,0.1);background:rgba(4,10,24,0.5)">
-      <p style="margin:0;font-family:sans-serif;font-size:12px;color:#6B7FA8">Sent via Shaft Lok Inc. · shaftlok.com</p>
+    <div style="padding:16px 32px;border-top:1px solid #D3DEE9;background:#FFFFFF">
+      <p style="margin:0;font-family:sans-serif;font-size:12px;color:#475569">Sent via Shaft Lok Inc. · shaftlok.com</p>
     </div>
   </div>
 </body>
@@ -335,12 +335,48 @@ const INQUIRY_SECTION_TITLES = [
 const decodeCardTitle = (title: string) =>
   title.replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').trim().toLowerCase()
 
+// Previously sent emails were navy. Keep that markup when tidying Last Sent,
+// so those previews still match the message the sailor received.
+const legacyCard = (title: string, body: string) => `
+      <div style="background:rgba(148,197,255,0.06);border:1px solid rgba(148,197,255,0.18);border-radius:10px;padding:18px 20px;margin-bottom:24px">
+        <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">${escapeHtml(title)}</p>
+        ${body}
+      </div>`
+
+const legacyField = (label: string, value: unknown) => {
+  const text = String(value ?? '').trim()
+  if (!text) return ''
+  return `<p style="margin:0 0 8px;font-family:sans-serif;font-size:13px;color:#A8BEDC;line-height:1.6"><span style="color:#6B7FA8">${escapeHtml(label)}: </span><span style="color:#EFF6FF">${escapeHtml(text)}</span></p>`
+}
+
+const legacyItemsQuotedTableHtml = (rows: {
+  itemHtml: string
+  qty: string | number
+  unitPriceHtml: string
+  totalHtml: string
+}[]) =>
+  `<table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:14px;color:#EFF6FF">
+          <tr>
+            <td style="padding:0 12px 8px 0;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Qty</td>
+            <td style="padding:0 12px 8px 0;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8">Item</td>
+            <td style="padding:0 12px 8px 0;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Unit Price</td>
+            <td style="padding:0 0 8px;text-align:right;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#38BDF8;white-space:nowrap">Total</td>
+          </tr>
+          ${rows.map((row) => `
+          <tr>
+            <td style="padding:0 12px 10px 0;text-align:right;white-space:nowrap;vertical-align:top;color:#A8BEDC">${row.qty}</td>
+            <td style="padding:0 12px 10px 0;vertical-align:top;color:#EFF6FF">${row.itemHtml}</td>
+            <td style="padding:0 12px 10px 0;text-align:right;white-space:nowrap;vertical-align:top">${row.unitPriceHtml}</td>
+            <td style="padding:0 0 10px;text-align:right;white-space:nowrap;vertical-align:top">${row.totalHtml}</td>
+          </tr>`).join('')}
+        </table>`
+
 const withInquiryNameEmail = (
   body: string,
   contact?: { name?: string | null; email?: string | null }
 ) => {
   if (/>Name: <\/span>/.test(body)) return body
-  return `${field('Name', contact?.name)}${field('Email', contact?.email)}${body}`
+  return `${legacyField('Name', contact?.name)}${legacyField('Email', contact?.email)}${body}`
 }
 
 const restyleItemsQuotedBody = (body: string) => {
@@ -360,7 +396,7 @@ const restyleItemsQuotedBody = (body: string) => {
     }
   }
 
-  return rows.length ? itemsQuotedTableHtml(rows) : body
+  return rows.length ? legacyItemsQuotedTableHtml(rows) : body
 }
 
 const quoteNumberLine = (quoteNumber: string) =>
@@ -406,7 +442,7 @@ export function restyleSentSailorQuoteHtml(
       replacements.push({
         start: index,
         end: index + full.length,
-        html: card('Items Quoted', restyleItemsQuotedBody(body))
+        html: legacyCard('Items Quoted', restyleItemsQuotedBody(body))
       })
       continue
     }
@@ -434,7 +470,7 @@ export function restyleSentSailorQuoteHtml(
     replacements.push({
       start: first.index,
       end: first.index + first.full.length,
-      html: card('Inquiry', withInquiryNameEmail(orderedBodies, contact))
+      html: legacyCard('Inquiry', withInquiryNameEmail(orderedBodies, contact))
     })
     for (const item of inquiryCards) {
       if (item.index === first.index) continue
@@ -445,7 +481,7 @@ export function restyleSentSailorQuoteHtml(
     replacements.push({
       start: target.index,
       end: target.index + target.full.length,
-      html: card('Inquiry', withInquiryNameEmail(target.body, contact))
+      html: legacyCard('Inquiry', withInquiryNameEmail(target.body, contact))
     })
   }
 

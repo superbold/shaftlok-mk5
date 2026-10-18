@@ -1159,7 +1159,7 @@ const quoteContentUnchanged = computed(() => {
   if ((editForm.value.shipping_notes || null) !== (q.sent_shipping_notes || null)) return false
   if ((editForm.value.quote_notes || null) !== (q.sent_quote_notes || null)) return false
   if (!sameAttachmentIds(editForm.value.attachment_ids, q.sent_attachment_ids)) return false
-  const sentHadPayment = /text-transform:uppercase;color:#38BDF8">Payment<\/p>/.test(q.sent_html || '')
+  const sentHadPayment = />Payment<\/p>/.test(q.sent_html || '')
   if ((!editForm.value.hide_payment) !== sentHadPayment) return false
   if (JSON.stringify(inquiryColumnsFromForm(editForm.value)) !== JSON.stringify(inquiryColumnsFromForm(inquiryFromQuote(q)))) {
     return false

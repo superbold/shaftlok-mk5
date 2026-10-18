@@ -94,7 +94,7 @@ onUnmounted(() => {
   width: 100%;
   border: none;
   display: block;
-  background: #040A18;
+  background: #FFFFFF;
 }
 
 .email-frame-flush .email-frame {

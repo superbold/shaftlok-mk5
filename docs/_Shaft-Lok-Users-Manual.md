@@ -28,6 +28,14 @@ The total the sailor sees is products plus shipping. **Send Quote** stays unavai
 
 The right side of the quote is a live preview of the email **Send** will use. After a quote has been sent once, that pane also has **Last Sent**, which is the copy that already went out. Edits on the left are not in Last Sent until you send again.
 
+## What the sailor receives
+
+**Get a Quote** emails the inquiry to Shaft Lok. That message stays the dark inquiry email. The sailor does not get a quote from that form.
+
+The quote the sailor receives, and the one they print, is the email from **Send Quote**. It includes the prices, terms, and, when **Include Payment** is on, the pay buttons. A sailor reported that printing the dark quote used too much ink, so that email is a white page. Quotes already sent stay as they were until you send them again.
+
+Paying does not send another Shaft Lok email. The sailor checks out on Stripe, then lands on the dark **Order Confirmed** page. Shaft Lok does not email a receipt. Stripe may send its own receipt when that option is on in the Stripe dashboard. That receipt uses Stripe’s layout, not the quote.
+
 ## Sending the email
 
 The first time you send, the site asks you to confirm. If you send again after something changed, it asks you to confirm the updated version. If nothing changed, it warns you that you are about to resend the same quote.
